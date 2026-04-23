@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "Ripple Labs"
+version = "1.0.0"
+id = "artifacts/ripple-labs"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 19683
+
+[services.development]
+run = "pnpm --filter @workspace/ripple-labs run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/ripple-labs", "run", "build" ]
+publicDir = "artifacts/ripple-labs/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "19683"
+BASE_PATH = "/"
