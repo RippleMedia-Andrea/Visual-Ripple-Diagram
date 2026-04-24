@@ -23,13 +23,13 @@ export default function Home() {
           data-testid="nav-logo"
         />
         <div className="flex items-center gap-6">
-          <a
-            href="#method"
+          <Link
+            href="/ripple-method"
             className="text-[#D7ECEB] text-sm font-sans hover:text-[#C8A96A] transition-colors"
             data-testid="nav-method"
           >
-            The Method
-          </a>
+            The Ripple Method™
+          </Link>
           <Link
             href="/purpose-lab"
             className="text-[#D7ECEB] text-sm font-sans hover:text-[#C8A96A] transition-colors"
@@ -93,6 +93,94 @@ export default function Home() {
               data-testid="hero-secondary-cta"
             >
               Visit Purpose Lab
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Explore Cards */}
+      <section
+        className="px-6 md:px-12 py-16"
+        style={{ backgroundColor: "#F5F1E8" }}
+        data-testid="explore-section"
+      >
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-10">
+            <p className="text-[#C8A96A] text-xs font-sans uppercase tracking-widest mb-3">
+              Explore
+            </p>
+            <h2
+              className="text-2xl md:text-3xl font-serif font-semibold text-[#0F2A36]"
+              style={{ fontFamily: "'Playfair Display', serif" }}
+              data-testid="explore-heading"
+            >
+              Where would you like to begin?
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5" data-testid="explore-cards">
+            {/* Free: Ripple Method */}
+            <Link href="/ripple-method" data-testid="card-ripple-method">
+              <div
+                className="group rounded-2xl px-7 py-8 border transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 cursor-pointer h-full"
+                style={{
+                  backgroundColor: "#EEE9DB",
+                  borderColor: "#D7ECEB",
+                }}
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <span
+                    className="px-2.5 py-1 rounded-full text-[10px] font-sans font-semibold uppercase tracking-wide"
+                    style={{ backgroundColor: "#D7ECEB", color: "#2F7F7B" }}
+                    data-testid="free-badge"
+                  >
+                    Free Overview
+                  </span>
+                  <span className="text-[#C8A96A] text-xs group-hover:translate-x-1 transition-transform">→</span>
+                </div>
+                <h3
+                  className="text-xl font-serif font-semibold text-[#0F2A36] mb-2"
+                  style={{ fontFamily: "'Playfair Display', serif" }}
+                >
+                  The Ripple Method™
+                </h3>
+                <div className="w-6 h-px mb-3" style={{ backgroundColor: "#C8A96A" }} />
+                <p className="text-[#5FA8A5] font-sans text-sm leading-relaxed">
+                  Explore the six-stage framework at your own pace. No account required. Free for everyone.
+                </p>
+              </div>
+            </Link>
+
+            {/* Paid: Purpose Lab */}
+            <Link href="/purpose-lab" data-testid="card-purpose-lab">
+              <div
+                className="group rounded-2xl px-7 py-8 border transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 cursor-pointer h-full"
+                style={{
+                  backgroundColor: "#0F2A36",
+                  borderColor: "#2F7F7B",
+                }}
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <span
+                    className="px-2.5 py-1 rounded-full text-[10px] font-sans font-semibold uppercase tracking-wide"
+                    style={{ backgroundColor: "#C8A96A", color: "#0F2A36" }}
+                    data-testid="paid-badge"
+                  >
+                    Guided Experience · $47
+                  </span>
+                  <span className="text-[#C8A96A] text-xs group-hover:translate-x-1 transition-transform">→</span>
+                </div>
+                <h3
+                  className="text-xl font-serif font-semibold text-white mb-2"
+                  style={{ fontFamily: "'Playfair Display', serif" }}
+                >
+                  Purpose Lab
+                </h3>
+                <div className="w-6 h-px mb-3" style={{ backgroundColor: "#C8A96A" }} />
+                <p className="text-[#9fd0cd] font-sans text-sm leading-relaxed">
+                  The full hands-on experience — storytelling, pattern recognition, purpose statement, season alignment, and action steps.
+                </p>
+              </div>
             </Link>
           </div>
         </div>

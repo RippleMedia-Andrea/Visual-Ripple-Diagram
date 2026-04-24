@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
 import PurposeLab from "@/pages/purpose-lab";
+import RippleMethodPage from "@/pages/ripple-method";
 
 const queryClient = new QueryClient();
 
@@ -12,6 +13,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
+      <Route path="/ripple-method" component={RippleMethodPage} />
       <Route path="/purpose-lab" component={PurposeLab} />
       <Route component={NotFound} />
     </Switch>

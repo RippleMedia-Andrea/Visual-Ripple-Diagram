@@ -323,10 +323,11 @@ export default function PurposeLab() {
             ← Home
           </Link>
           <Link
-            href="/#method"
+            href="/ripple-method"
             className="text-[#D7ECEB] text-xs font-sans hover:text-[#C8A96A] transition-colors hidden sm:inline"
+            data-testid="nav-ripple-method"
           >
-            The Method
+            The Ripple Method™
           </Link>
         </div>
       </nav>

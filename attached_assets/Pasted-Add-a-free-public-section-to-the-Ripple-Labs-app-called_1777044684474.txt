@@ -1,0 +1,97 @@
+Add a free public section to the Ripple Labs app called “The Ripple Method™.”
+
+Purpose:
+This section should introduce users to the premise and high-level framework of The Ripple Method™ without giving them the full hands-on Purpose Lab experience.
+
+Access:
+- This section should be free
+- Users should not need to pay to view it
+- Users should not need to create an account to view it
+- It should be available from the main Ripple Labs home page/navigation
+
+Page Title:
+The Ripple Method™
+
+Intro Copy:
+“The Ripple Method™ is a guided framework designed to help you uncover what is already within you and learn how to live it with clarity and intention. It is built on the belief that purpose is not something you create from scratch. It is something you recognize, name, and live.”
+
+Core Anchor:
+“What’s within you creates a ripple.”
+
+Create a clean, simple overview of the six stages:
+
+1. Reveal — Your Story
+Short teaching:
+Your story holds clues. In this stage, you begin noticing the experiences, moments, and memories that shaped you and revealed pieces of who you already are.
+
+2. Identify — Your Patterns
+Short teaching:
+Patterns reveal purpose. This stage helps you notice recurring themes, emotions, strengths, values, and ways you naturally impact others.
+
+3. Pinpoint — Your Purpose
+Short teaching:
+Purpose becomes clearer when you put language to it. This stage helps you move from patterns to a purpose statement rooted in action and impact.
+
+4. Personalize — Your Season
+Short teaching:
+Your purpose is not limited by your season. It is expressed through it. This stage helps you understand what living your purpose can look like in your current roles, responsibilities, and life stage.
+
+5. Live — Your Ripple
+Short teaching:
+Clarity becomes powerful when it turns into action. This stage helps you identify what to start, stop, and continue so you can live with greater alignment.
+
+6. Expand — Your Growth
+Short teaching:
+Purpose is not a one-time discovery. It is something you continue to live, revisit, and grow into over time as your life changes.
+
+Design Requirements:
+- Use the Ripple Labs visual identity
+- Calm, premium, reflective design
+- Use cards or a vertical step layout for each stage
+- Include a simple ripple-style visual or progress flow:
+Reveal → Identify → Pinpoint → Personalize → Live → Expand
+- Keep the teaching short and clear
+- Do not include the full workbook prompts, AI analysis, or detailed exercises here
+- This should feel like an introduction, not the full experience
+
+Call-to-Action Section at the End:
+Title:
+Ready to go deeper?
+
+Copy:
+“If you would like a more hands-on experience uncovering your purpose using The Ripple Method™, you can enter Purpose Lab or book a personal consultation.”
+
+Add two CTA buttons:
+1. “Purchase Purpose Lab”
+2. “Book a Consultation”
+
+Purpose Lab CTA:
+- Link to the Purpose Lab checkout / purchase flow
+- Mention one-time access price: $47
+
+Consultation CTA:
+- Link to consultation booking page or placeholder booking link for now
+
+CTA Support Copy:
+“Purpose Lab walks you through the full guided experience with storytelling, reflection, pattern recognition, purpose statement creation, season alignment, and practical action steps.”
+
+Optional note:
+“Consultations are available for those who want personal support understanding and applying their results.”
+
+Navigation:
+- Add “The Ripple Method™” to the main nav
+- Add a card on the Ripple Labs homepage for “The Ripple Method™”
+- Mark it as “Free Overview”
+- Keep Purpose Lab as the paid hands-on experience
+
+Important:
+- Do not remove or change the existing Purpose Lab flow
+- This free section should lead users toward Purpose Lab and consultations
+- Keep the distinction clear:
+  - Ripple Method™ overview = free education
+  - Purpose Lab = paid guided application
+  - Consultation = paid personal support
+
+Tone:
+Warm, clear, grounded, and empowering.
+The page should help users understand the method and feel invited, not pressured.
