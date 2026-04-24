@@ -1,3 +1,4 @@
+import { Link } from "wouter";
 import rippleLabsLogo from "@assets/2876A1D3-1596-40F7-9384-F5AAA5F311E8_1777042604510.png";
 import purposeLabLogo from "@assets/31DC4C16-212D-406B-AC0B-609119CF0477_1777042604510.png";
 import { RippleMethodDiagram } from "@/components/RippleMethodDiagram";
@@ -18,7 +19,7 @@ export default function Home() {
         <img
           src={rippleLabsLogo}
           alt="Ripple Labs"
-          className="h-10 w-auto object-contain brightness-0 invert"
+          className="h-10 w-auto object-contain rounded-lg"
           data-testid="nav-logo"
         />
         <div className="flex items-center gap-6">
@@ -29,20 +30,20 @@ export default function Home() {
           >
             The Method
           </a>
-          <a
-            href="#purpose-lab"
+          <Link
+            href="/purpose-lab"
             className="text-[#D7ECEB] text-sm font-sans hover:text-[#C8A96A] transition-colors"
             data-testid="nav-purpose-lab"
           >
             Purpose Lab
-          </a>
-          <a
-            href="#method"
+          </Link>
+          <Link
+            href="/purpose-lab"
             className="px-4 py-2 rounded-full text-sm font-sans font-medium transition-all border border-[#2F7F7B] text-[#D7ECEB] hover:bg-[#2F7F7B] hover:text-white"
             data-testid="nav-cta"
           >
             Begin
-          </a>
+          </Link>
         </div>
       </nav>
 
@@ -82,8 +83,8 @@ export default function Home() {
             >
               Explore the Method
             </a>
-            <a
-              href="#purpose-lab"
+            <Link
+              href="/purpose-lab"
               className="px-8 py-3 rounded-full font-sans font-medium border transition-all"
               style={{
                 borderColor: "#C8A96A",
@@ -92,7 +93,7 @@ export default function Home() {
               data-testid="hero-secondary-cta"
             >
               Visit Purpose Lab
-            </a>
+            </Link>
           </div>
         </div>
       </section>
@@ -165,14 +166,14 @@ export default function Home() {
                 journey through the Ripple Method designed to help you discover
                 your unique purpose and live it with intention.
               </p>
-              <a
-                href="#"
+              <Link
+                href="/purpose-lab"
                 className="inline-block px-7 py-3 rounded-full font-sans font-medium text-white text-sm transition-all shadow-md hover:shadow-lg hover:opacity-90"
                 style={{ backgroundColor: "#2F7F7B" }}
                 data-testid="purpose-lab-cta"
               >
                 Enter Purpose Lab
-              </a>
+              </Link>
             </div>
           </div>
         </div>
@@ -312,14 +313,14 @@ export default function Home() {
           <p className="font-script text-lg text-[#D7ECEB] mb-8">
             What's within you creates a ripple.
           </p>
-          <a
-            href="#method"
+          <Link
+            href="/purpose-lab"
             className="inline-block px-9 py-3.5 rounded-full font-sans font-medium text-white transition-all shadow-lg hover:opacity-90 hover:shadow-xl"
             style={{ backgroundColor: "#2F7F7B" }}
             data-testid="footer-cta"
           >
             Start Your Journey
-          </a>
+          </Link>
         </div>
       </section>
 
@@ -332,7 +333,7 @@ export default function Home() {
         <img
           src={rippleLabsLogo}
           alt="Ripple Labs"
-          className="h-7 w-auto object-contain brightness-0 invert opacity-60"
+          className="h-7 w-auto object-contain rounded-md opacity-80"
           data-testid="footer-logo"
         />
         <p className="text-[#5FA8A5] text-xs font-sans opacity-60 text-center">
