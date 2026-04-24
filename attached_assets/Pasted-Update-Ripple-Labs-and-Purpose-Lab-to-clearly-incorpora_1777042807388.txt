@@ -1,0 +1,77 @@
+Update Ripple Labs and Purpose Lab to clearly incorporate The Ripple Method as the core methodology behind the app experience.
+
+Purpose:
+The Purpose Lab is built on The Ripple Method, a guided process that helps users uncover their purpose from their story, put language to it, and live it out in their current season of life.
+
+Core belief:
+Purpose is not something users create. It is something already within them that they uncover, name, and live.
+
+Add The Ripple Method throughout the app as the organizing framework.
+
+The Ripple Method stages are:
+
+1. Reveal — Your Story
+Users uncover meaningful stories, early experiences, moments of aliveness, challenges, and defining memories.
+
+2. Identify — Your Patterns
+The app helps users recognize patterns in their stories, including emotions, actions, values, strengths, impact, audience, motivations, and recurring themes.
+
+3. Pinpoint — Your Purpose
+Users turn those patterns into a clear purpose statement:
+“I wake up every day to [action] so that [impact].”
+Purpose should always end with impact on others.
+
+4. Personalize — Your Season
+Users apply their purpose to their current season of life, roles, responsibilities, and capacity.
+Core teaching:
+“Purpose remains constant, but its expression changes by season.”
+
+5. Live — Your Ripple
+Users create aligned action steps using Start / Stop / Continue.
+They identify what needs to begin, what is misaligned, and what is already working.
+
+6. Expand — Your Growth
+Users integrate purpose into daily life through morning intention, evening reflection, and the ability to revisit Purpose Lab in future seasons.
+
+App updates needed:
+
+1. Add a Ripple Method overview screen near the beginning of Purpose Lab.
+Introduce the six stages in a clean, visual way.
+
+2. Add stage labels/progress indicators throughout Purpose Lab:
+- Reveal
+- Identify
+- Pinpoint
+- Personalize
+- Live
+- Expand
+
+3. Rename or organize existing Purpose Lab sections under these stages:
+- Story prompts = Reveal
+- Insight extraction = Identify
+- Purpose statement builder = Pinpoint
+- Living purpose in this season = Personalize
+- Start / Stop / Continue = Live
+- Daily practice + revisit later = Expand
+
+4. Add short teaching copy at the beginning of each stage explaining what the user is doing and why it matters.
+
+5. Add this language where appropriate:
+- “You are not becoming someone else. You are uncovering who you already are.”
+- “Your story holds clues.”
+- “Patterns reveal purpose.”
+- “Purpose is who you are in motion.”
+- “Your purpose is not limited by your season. It is expressed through it.”
+- “Small actions create a life of purpose.”
+- “What’s within you creates a ripple.”
+
+6. Add or update a reusable visual component called “The Ripple Method” using a ripple or step-based layout.
+
+Visual structure:
+Reveal → Identify → Pinpoint → Personalize → Live → Expand
+
+7. Make sure the experience feels like a guided methodology, not random forms or journaling prompts.
+
+8. Keep the tone calm, reflective, empowering, and grounded.
+
+Do not remove existing functionality. Refactor the experience so it clearly follows The Ripple Method.
