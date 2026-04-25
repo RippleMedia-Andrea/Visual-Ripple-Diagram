@@ -1,0 +1,58 @@
+Update the Purpose Lab purpose statement format across the app.
+
+Old format:
+“I wake up every day to [action] so that [impact].”
+
+New primary format:
+“I am someone who [action], so others can [impact].”
+
+Purpose:
+This new format should feel identity-based and other-centered. It should reinforce that purpose is not something the user is trying to become. It is part of who they already are and how they naturally show up in the world to impact others.
+
+Update all Purpose Lab areas that reference the purpose statement format:
+- Purpose Statement Builder
+- AI-generated purpose suggestions
+- editable purpose statement fields
+- instructions and examples
+- PDF/downloadable summary
+- dashboard
+- saved session view
+- any onboarding or teaching copy that references the old format
+
+New teaching copy:
+“Your purpose statement begins with identity and ends with impact. It is not just what you do. It reflects who you are and how your life helps others.”
+
+Purpose statement builder requirements:
+1. Generate 3–5 purpose statement suggestions using this structure:
+“I am someone who [action], so others can [impact].”
+
+2. Action should come from:
+- what the user naturally does
+- repeated behaviors
+- strengths
+- patterns from their stories
+
+3. Impact should come from:
+- how others are affected
+- what changes because of the user
+- the difference they naturally create in people’s lives
+
+4. Let users choose a suggested statement as a starting point or start from scratch.
+
+5. Keep the statement fully editable.
+
+6. Add guidance questions:
+- Does this sound like you?
+- Does this reflect how you naturally show up?
+- Does the impact focus on others?
+- Is this simple enough to remember and repeat?
+
+7. Add examples:
+“I am someone who helps people feel seen, so others can know they matter.”
+“I am someone who brings clarity to confusing situations, so others can move forward with confidence.”
+“I am someone who encourages growth, so others can become who they were created to be.”
+
+8. Keep the tone warm, grounded, reflective, and empowering.
+
+Important:
+Do not remove existing user data. If any saved statements use the old format, keep them saved but allow users to update or regenerate them using the new format.

@@ -3,6 +3,7 @@ import { Link } from "wouter";
 import rippleLabsLogo from "@assets/2876A1D3-1596-40F7-9384-F5AAA5F311E8_1777042604510.png";
 import purposeLabLogo from "@assets/31DC4C16-212D-406B-AC0B-609119CF0477_1777042604510.png";
 import { RippleMethodDiagram } from "@/components/RippleMethodDiagram";
+import { PurposeStatementBuilder } from "@/components/PurposeStatementBuilder";
 
 const stages = [
   {
@@ -85,30 +86,30 @@ const stages = [
     title: "Pinpoint",
     subtitle: "Your Purpose",
     eyebrow: "Stage Three",
-    belief: "Purpose is who you are in motion.",
+    belief: "You are not becoming someone else. You are naming who you already are.",
     teaching:
-      "Your patterns point to a purpose that is uniquely yours. Not a career title or a role — a clear, simple statement that names the action you were made to take and the impact you were made to create.",
-    what: "Using the patterns you've identified, you'll craft your personal purpose statement. Purpose always ends with its impact on others.",
+      "Your purpose statement begins with identity and ends with impact. It is not just what you do. It reflects who you are and how your life helps others. Your patterns point to a purpose that is uniquely yours — a clear, simple statement rooted in the action you naturally take and the difference it creates in others.",
+    what: "Using the patterns you've identified, you'll build your personal purpose statement using the format: \"I am someone who [action], so others can [impact].\" You can choose a suggested starting point or write your own from scratch.",
     prompts: [
-      {
-        label: "The Purpose Statement",
-        question:
-          '"I wake up every day to [action] so that [impact]." What would yours say?',
-      },
       {
         label: "The Action",
         question:
-          "What is the core action at the heart of your purpose? (e.g., create, teach, build, heal, connect, lead, challenge)",
+          "What do you naturally do? Think about repeated behaviors, strengths, and patterns from your stories. What shows up again and again?",
       },
       {
         label: "The Impact",
         question:
-          "Who benefits from your purpose, and what does it make possible for them?",
+          "How are others affected by you? What changes because of you? What difference do you naturally create in people's lives?",
       },
       {
-        label: "The Test",
+        label: "Does It Sound Like You?",
         question:
           "When you read your purpose statement, does it feel like a relief — like something you've always known but never said out loud?",
+      },
+      {
+        label: "Is It Other-Centered?",
+        question:
+          "Does the impact portion of your statement focus outward — on what others gain or experience because of who you are?",
       },
     ],
     color: "#2F7F7B",
@@ -595,6 +596,22 @@ export default function PurposeLab() {
               </p>
             </div>
 
+            {/* Purpose Statement Builder — Pinpoint stage only */}
+            {activeStageId === "pinpoint" && (
+              <div className="px-8 pb-6" data-testid="purpose-statement-builder-section">
+                <p
+                  className="text-xs font-sans uppercase tracking-widest mb-4"
+                  style={{ color: activeStage.textColor, opacity: 0.5 }}
+                >
+                  Build Your Purpose Statement
+                </p>
+                <PurposeStatementBuilder
+                  textColor={activeStage.textColor}
+                  cardBg={activeStage.cardBg}
+                />
+              </div>
+            )}
+
             {/* Reflection prompts */}
             <div className="px-8 pb-10">
               <p
@@ -683,7 +700,7 @@ export default function PurposeLab() {
               "You are not becoming someone else. You are uncovering who you already are.",
               "Your story holds clues.",
               "Patterns reveal purpose.",
-              "Purpose is who you are in motion.",
+              "Purpose is not something you create. It is something you recognize, name, and live.",
               "Your purpose is not limited by your season. It is expressed through it.",
               "What's within you creates a ripple.",
             ].map((teaching, i) => (
