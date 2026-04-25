@@ -1,0 +1,208 @@
+Add a new feature to the Purpose Lab called:
+
+“Ripple Decision Maker”
+
+Purpose:
+This tool helps users make aligned decisions using their purpose statement, their current season of life, and their priorities.
+
+The goal is to help users determine whether to say YES, NO, or NOT RIGHT NOW to opportunities, commitments, or decisions.
+
+This should feel like a guided, reflective decision-making experience—not just a simple yes/no output.
+
+--------------------------------------------------
+
+PART 1: SEASON OF LIFE PROFILE (SETUP)
+
+Create a section called:
+“Your Current Season”
+
+Purpose:
+Help users clearly define the context of their life right now.
+
+This should be a guided input experience with selectable options and optional custom inputs.
+
+Include categories:
+
+1. Life Stage
+- Student (middle school, high school, college)
+- Early career
+- Mid-career
+- Career transition
+- Entrepreneur / business owner
+- Stay-at-home parent
+- Empty nester
+- Retired
+- Other (custom input)
+
+2. Living Situation
+- Living with parents
+- Living alone
+- Living with roommates
+- Living with spouse/partner
+- Other
+
+3. Relationship Status
+- Single
+- Dating
+- Married
+- Divorced
+- Widowed
+
+4. Family Responsibilities
+- No children
+- Children (0–5)
+- Children (6–12)
+- Teenagers
+- Adult children
+- Caregiver (parent or other)
+- Multiple selections allowed
+
+5. Work / Time Commitments
+- Full-time job
+- Part-time job
+- Business owner
+- Student workload
+- Multiple roles (allow selection)
+
+6. Capacity Reflection (IMPORTANT)
+Add a short prompt:
+“How would you describe your current capacity?”
+Options:
+- Very full / overwhelmed
+- Busy but manageable
+- Balanced
+- Spacious / open
+
+Allow user to save this profile and edit later.
+
+--------------------------------------------------
+
+PART 2: PRIORITIES IDENTIFICATION
+
+Create a section called:
+“What Matters Most Right Now”
+
+Purpose:
+Help users identify and rank their current priorities.
+
+Step 1: Select Priority Categories (multi-select)
+- Faith / spiritual growth
+- Personal growth
+- Family
+- Marriage / relationship
+- Parenting
+- Career / work
+- Business
+- Health
+- Rest / recovery
+- Community
+- Finances
+- Other (custom)
+
+Step 2: Ranking
+Have users select their top 3–5 priorities.
+
+Step 3: Priority Clarification (IMPORTANT)
+For each selected priority, ask:
+
+“What does this look like in this season?”
+
+Example:
+If “Family” is selected:
+→ “Being present in the evenings”
+→ “Spending time with kids”
+
+If “Work” is selected:
+→ “Growing my business”
+→ “Stability in income”
+
+Allow short text input for each.
+
+Save this data.
+
+--------------------------------------------------
+
+PART 3: DECISION INPUT
+
+Create a section called:
+“Make a Decision”
+
+User inputs:
+- “What decision are you trying to make?”
+(text field)
+
+- “What are you considering saying yes to?”
+(text field)
+
+Optional:
+- urgency level (low / medium / high)
+
+--------------------------------------------------
+
+PART 4: DECISION ENGINE (AI RESPONSE)
+
+Use the following inputs:
+- user’s purpose statement
+- season of life profile
+- priorities
+- decision input
+
+Claude/AI should respond with:
+
+1. ALIGNMENT REFLECTION
+“Here’s how this aligns with your purpose…”
+
+2. SEASON CHECK
+“Considering your current season…”
+
+3. PRIORITY CHECK
+“This aligns / conflicts with your current priorities…”
+
+4. INSIGHT SUMMARY
+“What I’m noticing…”
+
+5. GUIDED OUTCOME (NOT FORCEFUL)
+Suggest one of:
+- This is aligned → consider saying YES
+- This may not be aligned → consider saying NO
+- This may be right later → NOT RIGHT NOW
+
+6. FINAL REFLECTION QUESTION
+“Does this move you closer to the life you want to live, or further from it?”
+
+--------------------------------------------------
+
+TONE REQUIREMENTS:
+
+- Calm
+- Reflective
+- Supportive
+- Non-judgmental
+- Do NOT tell the user what to do
+- Guide them to clarity
+
+--------------------------------------------------
+
+UI NOTES:
+
+- Clean, step-by-step flow
+- Save user inputs for reuse
+- Allow editing of season + priorities
+- Show purpose statement at top of decision screen
+- Use cards for clarity
+
+--------------------------------------------------
+
+IMPORTANT:
+
+This tool should reinforce:
+- identity
+- purpose
+- alignment
+
+It should NOT feel like:
+- a calculator
+- a rigid system
+
+It should feel like:
+a thoughtful guide helping them make aligned decisions.
