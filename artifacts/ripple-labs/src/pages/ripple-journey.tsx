@@ -5,6 +5,49 @@ import { StageChat, type ChatMessage } from "@/components/StageChat";
 
 const BASE_URL = import.meta.env.BASE_URL.replace(/\/$/, "");
 
+const STORY_PROMPTS = [
+  {
+    id: "alive",
+    label: "A moment I felt most alive",
+    description: "When were you most fully yourself? What were you doing, and who were you with?",
+  },
+  {
+    id: "shaped",
+    label: "An experience that quietly shaped me",
+    description: "An early memory or moment — big or small — that made you who you are.",
+  },
+  {
+    id: "challenge",
+    label: "A challenge that revealed my strength",
+    description: "A difficulty you walked through and what it showed you about yourself.",
+  },
+  {
+    id: "difference",
+    label: "A time I made a real difference",
+    description: "When did you know your presence or action truly mattered to someone else?",
+  },
+  {
+    id: "shifted",
+    label: "A moment when everything shifted",
+    description: "Before and after. What changed? What became possible that wasn't before?",
+  },
+  {
+    id: "natural",
+    label: "Something I do that comes naturally",
+    description: "What do others ask you for or notice about you that feels effortless to you?",
+  },
+  {
+    id: "care",
+    label: "Something I've always cared about",
+    description: "A cause, a person, a gap in the world that has always pulled at you.",
+  },
+  {
+    id: "memory",
+    label: "A memory I keep returning to",
+    description: "One that still holds meaning — even if you can't fully explain why.",
+  },
+];
+
 const STAGES = [
   {
     id: "reveal",
@@ -135,7 +178,8 @@ interface JourneyContext {
 
 type AllMessages = ChatMessage[][];
 
-const STORAGE_KEY = "ripple_journey_v1";
+const STORAGE_KEY = "ripple_journey_v2";
+const PROMPTS_KEY = "ripple_prompts_v1";
 
 function loadSaved(): { messages: AllMessages; context: JourneyContext; stageIdx: number } | null {
   try {
@@ -143,6 +187,14 @@ function loadSaved(): { messages: AllMessages; context: JourneyContext; stageIdx
     if (raw) return JSON.parse(raw);
   } catch {}
   return null;
+}
+
+function loadSavedPrompts(): string[] {
+  try {
+    const raw = localStorage.getItem(PROMPTS_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch {}
+  return [];
 }
 
 function saveProgress(messages: AllMessages, context: JourneyContext, stageIdx: number) {
@@ -170,6 +222,10 @@ export default function RippleJourney() {
   const [isStreaming, setIsStreaming] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
 
+  // Stage 1: prompt selection
+  const [selectedPrompts, setSelectedPrompts] = useState<string[]>(loadSavedPrompts);
+  const [promptsConfirmed, setPromptsConfirmed] = useState(() => loadSavedPrompts().length >= 2 && (saved?.messages?.[0]?.length ?? 0) > 0);
+
   // Stage-3-specific: purpose picker UI
   const [purposeOptions, setPurposeOptions] = useState<string[]>(saved?.context?.purposeOptions ?? []);
   const [selectedOption, setSelectedOption] = useState<string>("");
@@ -185,6 +241,10 @@ export default function RippleJourney() {
   useEffect(() => {
     saveProgress(allMessages, context, stageIdx);
   }, [allMessages, context, stageIdx]);
+
+  useEffect(() => {
+    try { localStorage.setItem(PROMPTS_KEY, JSON.stringify(selectedPrompts)); } catch {}
+  }, [selectedPrompts]);
 
   // Auto-open each stage — send opening prompt if messages are empty
   const hasOpened = useRef<Record<number, boolean>>({});
@@ -252,19 +312,28 @@ export default function RippleJourney() {
     [allMessages]
   );
 
-  const hasOpenedRef = useRef(false);
-  useEffect(() => {
-    if (!hasOpenedRef.current && allMessages[0].length === 0) {
-      hasOpenedRef.current = true;
-      sendOpening(0);
-    }
-  }, []);
+  // Stage 0 no longer auto-opens — user must select prompts first
+  async function triggerRevealOpening(prompts: string[]) {
+    if (allMessages[0].length > 0) return;
+    const promptLabels = prompts
+      .map((id) => STORY_PROMPTS.find((p) => p.id === id)?.label ?? id)
+      .join(", ");
+    const openingText = `The person has chosen to share stories around these themes: ${promptLabels}. Please warmly welcome them to Stage 1: Reveal — Your Story. Acknowledge the themes they chose, then gently invite them to begin with whichever one feels most natural right now. Ask one open, warm question to get them started. Keep your opening under 100 words.`;
+    await streamAIOpening("reveal", openingText, 0, { selectedPrompts: prompts, purposeStatement: "", patterns: [], season: "" });
+  }
+
+  function confirmAndBegin() {
+    if (selectedPrompts.length < 2) return;
+    setPromptsConfirmed(true);
+    triggerRevealOpening(selectedPrompts);
+  }
 
   function buildContext(idx: number) {
     return {
       purposeStatement: context.purposeStatement,
       patterns: context.patterns ? [context.patterns] : [],
       season: context.season,
+      selectedPrompts,
     };
   }
 
@@ -429,6 +498,7 @@ export default function RippleJourney() {
 
   function resetJourney() {
     localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(PROMPTS_KEY);
     setStageIdx(0);
     setAllMessages(emptyMessages());
     setContext(emptyContext());
@@ -436,10 +506,10 @@ export default function RippleJourney() {
     setSelectedOption("");
     setEditedPurpose("");
     setPurposeConfirmed(false);
+    setSelectedPrompts([]);
+    setPromptsConfirmed(false);
     setIsComplete(false);
     hasOpened.current = {};
-    hasOpenedRef.current = false;
-    setTimeout(() => sendOpening(0), 100);
   }
 
   if (isComplete) {
@@ -628,18 +698,125 @@ export default function RippleJourney() {
 
           {/* Right: Chat + stage-specific UI */}
           <div className="space-y-5">
-            <StageChat
-              stage={stage.id}
-              messages={allMessages[stageIdx]}
-              onMessages={(msgs) => updateStageMessages(stageIdx, msgs)}
-              context={buildContext(stageIdx)}
-              stageColor={stage.color}
-              stageTextColor={stage.textColor}
-              cardBg={stage.cardBg}
-              placeholder={stage.placeholder}
-              isStreaming={isStreaming}
-              setIsStreaming={setIsStreaming}
-            />
+
+            {/* Stage 0: prompt selection screen (shown before chat begins) */}
+            {stageIdx === 0 && !promptsConfirmed ? (
+              <div
+                className="rounded-2xl p-6 space-y-5"
+                style={{ backgroundColor: "rgba(255,255,255,0.05)", border: "1px solid rgba(200,169,106,0.18)" }}
+                data-testid="prompt-selector"
+              >
+                <div>
+                  <p
+                    className="text-[10px] font-sans uppercase tracking-widest mb-1"
+                    style={{ color: stage.textColor, opacity: 0.45 }}
+                  >
+                    Choose your stories
+                  </p>
+                  <p
+                    className="text-sm font-sans leading-relaxed"
+                    style={{ color: stage.textColor, opacity: 0.75 }}
+                  >
+                    Pick <strong>2 or 3</strong> of the prompts below. Your guide will walk through each one with you.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5" data-testid="prompt-grid">
+                  {STORY_PROMPTS.map((prompt) => {
+                    const isSelected = selectedPrompts.includes(prompt.id);
+                    const atMax = selectedPrompts.length >= 3 && !isSelected;
+                    return (
+                      <button
+                        key={prompt.id}
+                        onClick={() => {
+                          if (atMax) return;
+                          setSelectedPrompts((prev) =>
+                            isSelected ? prev.filter((id) => id !== prompt.id) : [...prev, prompt.id]
+                          );
+                        }}
+                        disabled={atMax}
+                        className="text-left px-4 py-3.5 rounded-xl border transition-all duration-200"
+                        style={{
+                          backgroundColor: isSelected
+                            ? "rgba(200,169,106,0.18)"
+                            : "rgba(255,255,255,0.03)",
+                          borderColor: isSelected
+                            ? "rgba(200,169,106,0.6)"
+                            : "rgba(255,255,255,0.08)",
+                          opacity: atMax ? 0.35 : 1,
+                        }}
+                        data-testid={`prompt-${prompt.id}`}
+                      >
+                        <div className="flex items-start gap-3">
+                          <div
+                            className="flex-shrink-0 w-4 h-4 rounded border-2 mt-0.5 flex items-center justify-center transition-all"
+                            style={{
+                              borderColor: isSelected ? "#C8A96A" : "rgba(200,169,106,0.3)",
+                              backgroundColor: isSelected ? "#C8A96A" : "transparent",
+                            }}
+                          >
+                            {isSelected && (
+                              <svg width="8" height="6" viewBox="0 0 8 6" fill="none">
+                                <path d="M1 3L3 5L7 1" stroke="#0F2A36" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                              </svg>
+                            )}
+                          </div>
+                          <div>
+                            <p
+                              className="text-sm font-sans font-medium leading-snug mb-1"
+                              style={{ color: stage.textColor }}
+                            >
+                              {prompt.label}
+                            </p>
+                            <p
+                              className="text-xs font-sans leading-relaxed"
+                              style={{ color: stage.textColor, opacity: 0.5 }}
+                            >
+                              {prompt.description}
+                            </p>
+                          </div>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <div className="flex items-center justify-between pt-1">
+                  <p
+                    className="text-xs font-sans"
+                    style={{ color: stage.textColor, opacity: selectedPrompts.length >= 2 ? 0.6 : 0.35 }}
+                  >
+                    {selectedPrompts.length === 0
+                      ? "Choose at least 2"
+                      : selectedPrompts.length === 1
+                      ? "Choose 1 more"
+                      : `${selectedPrompts.length} selected — ready to begin`}
+                  </p>
+                  <button
+                    onClick={confirmAndBegin}
+                    disabled={selectedPrompts.length < 2 || isStreaming}
+                    className="px-6 py-2.5 rounded-full text-sm font-sans font-medium transition-all disabled:opacity-30 hover:opacity-90"
+                    style={{ backgroundColor: "#C8A96A", color: "#0F2A36" }}
+                    data-testid="begin-stories-btn"
+                  >
+                    {isStreaming ? "Starting..." : "Let's Begin →"}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <StageChat
+                stage={stage.id}
+                messages={allMessages[stageIdx]}
+                onMessages={(msgs) => updateStageMessages(stageIdx, msgs)}
+                context={buildContext(stageIdx)}
+                stageColor={stage.color}
+                stageTextColor={stage.textColor}
+                cardBg={stage.cardBg}
+                placeholder={stage.placeholder}
+                isStreaming={isStreaming}
+                setIsStreaming={setIsStreaming}
+              />
+            )}
 
             {/* Stage 2 (Pinpoint): Purpose statement picker */}
             {stageIdx === 2 && purposeOptions.length > 0 && (

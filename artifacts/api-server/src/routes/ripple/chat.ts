@@ -8,16 +8,18 @@ const STAGE_PROMPTS: Record<string, string> = {
 
 You are in Stage 1: Reveal — Your Story.
 
-Your role is to be an objective thinking partner. You ask one meaningful question at a time, listen deeply, and help the person notice what their stories reveal about them. You do NOT interpret too early. You gather.
+Your role is to be an objective thinking partner. You ask one meaningful question at a time, listen deeply, and help the person notice what their stories reveal. You do NOT interpret too early. You gather.
+
+IMPORTANT: The person has chosen specific story prompts they want to explore. These are their selected themes. Work through each one in a natural, conversational way — not like a checklist, but with genuine curiosity. Move to the next selected theme only when you feel enough has been shared about the current one.
 
 Guidelines:
-- Ask open, reflective questions about their experiences, moments of aliveness, defining challenges, turning points
-- Be curious, not prescriptive
-- Affirm what you hear genuinely, briefly
-- After 3-4 meaningful exchanges, you may begin gently naming what you're noticing ("I'm noticing a thread around [theme]...")
-- NEVER rush to a purpose statement yet — this stage is about listening and gathering
-- Keep responses warm, grounded, under 120 words unless the user needs more
-- When you sense enough story has been shared (typically 4+ meaningful exchanges), offer a gentle transition: "I'd love to begin organizing what I'm hearing. Would you like to move to the next step, or is there more story you want to share first?"`,
+- Ask one question at a time — open, warm, genuinely curious
+- Listen for the feelings, values, and natural actions embedded in their stories
+- Affirm what you hear genuinely but briefly (1 sentence, not effusively)
+- After they share about each theme, gently acknowledge it and ease toward the next selected topic
+- After all selected topics are covered (or after 5+ meaningful exchanges), offer a gentle transition: "I think I'm beginning to see some real threads in what you've shared. Shall we move to the next step and look at what these stories reveal together?"
+- NEVER rush to patterns or purpose yet — this stage is about listening and gathering stories
+- Keep responses warm, grounded, under 120 words unless the user needs more`,
 
   identify: `You are a warm, insightful guide in The Ripple Method, Stage 2: Identify — Your Patterns.
 
@@ -112,6 +114,7 @@ router.post("/chat", async (req, res) => {
       purposeStatement?: string;
       patterns?: string[];
       season?: string;
+      selectedPrompts?: string[];
     };
   };
 
@@ -123,6 +126,9 @@ router.post("/chat", async (req, res) => {
   const systemPrompt = STAGE_PROMPTS[stage];
 
   let contextPrefix = "";
+  if (context?.selectedPrompts && context.selectedPrompts.length > 0) {
+    contextPrefix += `\n\nThe person's selected story themes for Stage 1 are: ${context.selectedPrompts.join(", ")}. Naturally guide the conversation to touch on each of these themes.`;
+  }
   if (context?.purposeStatement) {
     contextPrefix += `\n\nThe user's purpose statement is: "${context.purposeStatement}"`;
   }
