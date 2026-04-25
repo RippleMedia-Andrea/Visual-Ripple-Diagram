@@ -746,13 +746,14 @@ export default function PurposeLab() {
             Small actions create a life of purpose. Your journey through Purpose Lab
             starts with a single story.
           </p>
-          <button
-            className="px-9 py-3.5 rounded-full font-sans font-medium text-white transition-all shadow-md hover:shadow-lg hover:opacity-90"
+          <Link
+            href="/ripple-journey"
+            className="inline-block px-9 py-3.5 rounded-full font-sans font-medium text-white transition-all shadow-md hover:shadow-lg hover:opacity-90"
             style={{ backgroundColor: "#2F7F7B" }}
             data-testid="begin-journey-btn"
           >
-            Begin with Stage One
-          </button>
+            Begin Your Journey →
+          </Link>
         </div>
       </section>
 

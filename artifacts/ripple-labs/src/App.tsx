@@ -6,6 +6,7 @@ import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
 import PurposeLab from "@/pages/purpose-lab";
 import RippleMethodPage from "@/pages/ripple-method";
+import RippleJourney from "@/pages/ripple-journey";
 
 const queryClient = new QueryClient();
 
@@ -14,6 +15,7 @@ function Router() {
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/ripple-method" component={RippleMethodPage} />
+      <Route path="/ripple-journey" component={RippleJourney} />
       <Route path="/purpose-lab" component={PurposeLab} />
       <Route component={NotFound} />
     </Switch>
