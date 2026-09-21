@@ -9,10 +9,16 @@ const domains = (process.env.REPLIT_DOMAINS ?? process.env.REPLIT_DEV_DOMAIN ?? 
   .map((domain) => domain.trim())
   .filter(Boolean)
   .map((domain) => (domain.startsWith("http") ? domain : `https://${domain}`));
+const expoOrigins = (process.env.REPLIT_EXPO_DEV_DOMAIN ?? "")
+  .split(",")
+  .map((domain) => domain.trim())
+  .filter(Boolean)
+  .map((domain) => (domain.startsWith("http") ? domain : `https://${domain}`));
 const appOrigins = (process.env.APP_ORIGINS ?? "").split(",").map((origin) => origin.trim()).filter(Boolean);
 
 export const trustedOrigins = [
   ...domains,
+  ...expoOrigins,
   ...appOrigins,
   "http://localhost:5173",
   "http://localhost:19683",

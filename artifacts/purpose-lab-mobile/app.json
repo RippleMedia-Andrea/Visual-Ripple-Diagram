@@ -8,9 +8,14 @@
     "scheme": "purpose-lab-mobile",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "supportsTablet": false
+      "supportsTablet": false,
+      "bundleIdentifier": "app.ripplelabs.purposelab",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
+      "package": "app.ripplelabs.purposelab",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/purpose-lab-icon.png",
         "backgroundColor": "#0F2A36"

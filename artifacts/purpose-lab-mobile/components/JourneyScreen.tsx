@@ -6,6 +6,7 @@ import {
   Modal,
   Platform,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -20,6 +21,11 @@ import {
   useGetCurrentJourney,
   useRestartJourney,
   useUpdateJourney,
+  useExtractJourneyDiscoveries,
+  useUpdateStoryCard,
+  useDeleteStoryCard,
+  useUpdatePurposeTheme,
+  useDeletePurposeTheme,
   type ChatMessage as ApiChatMessage,
 } from '@workspace/api-client-react';
 import { useQueryClient } from '@tanstack/react-query';
@@ -27,21 +33,32 @@ import { STAGES, STORY_PROMPTS } from '@/constants/journey';
 import { streamJourneyChat, type ChatMessage } from '@/lib/mobile-api';
 import { useAuth } from '@/providers/AuthProvider';
 import { useColors } from '@/hooks/useColors';
+import { MyDiscoveries } from './MyDiscoveries';
+import { JourneySummary } from './JourneySummary';
+import { StoryCardView, ThemeCardView, SeasonFormView, ActionPlanFormView } from './Discoveries';
 
 function messageKey(message: ChatMessage, index: number) {
   return `${message.role}-${index}-${message.content.slice(0, 16)}`;
 }
 
 function extractPurposeOptions(messages: ChatMessage[]): string[] {
-  const text = messages
+  const allText = messages
     .filter((message) => message.role === 'assistant')
     .map((message) => message.content)
     .join('\n');
   const options: string[] = [];
-  const pattern = /I am someone who[^\n"]+(?:so others can[^\n".]+)?/gi;
-  for (const match of text.matchAll(pattern)) {
-    const option = match[0].trim().replace(/[."”]+$/, '');
-    if (!options.includes(option)) options.push(option);
+  const regex = /Option\s*\d[:\.]?\s*[""]?(I am someone who[^"".\n]+(?:so others can[^"".\n]+)?)["".]?/gi;
+  let match;
+  while ((match = regex.exec(allText)) !== null) {
+    const stmt = match[1].trim().replace(/["""]/g, "");
+    if (stmt && !options.includes(stmt)) options.push(stmt);
+  }
+  if (options.length === 0) {
+    const lineRegex = /[""]?(I am someone who[^"""\n]{10,})[""".]?/gi;
+    while ((match = lineRegex.exec(allText)) !== null) {
+      const stmt = match[1].trim().replace(/["""]/g, "");
+      if (stmt && !options.includes(stmt) && options.length < 3) options.push(stmt);
+    }
   }
   return options.slice(0, 3);
 }
@@ -54,6 +71,12 @@ export function JourneyScreen() {
   const journeyQuery = useGetCurrentJourney();
   const updateJourney = useUpdateJourney();
   const restartJourney = useRestartJourney();
+  const extractDiscoveries = useExtractJourneyDiscoveries();
+  const updateStoryCard = useUpdateStoryCard();
+  const deleteStoryCard = useDeleteStoryCard();
+  const updatePurposeTheme = useUpdatePurposeTheme();
+  const deletePurposeTheme = useDeletePurposeTheme();
+
   const [visibleStage, setVisibleStage] = useState<number | null>(null);
   const [draft, setDraft] = useState('');
   const [localMessages, setLocalMessages] = useState<Record<string, ChatMessage[]>>({});
@@ -61,6 +84,12 @@ export function JourneyScreen() {
   const [purposeDraft, setPurposeDraft] = useState<string | null>(null);
   const [isStreaming, setIsStreaming] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showDiscoveries, setShowDiscoveries] = useState(false);
+  const [reviewStageId, setReviewStageId] = useState<string | null>(null);
+  const [isExtracting, setIsExtracting] = useState(false);
+  const [extractionFailed, setExtractionFailed] = useState(false);
+  const [deletePassword, setDeletePassword] = useState('');
+  const [deleteError, setDeleteError] = useState('');
   const [streamError, setStreamError] = useState('');
   const inputRef = useRef<TextInput>(null);
 
@@ -85,12 +114,14 @@ export function JourneyScreen() {
     setPurposeDraft(null);
     setVisibleStage(null);
     setStreamError('');
+    setConfirmDeleteMode(false);
+    setDeletePassword('');
   }, [journey?.id]);
 
   function togglePrompt(id: string) {
     if (promptSelection.includes(id)) {
       setSelectedPrompts(promptSelection.filter((item) => item !== id));
-    } else if (promptSelection.length < 3) {
+    } else {
       setSelectedPrompts([...promptSelection, id]);
     }
   }
@@ -134,17 +165,22 @@ export function JourneyScreen() {
 
   async function beginStage() {
     if (!journey || stageIdx === 0 || messages.length > 0 || isHistorical || isComplete) return;
-    const previousStage = STAGES[stageIdx - 1];
-    const previousMessages = (localMessages[previousStage.id] ??
-      journey.messages[previousStage.id] ??
-      []) as ChatMessage[];
-    const summary = previousMessages
-      .map((message) => `${message.role === 'user' ? 'Person' : 'Guide'}: ${message.content}`)
-      .join('\n\n');
+
+    const promptLabels = promptSelection
+      .map((id) => STORY_PROMPTS.find((p) => p.id === id)?.label ?? id)
+      .join(', ');
+
     const openingPrompt =
-      stageIdx === 2
-        ? `Based on the prior conversation below, generate exactly 3 purpose statement options in the format "I am someone who [action], so others can [impact]." Label them Option 1, Option 2, and Option 3.\n\n${summary}`
-        : `Begin Stage ${stage.number}: ${stage.title} — ${stage.subtitle}. Use the prior-stage conversation below and the saved purpose statement when available. Reflect one relevant thread, then ask one warm, focused question.\n\n${summary}`;
+      stageIdx === 1
+        ? "I'm ready for Stage 2. Please reflect back the patterns and themes you noticed in my stories, and ask me to confirm or refine them."
+        : stageIdx === 2
+        ? "I'm ready for Stage 3. Based on my confirmed themes and stories, please generate exactly 3 purpose statement options."
+        : stageIdx === 3
+        ? "I'm ready for Stage 4. Please begin by asking about my current season of life and roles."
+        : stageIdx === 4
+        ? "I'm ready for Stage 5. Please introduce the Start / Stop / Continue framework and ask the first question."
+        : "I've completed all stages. Please begin Stage 6 and guide me into reflection.";
+
     setIsStreaming(true);
     setStreamError('');
     let assistant = '';
@@ -174,24 +210,69 @@ export function JourneyScreen() {
     }
   }
 
-  async function continueStage() {
+  async function beginStage0() {
+    if (!journey || stageIdx !== 0 || messages.length > 0 || isHistorical || isComplete) return;
+    if (promptSelection.length < 2) {
+      setStreamError('Choose at least two story prompts to begin.');
+      return;
+    }
+    const promptLabels = promptSelection
+      .map((id) => STORY_PROMPTS.find((p) => p.id === id)?.label ?? id)
+      .join(', ');
+    const openingPrompt = `The person has chosen to share stories around these themes: ${promptLabels}. Please warmly welcome them to Stage 1: Reveal — Your Story. Acknowledge the themes they chose, then gently invite them to begin with whichever one feels most natural right now. Ask one open, warm question to get them started. Keep your opening under 100 words.`;
+
+    setIsStreaming(true);
+    setStreamError('');
+    let assistant = '';
+    try {
+      await streamJourneyChat({
+        journeyId: journey.id,
+        stage: stage.id,
+        messages: [{ role: 'user', content: openingPrompt }],
+        context: {
+          selectedPrompts: promptSelection,
+          purposeStatement: purposeValue || undefined,
+        },
+        saveUserMessage: false,
+        onChunk(chunk) {
+          assistant += chunk;
+          setLocalMessages((current) => ({
+            ...current,
+            [stage.id]: [{ role: 'assistant', content: assistant }],
+          }));
+        },
+      });
+      await queryClient.invalidateQueries({ queryKey: getGetCurrentJourneyQueryKey() });
+    } catch (error) {
+      setStreamError(error instanceof Error ? error.message : 'Unable to begin this stage.');
+    } finally {
+      setIsStreaming(false);
+    }
+  }
+
+  async function runExtraction(stageId: string) {
     if (!journey) return;
-    if (isHistorical) {
-      setVisibleStage(journey.currentStageIdx);
-      return;
+    setIsExtracting(true);
+    setExtractionFailed(false);
+    try {
+      await extractDiscoveries.mutateAsync({ id: journey.id, stage: stageId as "reveal" | "identify" | "personalize" | "live" });
+      await queryClient.invalidateQueries({ queryKey: getGetCurrentJourneyQueryKey() });
+    } catch (error) {
+      setExtractionFailed(true);
+    } finally {
+      setIsExtracting(false);
     }
-    if (messages.length === 0) {
-      setStreamError(stageIdx === 0 ? 'Share at least one reflection before continuing.' : 'Begin this stage with your guide before continuing.');
-      return;
-    }
-    if (stageIdx === 0 && promptSelection.length < 2) {
-      setStreamError('Choose at least two story prompts before continuing.');
-      return;
-    }
-    if (stageIdx === 2 && !purposeValue.trim()) {
-      setStreamError('Choose or write the purpose statement that feels most true.');
-      return;
-    }
+  }
+
+  async function completeReviewAndContinue() {
+    if (!journey) return;
+    setReviewStageId(null);
+    setExtractionFailed(false);
+    await moveToNextStage();
+  }
+
+  async function moveToNextStage() {
+    if (!journey) return;
     const nextStage = Math.min(stageIdx + 1, 5);
     const updated = await updateJourney.mutateAsync({
       id: journey.id,
@@ -220,19 +301,49 @@ export function JourneyScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
   }
 
-  function confirmDelete() {
-    Alert.alert(
-      'Delete your account?',
-      'Your account and saved Purpose Lab journey will be permanently deleted. This cannot be undone.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete account',
-          style: 'destructive',
-          onPress: () => deleteAccount().catch((error: Error) => Alert.alert('Unable to delete', error.message)),
-        },
-      ],
-    );
+  async function continueStage() {
+    if (!journey) return;
+    if (isHistorical) {
+      setVisibleStage(journey.currentStageIdx);
+      return;
+    }
+    if (messages.length === 0) {
+      setStreamError('Begin this stage with your guide before continuing.');
+      return;
+    }
+    if (stageIdx === 2 && !purposeValue.trim()) {
+      setStreamError('Choose or write the purpose statement that feels most true.');
+      return;
+    }
+
+    if (['reveal', 'identify', 'personalize', 'live'].includes(stage.id)) {
+      setReviewStageId(stage.id);
+      runExtraction(stage.id);
+      return;
+    }
+
+    await moveToNextStage();
+  }
+
+  const [confirmDeleteMode, setConfirmDeleteMode] = useState(false);
+
+  function initiateDelete() {
+    setDeleteError('');
+    setDeletePassword('');
+    setConfirmDeleteMode(true);
+  }
+
+  async function performDelete() {
+    if (deletePassword.length < 8) {
+      setDeleteError('Enter your current password to delete your account.');
+      return;
+    }
+    setDeleteError('');
+    try {
+      await deleteAccount(deletePassword);
+    } catch (error) {
+      setDeleteError(error instanceof Error ? error.message : 'Unable to delete your account. Please try again.');
+    }
   }
 
   async function restart() {
@@ -244,6 +355,8 @@ export function JourneyScreen() {
     setPurposeDraft(null);
     setVisibleStage(0);
     setShowSettings(false);
+    setShowDiscoveries(false);
+    setReviewStageId(null);
   }
 
   if (journeyQuery.isLoading) {
@@ -266,6 +379,38 @@ export function JourneyScreen() {
     );
   }
 
+  if (isComplete) {
+    return (
+      <View style={{ flex: 1, backgroundColor: colors.background }}>
+        <View style={{ height: Math.max(insets.top, Platform.OS === 'web' ? 67 : 0), backgroundColor: colors.background }} />
+        <JourneySummary
+          storyCards={journey?.storyCards ?? []}
+          themes={journey?.themes ?? []}
+          season={journey?.season ?? null}
+          actionPlan={journey?.actionPlan ?? null}
+          purposeStatement={journey?.purposeStatement ?? null}
+          onReset={restart}
+          onOpenDiscoveries={() => setShowDiscoveries(true)}
+        />
+        <MyDiscoveries
+          isOpen={showDiscoveries}
+          onClose={() => setShowDiscoveries(false)}
+          storyCards={journey?.storyCards ?? []}
+          themes={journey?.themes ?? []}
+          season={journey?.season ?? null}
+          actionPlan={journey?.actionPlan ?? null}
+          purposeStatement={journey?.purposeStatement ?? null}
+          onUpdateStoryCard={(card) => updateStoryCard.mutateAsync(card)}
+          onDeleteStoryCard={(id) => deleteStoryCard.mutateAsync({ id })}
+          onUpdateTheme={(theme) => updatePurposeTheme.mutateAsync(theme)}
+          onDeleteTheme={(id) => deletePurposeTheme.mutateAsync({ id })}
+          onUpdateSeason={(s) => updateJourney.mutateAsync({ id: journey.id, data: { season: s } })}
+          onUpdateActionPlan={(ap) => updateJourney.mutateAsync({ id: journey.id, data: { actionPlan: ap } })}
+        />
+      </View>
+    );
+  }
+
   const header = (
     <View>
       <View style={[styles.stageHero, { backgroundColor: stage.color }]}>
@@ -275,14 +420,24 @@ export function JourneyScreen() {
             <Text style={[styles.stageTitle, { color: stage.textColor }]}>{stage.title}</Text>
             <Text style={[styles.stageSubtitle, { color: stage.textColor }]}>{stage.subtitle}</Text>
           </View>
-          <Pressable
-            testID="settings-button"
-            accessibilityLabel="Account settings"
-            onPress={() => setShowSettings(true)}
-            style={styles.iconButton}
-          >
-            <Feather name="settings" size={22} color={stage.textColor} />
-          </Pressable>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            <Pressable
+              testID="discoveries-trigger"
+              accessibilityLabel="My Discoveries"
+              onPress={() => setShowDiscoveries(true)}
+              style={styles.discoveriesButton}
+            >
+              <Text style={[styles.discoveriesText, { color: stage.textColor }]}>My Discoveries</Text>
+            </Pressable>
+            <Pressable
+              testID="settings-button"
+              accessibilityLabel="Account settings"
+              onPress={() => setShowSettings(true)}
+              style={styles.iconButton}
+            >
+              <Feather name="settings" size={22} color={stage.textColor} />
+            </Pressable>
+          </View>
         </View>
         <View style={styles.progressRow}>
           {STAGES.map((item, index) => (
@@ -308,7 +463,7 @@ export function JourneyScreen() {
       </View>
       {stageIdx === 0 && messages.length === 0 ? (
         <View style={styles.promptSection}>
-          <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>CHOOSE 2–3 THREADS</Text>
+          <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>CHOOSE AT LEAST 2 THREADS</Text>
           {STORY_PROMPTS.map((prompt) => {
             const selected = promptSelection.includes(prompt.id);
             return (
@@ -324,7 +479,10 @@ export function JourneyScreen() {
                   },
                 ]}
               >
-                <Text style={[styles.promptText, { color: colors.foreground }]}>{prompt.label}</Text>
+                <View style={{ flex: 1, gap: 4 }}>
+                  <Text style={[styles.promptText, { color: colors.foreground }]}>{prompt.label}</Text>
+                  <Text style={[styles.promptDesc, { color: colors.mutedForeground }]}>{prompt.description}</Text>
+                </View>
                 <Feather name={selected ? 'check-circle' : 'circle'} size={20} color={selected ? colors.primary : colors.mutedForeground} />
               </Pressable>
             );
@@ -348,6 +506,17 @@ export function JourneyScreen() {
               style={[styles.beginButton, { backgroundColor: colors.secondary }]}
             >
               <Text style={[styles.beginLabel, { color: colors.secondaryForeground }]}>Begin this stage</Text>
+              <Feather name="arrow-right" size={17} color={colors.primary} />
+            </Pressable>
+          ) : null}
+          {stageIdx === 0 && !isHistorical && !isComplete ? (
+            <Pressable
+              testID="begin-stage-0"
+              disabled={isStreaming || promptSelection.length < 2}
+              onPress={beginStage0}
+              style={[styles.beginButton, { backgroundColor: colors.secondary, opacity: promptSelection.length < 2 ? 0.5 : 1 }]}
+            >
+              <Text style={[styles.beginLabel, { color: colors.secondaryForeground }]}>Confirm and begin</Text>
               <Feather name="arrow-right" size={17} color={colors.primary} />
             </Pressable>
           ) : null}
@@ -384,22 +553,90 @@ export function JourneyScreen() {
           />
         </View>
       ) : null}
-      {isComplete ? (
-        <View style={[styles.completionCard, { backgroundColor: colors.deepTeal }]}>
-          <Feather name="check-circle" size={28} color={colors.accent} />
-          <Text style={[styles.completionTitle, { color: colors.primaryForeground }]}>Your ripple continues</Text>
-          <Text style={[styles.completionCopy, { color: colors.softAqua }]}>
-            Your completed journey remains here whenever you want to revisit it. Begin a new one from account settings.
-          </Text>
-        </View>
-      ) : null}
     </View>
   );
 
   return (
     <KeyboardAvoidingView style={[styles.screen, { backgroundColor: colors.background }]} behavior="padding" keyboardVerticalOffset={0}>
       <View style={{ height: Math.max(insets.top, Platform.OS === 'web' ? 67 : 0), backgroundColor: stage.color }} />
-      <FlatList
+      {reviewStageId ? (
+        <View style={[styles.reviewOverlay, { backgroundColor: colors.background }]}>
+          {isExtracting ? (
+            <View style={styles.center}>
+              <ActivityIndicator size="large" color={colors.primary} />
+              <Text style={[styles.loadingText, { color: colors.mutedForeground, marginTop: 12 }]}>Gathering what you shared…</Text>
+            </View>
+          ) : extractionFailed ? (
+            <View style={styles.center}>
+              <Feather name="alert-circle" size={34} color={colors.destructive} />
+              <Text style={[styles.errorTitle, { color: colors.foreground }]}>Unable to gather</Text>
+              <View style={{ flexDirection: 'row', gap: 12, marginTop: 16 }}>
+                <Pressable testID="retry-extraction" onPress={() => runExtraction(reviewStageId)} style={[styles.retry, { backgroundColor: colors.primary }]}>
+                  <Text style={[styles.buttonLabel, { color: colors.primaryForeground }]}>Try again</Text>
+                </Pressable>
+                <Pressable testID="continue-anyway" onPress={completeReviewAndContinue} style={[styles.retry, { backgroundColor: colors.secondary }]}>
+                  <Text style={[styles.buttonLabel, { color: colors.secondaryForeground }]}>Continue anyway</Text>
+                </Pressable>
+              </View>
+            </View>
+          ) : (
+            <View style={{ flex: 1 }}>
+              <View style={[styles.reviewHeader, { borderBottomColor: colors.border }]}>
+                <Text style={[styles.reviewTitle, { color: colors.primary }]}>Here's what I heard</Text>
+              </View>
+              <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 100 }}>
+                {reviewStageId === 'reveal' && (journey?.storyCards?.length ?? 0) > 0 ? (
+                  <View style={{ marginBottom: 32 }}>
+                    <Text style={[styles.sectionLabel, { color: colors.mutedForeground, marginBottom: 12 }]}>YOUR STORIES</Text>
+                    {journey?.storyCards?.map((card) => (
+                      <StoryCardView
+                        key={card.id}
+                        card={card}
+                        onUpdate={(c) => updateStoryCard.mutateAsync(c)}
+                        onDelete={() => card.id && deleteStoryCard.mutateAsync({ id: card.id })}
+                      />
+                    ))}
+                  </View>
+                ) : null}
+
+                {reviewStageId === 'identify' && (journey?.themes?.length ?? 0) > 0 ? (
+                  <View style={{ marginBottom: 32 }}>
+                    <Text style={[styles.sectionLabel, { color: colors.mutedForeground, marginBottom: 12 }]}>YOUR THEMES</Text>
+                    {journey?.themes?.map((theme) => (
+                      <ThemeCardView
+                        key={theme.id}
+                        theme={theme}
+                        onUpdate={(t) => updatePurposeTheme.mutateAsync(t)}
+                        onDelete={() => theme.id && deletePurposeTheme.mutateAsync({ id: theme.id })}
+                      />
+                    ))}
+                  </View>
+                ) : null}
+
+                {reviewStageId === 'personalize' && journey?.season ? (
+                  <View style={{ marginBottom: 32 }}>
+                    <SeasonFormView season={journey.season} onUpdate={(s) => { if (journey) updateJourney.mutateAsync({ id: journey.id, data: { season: s } }); }} />
+                  </View>
+                ) : null}
+
+                {reviewStageId === 'live' && journey?.actionPlan ? (
+                  <View style={{ marginBottom: 32 }}>
+                    <ActionPlanFormView actionPlan={journey.actionPlan} onUpdate={(ap) => { if (journey) updateJourney.mutateAsync({ id: journey.id, data: { actionPlan: ap } }); }} />
+                  </View>
+                ) : null}
+              </ScrollView>
+
+              <View style={[styles.reviewFooter, { backgroundColor: colors.background, borderTopColor: colors.border, paddingBottom: Math.max(insets.bottom, 24) }]}>
+                <Pressable testID="complete-review" onPress={completeReviewAndContinue} style={[styles.reviewPrimaryBtn, { backgroundColor: colors.primary }]}>
+                  <Text style={[styles.reviewPrimaryBtnText, { color: colors.primaryForeground }]}>This feels right — continue</Text>
+                  <Feather name="arrow-right" size={18} color={colors.primaryForeground} />
+                </Pressable>
+              </View>
+            </View>
+          )}
+        </View>
+      ) : (
+        <FlatList
         data={reversedMessages}
         keyExtractor={messageKey}
         inverted={messages.length > 0}
@@ -424,40 +661,59 @@ export function JourneyScreen() {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       />
+      )}
       {streamError ? <Text style={[styles.inlineError, { color: colors.destructive }]}>{streamError}</Text> : null}
-      <View style={[styles.composer, { backgroundColor: colors.background, borderColor: colors.border, paddingBottom: Math.max(insets.bottom, Platform.OS === 'web' ? 34 : 8) }]}>
-        <TextInput
-          ref={inputRef}
-          testID="chat-input"
-          value={draft}
-          onChangeText={setDraft}
-          placeholder={stage.placeholder}
-          placeholderTextColor={colors.mutedForeground}
-          multiline
-          maxLength={4000}
-          blurOnSubmit={false}
-          editable={!isHistorical && !isComplete}
-          style={[styles.chatInput, { color: colors.foreground, backgroundColor: colors.card, borderColor: colors.input, opacity: isHistorical || isComplete ? 0.55 : 1 }]}
-        />
-        <Pressable
-          testID="send-button"
-          accessibilityLabel="Send reflection"
-          disabled={!draft.trim() || isStreaming || isHistorical || isComplete}
-          onPress={send}
-          style={({ pressed }) => [styles.sendButton, { backgroundColor: colors.primary, opacity: pressed || !draft.trim() ? 0.5 : 1 }]}
-        >
-          <Feather name="arrow-up" size={20} color={colors.primaryForeground} />
-        </Pressable>
-        <Pressable
-          testID="continue-button"
-          accessibilityLabel={isHistorical ? 'Return to current stage' : stageIdx === 5 ? 'Complete journey' : 'Continue to next stage'}
-          disabled={updateJourney.isPending || isComplete}
-          onPress={continueStage}
-          style={styles.nextButton}
-        >
-          <Feather name={isHistorical ? 'corner-down-right' : stageIdx === 5 ? 'check' : 'chevron-right'} size={24} color={colors.primary} />
-        </Pressable>
-      </View>
+      {isComplete ? null : (
+        <View style={[styles.composer, { backgroundColor: colors.background, borderColor: colors.border, paddingBottom: Math.max(insets.bottom, Platform.OS === 'web' ? 34 : 8) }]}>
+          <TextInput
+            ref={inputRef}
+            testID="chat-input"
+            value={draft}
+            onChangeText={setDraft}
+            placeholder={stage.placeholder}
+            placeholderTextColor={colors.mutedForeground}
+            multiline
+            maxLength={4000}
+            blurOnSubmit={false}
+            editable={!isHistorical && !isComplete}
+            style={[styles.chatInput, { color: colors.foreground, backgroundColor: colors.card, borderColor: colors.input, opacity: isHistorical || isComplete ? 0.55 : 1 }]}
+          />
+          <Pressable
+            testID="send-button"
+            accessibilityLabel="Send reflection"
+            disabled={!draft.trim() || isStreaming || isHistorical || isComplete}
+            onPress={send}
+            style={({ pressed }) => [styles.sendButton, { backgroundColor: colors.primary, opacity: pressed || !draft.trim() ? 0.5 : 1 }]}
+          >
+            <Feather name="arrow-up" size={20} color={colors.primaryForeground} />
+          </Pressable>
+          <Pressable
+            testID="continue-button"
+            accessibilityLabel={isHistorical ? 'Return to current stage' : stageIdx === 5 ? 'Complete journey' : 'Continue to next stage'}
+            disabled={updateJourney.isPending || isComplete}
+            onPress={continueStage}
+            style={styles.nextButton}
+          >
+            <Feather name={isHistorical ? 'corner-down-right' : stageIdx === 5 ? 'check' : 'chevron-right'} size={24} color={colors.primary} />
+          </Pressable>
+        </View>
+      )}
+
+      <MyDiscoveries
+        isOpen={showDiscoveries}
+        onClose={() => setShowDiscoveries(false)}
+        storyCards={journey?.storyCards ?? []}
+        themes={journey?.themes ?? []}
+        season={journey?.season ?? null}
+        actionPlan={journey?.actionPlan ?? null}
+        purposeStatement={journey?.purposeStatement ?? null}
+        onUpdateStoryCard={(card) => updateStoryCard.mutateAsync(card)}
+        onDeleteStoryCard={(id) => deleteStoryCard.mutateAsync({ id })}
+        onUpdateTheme={(theme) => updatePurposeTheme.mutateAsync(theme)}
+        onDeleteTheme={(id) => deletePurposeTheme.mutateAsync({ id })}
+        onUpdateSeason={(s) => { if (journey) updateJourney.mutateAsync({ id: journey.id, data: { season: s } }); }}
+        onUpdateActionPlan={(ap) => { if (journey) updateJourney.mutateAsync({ id: journey.id, data: { actionPlan: ap } }); }}
+      />
 
       <Modal visible={showSettings} animationType="slide" presentationStyle="pageSheet" onRequestClose={() => setShowSettings(false)}>
         <View style={[styles.settings, { backgroundColor: colors.background, paddingTop: insets.top + 16, paddingBottom: insets.bottom + 20 }]}>
@@ -470,7 +726,7 @@ export function JourneyScreen() {
           <Text style={[styles.settingsCopy, { color: colors.mutedForeground }]}>
             Your progress is shared securely across Purpose Lab on web, iPhone, and Android.
           </Text>
-          <Pressable onPress={restart} style={[styles.settingsAction, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <Pressable testID="restart-journey-settings" onPress={restart} style={[styles.settingsAction, { backgroundColor: colors.card, borderColor: colors.border }]}>
             <Feather name="refresh-ccw" size={20} color={colors.primary} />
             <Text style={[styles.actionText, { color: colors.foreground }]}>Begin a new journey</Text>
           </Pressable>
@@ -479,10 +735,39 @@ export function JourneyScreen() {
             <Text style={[styles.actionText, { color: colors.foreground }]}>Sign out</Text>
           </Pressable>
           <View style={{ flex: 1 }} />
-          <Pressable testID="delete-account" onPress={confirmDelete} style={[styles.settingsAction, { borderColor: colors.destructive }]}>
-            <Feather name="trash-2" size={20} color={colors.destructive} />
-            <Text style={[styles.actionText, { color: colors.destructive }]}>Delete account permanently</Text>
-          </Pressable>
+          {confirmDeleteMode ? (
+            <View style={{ gap: 12 }}>
+              <Text style={[styles.settingsCopy, { color: colors.destructive }]}>
+                This action is permanent. Please enter your password to confirm.
+              </Text>
+              <TextInput
+                value={deletePassword}
+                onChangeText={setDeletePassword}
+                placeholder="Password"
+                placeholderTextColor={colors.mutedForeground}
+                secureTextEntry
+                testID="delete-password-input"
+                style={[styles.passwordInput, { color: colors.foreground, backgroundColor: colors.card, borderColor: colors.destructive }]}
+              />
+              {deleteError ? (
+                <Text testID="delete-account-error" style={[styles.deleteError, { color: colors.destructive }]}>
+                  {deleteError}
+                </Text>
+              ) : null}
+              <Pressable testID="confirm-delete" onPress={performDelete} style={[styles.settingsAction, { backgroundColor: colors.destructive, borderColor: colors.destructive }]}>
+                <Feather name="alert-triangle" size={20} color={colors.destructiveForeground} />
+                <Text style={[styles.actionText, { color: colors.destructiveForeground }]}>Confirm Deletion</Text>
+              </Pressable>
+              <Pressable onPress={() => { setConfirmDeleteMode(false); setDeleteError(''); setDeletePassword(''); }} style={[styles.settingsAction, { borderColor: colors.border }]}>
+                <Text style={[styles.actionText, { color: colors.foreground, textAlign: 'center', flex: 1 }]}>Cancel</Text>
+              </Pressable>
+            </View>
+          ) : (
+            <Pressable testID="delete-account" onPress={initiateDelete} style={[styles.settingsAction, { borderColor: colors.destructive }]}>
+              <Feather name="trash-2" size={20} color={colors.destructive} />
+              <Text style={[styles.actionText, { color: colors.destructive }]}>Delete account permanently</Text>
+            </Pressable>
+          )}
         </View>
       </Modal>
     </KeyboardAvoidingView>
@@ -511,6 +796,8 @@ const styles = StyleSheet.create({
   stageNumber: { fontFamily: 'Poppins_600SemiBold', fontSize: 11, letterSpacing: 2, opacity: 0.7 },
   stageTitle: { fontFamily: 'PlayfairDisplay_600SemiBold', fontSize: 38, lineHeight: 43, marginTop: 8 },
   stageSubtitle: { fontFamily: 'Poppins_400Regular', fontSize: 15, opacity: 0.8 },
+  discoveriesButton: { paddingHorizontal: 12, paddingVertical: 6, backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 16 },
+  discoveriesText: { fontFamily: 'Poppins_500Medium', fontSize: 12 },
   iconButton: { padding: 8 },
   progressRow: { flexDirection: 'row', gap: 9, marginTop: 22 },
   progressDot: { width: 12, height: 12, borderRadius: 6, borderWidth: 1 },
@@ -520,7 +807,8 @@ const styles = StyleSheet.create({
   promptSection: { paddingHorizontal: 16, paddingTop: 12, gap: 9 },
   sectionLabel: { fontFamily: 'Poppins_600SemiBold', fontSize: 10, letterSpacing: 1.8, marginBottom: 3 },
   prompt: { borderWidth: 1, borderRadius: 16, padding: 15, flexDirection: 'row', alignItems: 'center', gap: 12 },
-  promptText: { flex: 1, fontFamily: 'Poppins_500Medium', fontSize: 13, lineHeight: 19 },
+  promptText: { fontFamily: 'Poppins_500Medium', fontSize: 13, lineHeight: 19 },
+  promptDesc: { fontFamily: 'Poppins_400Regular', fontSize: 12, lineHeight: 18 },
   emptyState: { alignItems: 'center', padding: 28 },
   emptyTitle: { fontFamily: 'PlayfairDisplay_600SemiBold', fontSize: 21, marginTop: 10 },
   emptyCopy: { fontFamily: 'Poppins_400Regular', fontSize: 13, textAlign: 'center', lineHeight: 20, marginTop: 5 },
@@ -544,6 +832,14 @@ const styles = StyleSheet.create({
   settingsHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   settingsTitle: { fontFamily: 'PlayfairDisplay_600SemiBold', fontSize: 30 },
   settingsCopy: { fontFamily: 'Poppins_400Regular', fontSize: 14, lineHeight: 22, marginBottom: 14 },
+  passwordInput: { height: 50, borderWidth: 1, borderRadius: 12, paddingHorizontal: 16, fontFamily: 'Poppins_400Regular' },
+  deleteError: { fontFamily: 'Poppins_400Regular', fontSize: 13, lineHeight: 19 },
   settingsAction: { minHeight: 58, borderWidth: 1, borderRadius: 16, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, gap: 12 },
   actionText: { fontFamily: 'Poppins_500Medium', fontSize: 14 },
+  reviewOverlay: { flex: 1 },
+  reviewHeader: { paddingHorizontal: 20, paddingVertical: 16, borderBottomWidth: 1 },
+  reviewTitle: { fontFamily: 'PlayfairDisplay_600SemiBold', fontSize: 24 },
+  reviewFooter: { padding: 20, borderTopWidth: 1 },
+  reviewPrimaryBtn: { padding: 18, borderRadius: 30, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12 },
+  reviewPrimaryBtnText: { fontFamily: 'Poppins_600SemiBold', fontSize: 15 },
 });

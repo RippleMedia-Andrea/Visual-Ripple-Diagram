@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { STORY_PROMPT_LABELS } from "@workspace/story-prompts";
 import { anthropic } from "@workspace/integrations-anthropic-ai";
 import { and, count, eq, gte } from "drizzle-orm";
 import { db, journeyMessages, journeys, purposeThemes, storyCards } from "@workspace/db";
@@ -87,15 +88,8 @@ router.post("/chat", requireAuth, async (req, res) => {
     db.select().from(storyCards).where(eq(storyCards.journeyId, journey.id)),
     db.select().from(purposeThemes).where(eq(purposeThemes.journeyId, journey.id)),
   ]);
-  const promptLabels: Record<string, string> = {
-    supported: "A time I supported someone",
-    solved: "A problem I solved",
-    created: "Something I created",
-    determined: "Something I went through that I don't want others to experience",
-    needed: "What I needed that I now give others",
-  };
   const databaseContext = [
-    journey.selectedPrompts.length ? `Selected story prompts: ${journey.selectedPrompts.map((id) => promptLabels[id] ?? id).join(", ")}` : "",
+    journey.selectedPrompts.length ? `Selected story prompts: ${journey.selectedPrompts.map((id) => STORY_PROMPT_LABELS[id] ?? id).join(", ")}` : "",
     ["identify","pinpoint","personalize","live","expand"].includes(stage) ? `Story cards: ${JSON.stringify(cards)}` : "",
     ["pinpoint","personalize","live","expand"].includes(stage) ? `Purpose themes: ${JSON.stringify(themes)}` : "",
     ["personalize","live","expand"].includes(stage) && journey.purposeStatement ? `Purpose statement: ${journey.purposeStatement}` : "",

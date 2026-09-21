@@ -56,8 +56,8 @@ export function signOut(token: string) {
   return authRequest('sign-out', {}, token);
 }
 
-export function deleteAccount(token: string) {
-  return authRequest('delete-user', {}, token);
+export function deleteAccount(password: string, token: string) {
+  return authRequest('delete-user', { password }, token);
 }
 
 export async function streamJourneyChat({

@@ -23,7 +23,7 @@ interface AuthContextValue {
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (name: string, email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
-  deleteAccount: () => Promise<void>;
+  deleteAccount: (password: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -67,9 +67,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await clearAuth();
   }, [clearAuth, token]);
 
-  const deleteAccount = useCallback(async () => {
+  const deleteAccount = useCallback(async (password: string) => {
     if (!token) return;
-    await deleteAccountRequest(token);
+    await deleteAccountRequest(password, token);
     await clearAuth();
   }, [clearAuth, token]);
 

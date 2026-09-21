@@ -88,7 +88,11 @@ router.patch("/:id", async (req, res, next) => {
     }
     update.updatedAt = new Date();
 
-    const [journey] = await db.insert(journeys).values({ userId }).returning();
+    const [journey] = await db
+      .update(journeys)
+      .set(update)
+      .where(and(eq(journeys.id, id), eq(journeys.userId, userId)))
+      .returning();
 
     if (!journey) {
       res.status(404).json({ error: "Journey not found." });

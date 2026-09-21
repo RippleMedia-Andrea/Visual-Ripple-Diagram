@@ -1,3 +1,5 @@
+export { STORY_PROMPTS } from '@workspace/story-prompts';
+
 export const STAGES = [
   {
     id: 'reveal',
@@ -65,15 +67,4 @@ export const STAGES = [
     color: '#EEE9DB',
     textColor: '#0F2A36',
   },
-] as const;
-
-export const STORY_PROMPTS = [
-  { id: 'alive', label: 'A moment I felt most alive' },
-  { id: 'shaped', label: 'An experience that quietly shaped me' },
-  { id: 'challenge', label: 'A challenge that revealed my strength' },
-  { id: 'difference', label: 'A time I made a real difference' },
-  { id: 'shifted', label: 'A moment when everything shifted' },
-  { id: 'natural', label: 'Something I do that comes naturally' },
-  { id: 'care', label: 'Something I’ve always cared about' },
-  { id: 'memory', label: 'A memory I keep returning to' },
 ] as const;
