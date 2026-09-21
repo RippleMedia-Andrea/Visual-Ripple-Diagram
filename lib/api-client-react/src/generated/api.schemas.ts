@@ -8,3 +8,77 @@
 export interface HealthStatus {
   status: string;
 }
+
+export type ChatMessageRole =
+  (typeof ChatMessageRole)[keyof typeof ChatMessageRole];
+
+export const ChatMessageRole = {
+  user: "user",
+  assistant: "assistant",
+} as const;
+
+export interface ChatMessage {
+  role: ChatMessageRole;
+  content: string;
+}
+
+export interface StageMessages {
+  reveal: ChatMessage[];
+  identify: ChatMessage[];
+  pinpoint: ChatMessage[];
+  personalize: ChatMessage[];
+  live: ChatMessage[];
+  expand: ChatMessage[];
+}
+
+export type JourneyRecordStatus =
+  (typeof JourneyRecordStatus)[keyof typeof JourneyRecordStatus];
+
+export const JourneyRecordStatus = {
+  in_progress: "in_progress",
+  complete: "complete",
+} as const;
+
+export interface JourneyRecord {
+  id: number;
+  userId: string;
+  status: JourneyRecordStatus;
+  /**
+   * @minimum 0
+   * @maximum 5
+   */
+  currentStageIdx: number;
+  selectedPrompts: string[];
+  purposeOptions: string[];
+  /** @nullable */
+  purposeStatement?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  /** @nullable */
+  completedAt?: string | null;
+}
+
+export type Journey = JourneyRecord & {
+  messages: StageMessages;
+};
+
+export type JourneyUpdateStatus =
+  (typeof JourneyUpdateStatus)[keyof typeof JourneyUpdateStatus];
+
+export const JourneyUpdateStatus = {
+  in_progress: "in_progress",
+  complete: "complete",
+} as const;
+
+export interface JourneyUpdate {
+  /**
+   * @minimum 0
+   * @maximum 5
+   */
+  currentStageIdx?: number;
+  selectedPrompts?: string[];
+  purposeOptions?: string[];
+  /** @nullable */
+  purposeStatement?: string | null;
+  status?: JourneyUpdateStatus;
+}

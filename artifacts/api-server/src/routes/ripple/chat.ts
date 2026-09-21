@@ -1,5 +1,8 @@
 import { Router } from "express";
 import { anthropic } from "@workspace/integrations-anthropic-ai";
+import { and, count, eq, gte } from "drizzle-orm";
+import { db, journeyMessages, journeys } from "@workspace/db";
+import { requireAuth } from "../../middlewares/require-auth";
 
 const router = Router();
 
@@ -106,10 +109,12 @@ Your task:
 Keep this stage reflective, celebratory, and forward-looking.`,
 };
 
-router.post("/chat", async (req, res) => {
-  const { stage, messages, context } = req.body as {
+router.post("/chat", requireAuth, async (req, res) => {
+  const { stage, messages, context, journeyId, saveUserMessage = true } = req.body as {
     stage: string;
     messages: Array<{ role: "user" | "assistant"; content: string }>;
+    journeyId: number;
+    saveUserMessage?: boolean;
     context?: {
       purposeStatement?: string;
       patterns?: string[];
@@ -118,8 +123,68 @@ router.post("/chat", async (req, res) => {
     };
   };
 
-  if (!stage || !messages || !STAGE_PROMPTS[stage]) {
+  if (!stage || !Array.isArray(messages) || !STAGE_PROMPTS[stage]) {
     res.status(400).json({ error: "Invalid stage or missing messages" });
+    return;
+  }
+
+  const userId = res.locals.user.id as string;
+  const [journey] = await db
+    .select({ id: journeys.id })
+    .from(journeys)
+    .where(and(eq(journeys.id, Number(journeyId)), eq(journeys.userId, userId)))
+    .limit(1);
+
+  if (!journey) {
+    res.status(404).json({ error: "Journey not found." });
+    return;
+  }
+
+  const userMessage = [...messages].reverse().find((message) => message.role === "user");
+  if (!userMessage || typeof userMessage.content !== "string") {
+    res.status(400).json({ error: "A user message is required." });
+    return;
+  }
+  if (userMessage.content.length > 4_000) {
+    res.status(400).json({ error: "Messages must be 4,000 characters or fewer." });
+    return;
+  }
+
+  const now = Date.now();
+  const oneHourAgo = new Date(now - 60 * 60 * 1000);
+  const oneDayAgo = new Date(now - 24 * 60 * 60 * 1000);
+  const [{ hourly = 0 } = {}, { daily = 0 } = {}] = await Promise.all([
+    db
+      .select({ hourly: count() })
+      .from(journeyMessages)
+      .innerJoin(journeys, eq(journeyMessages.journeyId, journeys.id))
+      .where(
+        and(
+          eq(journeys.userId, userId),
+          eq(journeyMessages.role, "user"),
+          gte(journeyMessages.createdAt, oneHourAgo),
+        ),
+      )
+      .then((rows) => rows[0]),
+    db
+      .select({ daily: count() })
+      .from(journeyMessages)
+      .innerJoin(journeys, eq(journeyMessages.journeyId, journeys.id))
+      .where(
+        and(
+          eq(journeys.userId, userId),
+          eq(journeyMessages.role, "user"),
+          gte(journeyMessages.createdAt, oneDayAgo),
+        ),
+      )
+      .then((rows) => rows[0]),
+  ]);
+
+  if (Number(hourly) >= 40 || Number(daily) >= 200) {
+    res.status(429).json({
+      error:
+        "You've done a lot of meaningful reflection today. Take a breath and come back a little later to continue.",
+    });
     return;
   }
 
@@ -147,24 +212,43 @@ router.post("/chat", async (req, res) => {
 
     const stream = anthropic.messages.stream({
       model: "claude-sonnet-4-6",
-      max_tokens: 8192,
+      max_tokens: 1500,
       system: systemPrompt + contextPrefix,
       messages,
     });
 
+    let assistantReply = "";
     for await (const event of stream) {
       if (
         event.type === "content_block_delta" &&
         event.delta.type === "text_delta"
       ) {
+        assistantReply += event.delta.text;
         res.write(`data: ${JSON.stringify({ content: event.delta.text })}\n\n`);
       }
     }
 
+    const storedMessages: Array<typeof journeyMessages.$inferInsert> = [];
+    if (saveUserMessage) {
+      storedMessages.push({
+        journeyId: journey.id,
+        stage: stage as typeof journeyMessages.$inferInsert.stage,
+        role: "user",
+        content: userMessage.content,
+      });
+    }
+    storedMessages.push({
+      journeyId: journey.id,
+      stage: stage as typeof journeyMessages.$inferInsert.stage,
+      role: "assistant",
+      content: assistantReply,
+    });
+    await db.insert(journeyMessages).values(storedMessages);
+
     res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
     res.end();
   } catch (err) {
-    console.error("Ripple chat error:", err);
+    req.log.error({ err }, "Ripple chat error");
     if (!res.headersSent) {
       res.status(500).json({ error: "AI service error" });
     } else {

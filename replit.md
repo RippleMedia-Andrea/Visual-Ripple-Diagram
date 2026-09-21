@@ -36,6 +36,8 @@ React + Vite web app (port 19683, previewPath `/`)
 - `/ripple-method` — Free public overview of The Ripple Method™ (6 stages, flow, diagram, CTA)
 - `/purpose-lab` — Purpose Lab overview page (static, links to journey)
 - `/ripple-journey` — **AI-powered guided journey** (6-stage interactive experience with Claude as guide)
+- `/sign-in` — Email/password sign in
+- `/create-account` — Email/password account creation
 
 **Key components:**
 - `StageChat.tsx` — Streaming SSE chat component for AI conversations
@@ -44,12 +46,22 @@ React + Vite web app (port 19683, previewPath `/`)
 
 **AI Integration:** Uses Anthropic claude-sonnet-4-6 via Replit AI Integrations proxy (no user API key needed). Charges billed to Replit credits.
 
+**Authentication:** Better Auth email/password accounts. The journey route requires a session; public pages remain open. Better Auth bearer support is enabled for a future Expo client.
+
 ### API Server (`artifacts/api-server`)
 Express 5 (port 8080)
 
 **Routes:**
 - `GET /api/healthz` — health check
 - `POST /api/ripple/chat` — Streaming SSE endpoint for AI journey chat. Accepts `{ stage, messages, context }`, returns SSE stream from Claude.
+- `/api/auth/*` — Better Auth account/session endpoints (cookie and bearer-token support)
+- `GET /api/journeys/current` — Load or create the signed-in user's current journey and grouped messages
+- `PATCH /api/journeys/:id` — Save signed-in user's journey progress
+- `POST /api/journeys/:id/restart` — Archive the current journey and begin a new one
+
+**Database tables:**
+- Better Auth: `user`, `session`, `account`, `verification`
+- Purpose Lab: `journeys`, `journey_messages`
 
 **Lib packages used:**
 - `@workspace/integrations-anthropic-ai` — Anthropic SDK client with Replit AI proxy env vars
@@ -57,6 +69,7 @@ Express 5 (port 8080)
 **Env vars required (auto-set by Replit AI Integrations):**
 - `AI_INTEGRATIONS_ANTHROPIC_BASE_URL`
 - `AI_INTEGRATIONS_ANTHROPIC_API_KEY`
+- `SESSION_SECRET`
 
 ## Brand Identity
 - Deep Teal `#0F2A36`, Ripple Teal `#2F7F7B`, Soft Teal `#5FA8A5`, Soft Aqua `#D7ECEB`

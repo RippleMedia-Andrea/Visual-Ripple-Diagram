@@ -5,18 +5,26 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import type {
+  MutationFunction,
   QueryFunction,
   QueryKey,
+  UseMutationOptions,
+  UseMutationResult,
   UseQueryOptions,
   UseQueryResult,
 } from "@tanstack/react-query";
 
-import type { HealthStatus } from "./api.schemas";
+import type {
+  HealthStatus,
+  Journey,
+  JourneyRecord,
+  JourneyUpdate,
+} from "./api.schemas";
 
 import { customFetch } from "../custom-fetch";
-import type { ErrorType } from "../custom-fetch";
+import type { ErrorType, BodyType } from "../custom-fetch";
 
 type AwaitedInput<T> = PromiseLike<T> | T;
 
@@ -99,3 +107,249 @@ export function useHealthCheck<
 
   return { ...query, queryKey: queryOptions.queryKey };
 }
+
+/**
+ * @summary Load or create the signed-in user's current journey
+ */
+export const getGetCurrentJourneyUrl = () => {
+  return `/api/journeys/current`;
+};
+
+export const getCurrentJourney = async (
+  options?: RequestInit,
+): Promise<Journey> => {
+  return customFetch<Journey>(getGetCurrentJourneyUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetCurrentJourneyQueryKey = () => {
+  return [`/api/journeys/current`] as const;
+};
+
+export const getGetCurrentJourneyQueryOptions = <
+  TData = Awaited<ReturnType<typeof getCurrentJourney>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getCurrentJourney>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetCurrentJourneyQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getCurrentJourney>>
+  > = ({ signal }) => getCurrentJourney({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getCurrentJourney>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetCurrentJourneyQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getCurrentJourney>>
+>;
+export type GetCurrentJourneyQueryError = ErrorType<void>;
+
+/**
+ * @summary Load or create the signed-in user's current journey
+ */
+
+export function useGetCurrentJourney<
+  TData = Awaited<ReturnType<typeof getCurrentJourney>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getCurrentJourney>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetCurrentJourneyQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Save journey progress
+ */
+export const getUpdateJourneyUrl = (id: number) => {
+  return `/api/journeys/${id}`;
+};
+
+export const updateJourney = async (
+  id: number,
+  journeyUpdate: JourneyUpdate,
+  options?: RequestInit,
+): Promise<JourneyRecord> => {
+  return customFetch<JourneyRecord>(getUpdateJourneyUrl(id), {
+    ...options,
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(journeyUpdate),
+  });
+};
+
+export const getUpdateJourneyMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateJourney>>,
+    TError,
+    { id: number; data: BodyType<JourneyUpdate> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateJourney>>,
+  TError,
+  { id: number; data: BodyType<JourneyUpdate> },
+  TContext
+> => {
+  const mutationKey = ["updateJourney"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateJourney>>,
+    { id: number; data: BodyType<JourneyUpdate> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return updateJourney(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateJourneyMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateJourney>>
+>;
+export type UpdateJourneyMutationBody = BodyType<JourneyUpdate>;
+export type UpdateJourneyMutationError = ErrorType<void>;
+
+/**
+ * @summary Save journey progress
+ */
+export const useUpdateJourney = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateJourney>>,
+    TError,
+    { id: number; data: BodyType<JourneyUpdate> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateJourney>>,
+  TError,
+  { id: number; data: BodyType<JourneyUpdate> },
+  TContext
+> => {
+  return useMutation(getUpdateJourneyMutationOptions(options));
+};
+
+/**
+ * @summary Archive the current journey and begin a new one
+ */
+export const getRestartJourneyUrl = (id: number) => {
+  return `/api/journeys/${id}/restart`;
+};
+
+export const restartJourney = async (
+  id: number,
+  options?: RequestInit,
+): Promise<Journey> => {
+  return customFetch<Journey>(getRestartJourneyUrl(id), {
+    ...options,
+    method: "POST",
+  });
+};
+
+export const getRestartJourneyMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof restartJourney>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof restartJourney>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  const mutationKey = ["restartJourney"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof restartJourney>>,
+    { id: number }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return restartJourney(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type RestartJourneyMutationResult = NonNullable<
+  Awaited<ReturnType<typeof restartJourney>>
+>;
+
+export type RestartJourneyMutationError = ErrorType<void>;
+
+/**
+ * @summary Archive the current journey and begin a new one
+ */
+export const useRestartJourney = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof restartJourney>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof restartJourney>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  return useMutation(getRestartJourneyMutationOptions(options));
+};

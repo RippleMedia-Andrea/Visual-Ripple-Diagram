@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { Link } from "wouter";
 import rippleLabsLogo from "@assets/2876A1D3-1596-40F7-9384-F5AAA5F311E8_1777042604510.png";
 import { StageChat, type ChatMessage } from "@/components/StageChat";
+import { AccountMenu } from "@/components/AccountMenu";
 
 const BASE_URL = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -178,29 +179,13 @@ interface JourneyContext {
 
 type AllMessages = ChatMessage[][];
 
-const STORAGE_KEY = "ripple_journey_v2";
-const PROMPTS_KEY = "ripple_prompts_v1";
-
-function loadSaved(): { messages: AllMessages; context: JourneyContext; stageIdx: number } | null {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return JSON.parse(raw);
-  } catch {}
-  return null;
-}
-
-function loadSavedPrompts(): string[] {
-  try {
-    const raw = localStorage.getItem(PROMPTS_KEY);
-    if (raw) return JSON.parse(raw);
-  } catch {}
-  return [];
-}
-
-function saveProgress(messages: AllMessages, context: JourneyContext, stageIdx: number) {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ messages, context, stageIdx }));
-  } catch {}
+interface JourneyResponse {
+  id: number;
+  currentStageIdx: number;
+  selectedPrompts: string[];
+  purposeOptions: string[];
+  purposeStatement: string | null;
+  messages: Record<string, ChatMessage[]>;
 }
 
 const emptyMessages = (): AllMessages => STAGES.map(() => []);
@@ -215,36 +200,95 @@ const emptyContext = (): JourneyContext => ({
 });
 
 export default function RippleJourney() {
-  const saved = loadSaved();
-  const [stageIdx, setStageIdx] = useState(saved?.stageIdx ?? 0);
-  const [allMessages, setAllMessages] = useState<AllMessages>(saved?.messages ?? emptyMessages());
-  const [context, setContext] = useState<JourneyContext>(saved?.context ?? emptyContext());
+  const [journeyId, setJourneyId] = useState<number | null>(null);
+  const [isLoadingJourney, setIsLoadingJourney] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const [stageIdx, setStageIdx] = useState(0);
+  const [highestStageIdx, setHighestStageIdx] = useState(0);
+  const [allMessages, setAllMessages] = useState<AllMessages>(emptyMessages);
+  const [context, setContext] = useState<JourneyContext>(emptyContext);
   const [isStreaming, setIsStreaming] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
 
   // Stage 1: prompt selection
-  const [selectedPrompts, setSelectedPrompts] = useState<string[]>(loadSavedPrompts);
-  const [promptsConfirmed, setPromptsConfirmed] = useState(() => loadSavedPrompts().length >= 2 && (saved?.messages?.[0]?.length ?? 0) > 0);
+  const [selectedPrompts, setSelectedPrompts] = useState<string[]>([]);
+  const [promptsConfirmed, setPromptsConfirmed] = useState(false);
 
   // Stage-3-specific: purpose picker UI
-  const [purposeOptions, setPurposeOptions] = useState<string[]>(saved?.context?.purposeOptions ?? []);
+  const [purposeOptions, setPurposeOptions] = useState<string[]>([]);
   const [selectedOption, setSelectedOption] = useState<string>("");
-  const [editedPurpose, setEditedPurpose] = useState(saved?.context?.purposeStatement ?? "");
-  const [purposeConfirmed, setPurposeConfirmed] = useState(!!saved?.context?.purposeStatement);
+  const [editedPurpose, setEditedPurpose] = useState("");
+  const [purposeConfirmed, setPurposeConfirmed] = useState(false);
 
   // Stage-5-specific: structured SSC
   const [sscMode, setSscMode] = useState<"chat" | "structured">("chat");
 
   const stage = STAGES[stageIdx];
 
-  // Persist on changes
   useEffect(() => {
-    saveProgress(allMessages, context, stageIdx);
-  }, [allMessages, context, stageIdx]);
+    let cancelled = false;
+    fetch(`${BASE_URL}/api/journeys/current`, { credentials: "include" })
+      .then(async (response) => {
+        if (!response.ok) throw new Error("Unable to load your journey.");
+        return (await response.json()) as JourneyResponse;
+      })
+      .then((journey) => {
+        if (cancelled) return;
+        const messages = STAGES.map((item) => journey.messages[item.id] ?? []);
+        const purposeStatement = journey.purposeStatement ?? "";
+        setJourneyId(journey.id);
+        setStageIdx(journey.currentStageIdx);
+        setHighestStageIdx(journey.currentStageIdx);
+        setAllMessages(messages);
+        setSelectedPrompts(journey.selectedPrompts ?? []);
+        setPromptsConfirmed(
+          (journey.selectedPrompts?.length ?? 0) >= 2 && messages[0].length > 0,
+        );
+        setPurposeOptions(journey.purposeOptions ?? []);
+        setEditedPurpose(purposeStatement);
+        setPurposeConfirmed(Boolean(purposeStatement));
+        setContext((previous) => ({
+          ...previous,
+          purposeOptions: journey.purposeOptions ?? [],
+          purposeStatement,
+        }));
+        setIsLoadingJourney(false);
+      })
+      .catch((error: Error) => {
+        if (cancelled) return;
+        setLoadError(error.message);
+        setIsLoadingJourney(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
-    try { localStorage.setItem(PROMPTS_KEY, JSON.stringify(selectedPrompts)); } catch {}
-  }, [selectedPrompts]);
+    if (!journeyId || isLoadingJourney) return;
+    const timeout = window.setTimeout(() => {
+      fetch(`${BASE_URL}/api/journeys/${journeyId}`, {
+        method: "PATCH",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          currentStageIdx: highestStageIdx,
+          selectedPrompts,
+          purposeOptions,
+          purposeStatement: context.purposeStatement || null,
+        }),
+      }).catch(() => {});
+    }, 350);
+    return () => window.clearTimeout(timeout);
+  }, [
+    journeyId,
+    isLoadingJourney,
+    highestStageIdx,
+    selectedPrompts,
+    purposeOptions,
+    context.purposeStatement,
+  ]);
 
   // Auto-open each stage — send opening prompt if messages are empty
   const hasOpened = useRef<Record<number, boolean>>({});
@@ -269,9 +313,11 @@ export default function RippleJourney() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
+            journeyId,
             stage: s.id,
             messages: [{ role: "user", content: "__OPEN__" }],
             context: buildContext(idx),
+            saveUserMessage: false,
           }),
         });
 
@@ -309,7 +355,7 @@ export default function RippleJourney() {
         setIsStreaming(false);
       }
     },
-    [allMessages]
+    [allMessages, journeyId]
   );
 
   // Stage 0 no longer auto-opens — user must select prompts first
@@ -364,9 +410,11 @@ export default function RippleJourney() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          journeyId,
           stage: stageId,
           messages: [{ role: "user", content: prompt }],
           context: ctx ?? buildContext(idx),
+          saveUserMessage: false,
         }),
       });
       if (!res.ok || !res.body) throw new Error();
@@ -480,8 +528,18 @@ export default function RippleJourney() {
   function goNext() {
     if (stageIdx >= STAGES.length - 1) {
       setIsComplete(true);
+      if (journeyId) {
+        fetch(`${BASE_URL}/api/journeys/${journeyId}`, {
+          method: "PATCH",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: "complete", currentStageIdx: 5 }),
+        }).catch(() => {});
+      }
     } else {
-      setStageIdx((i) => i + 1);
+      const next = stageIdx + 1;
+      setHighestStageIdx((current) => Math.max(current, next));
+      setStageIdx(next);
     }
   }
 
@@ -496,10 +554,17 @@ export default function RippleJourney() {
     setPurposeConfirmed(true);
   }
 
-  function resetJourney() {
-    localStorage.removeItem(STORAGE_KEY);
-    localStorage.removeItem(PROMPTS_KEY);
+  async function resetJourney() {
+    if (!journeyId) return;
+    const response = await fetch(`${BASE_URL}/api/journeys/${journeyId}/restart`, {
+      method: "POST",
+      credentials: "include",
+    });
+    if (!response.ok) return;
+    const next = (await response.json()) as JourneyResponse;
+    setJourneyId(next.id);
     setStageIdx(0);
+    setHighestStageIdx(0);
     setAllMessages(emptyMessages());
     setContext(emptyContext());
     setPurposeOptions([]);
@@ -510,6 +575,22 @@ export default function RippleJourney() {
     setPromptsConfirmed(false);
     setIsComplete(false);
     hasOpened.current = {};
+  }
+
+  if (isLoadingJourney) {
+    return (
+      <div className="min-h-screen bg-[#0F2A36] text-[#D7ECEB] flex items-center justify-center font-sans">
+        Loading your journey…
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="min-h-screen bg-[#0F2A36] text-[#D7ECEB] flex items-center justify-center px-6 font-sans text-center">
+        {loadError} Please refresh and try again.
+      </div>
+    );
   }
 
   if (isComplete) {
@@ -549,6 +630,7 @@ export default function RippleJourney() {
           >
             ← Purpose Lab
           </Link>
+          <AccountMenu color={stage.textColor} />
         </div>
       </nav>
 
@@ -566,10 +648,10 @@ export default function RippleJourney() {
         {STAGES.map((s, i) => (
           <button
             key={s.id}
-            onClick={() => !isStreaming && setStageIdx(i)}
+            onClick={() => !isStreaming && i <= highestStageIdx && setStageIdx(i)}
             data-testid={`stage-dot-${s.id}`}
             className="flex items-center gap-1.5 transition-all"
-            disabled={isStreaming}
+            disabled={isStreaming || i > highestStageIdx}
           >
             <div
               className={`rounded-full transition-all duration-300 flex items-center justify-center text-[9px] font-bold ${
@@ -813,6 +895,7 @@ export default function RippleJourney() {
                 stageTextColor={stage.textColor}
                 cardBg={stage.cardBg}
                 placeholder={stage.placeholder}
+                journeyId={journeyId!}
                 isStreaming={isStreaming}
                 setIsStreaming={setIsStreaming}
               />

@@ -7,6 +7,8 @@ import Home from "@/pages/home";
 import PurposeLab from "@/pages/purpose-lab";
 import RippleMethodPage from "@/pages/ripple-method";
 import RippleJourney from "@/pages/ripple-journey";
+import AuthPage from "@/pages/auth";
+import { ProtectedJourney } from "@/components/ProtectedJourney";
 
 const queryClient = new QueryClient();
 
@@ -15,7 +17,15 @@ function Router() {
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/ripple-method" component={RippleMethodPage} />
-      <Route path="/ripple-journey" component={RippleJourney} />
+      <Route path="/sign-in">{() => <AuthPage mode="sign-in" />}</Route>
+      <Route path="/create-account">{() => <AuthPage mode="sign-up" />}</Route>
+      <Route path="/ripple-journey">
+        {() => (
+          <ProtectedJourney>
+            <RippleJourney />
+          </ProtectedJourney>
+        )}
+      </Route>
       <Route path="/purpose-lab" component={PurposeLab} />
       <Route component={NotFound} />
     </Switch>

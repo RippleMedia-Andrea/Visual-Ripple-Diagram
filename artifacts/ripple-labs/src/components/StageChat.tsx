@@ -14,6 +14,7 @@ interface StageChatProps {
   stageTextColor: string;
   cardBg: string;
   placeholder?: string;
+  journeyId: number;
   isStreaming: boolean;
   setIsStreaming: (v: boolean) => void;
 }
@@ -29,6 +30,7 @@ export function StageChat({
   stageTextColor,
   cardBg,
   placeholder = "Share your thoughts...",
+  journeyId,
   isStreaming,
   setIsStreaming,
 }: StageChatProps) {
@@ -66,6 +68,7 @@ export function StageChat({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          journeyId,
           stage,
           messages: updatedMsgs,
           context,
@@ -73,7 +76,8 @@ export function StageChat({
       });
 
       if (!res.ok || !res.body) {
-        throw new Error("Failed to connect to AI");
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.error || "Failed to connect to AI");
       }
 
       const reader = res.body.getReader();
@@ -112,7 +116,9 @@ export function StageChat({
         {
           role: "assistant",
           content:
-            "I'm having trouble connecting right now. Please try again in a moment.",
+            err instanceof Error
+              ? err.message
+              : "I'm having trouble connecting right now. Please try again in a moment.",
         },
       ]);
       setStreamingText("");
@@ -232,6 +238,7 @@ export function StageChat({
           }}
           onKeyDown={handleKeyDown}
           rows={1}
+          maxLength={4000}
           data-testid="chat-input"
         />
         <button

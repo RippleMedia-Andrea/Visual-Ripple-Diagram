@@ -14,3 +14,116 @@ import * as zod from "zod";
 export const HealthCheckResponse = zod.object({
   status: zod.string(),
 });
+
+/**
+ * @summary Load or create the signed-in user's current journey
+ */
+export const getCurrentJourneyResponseOneCurrentStageIdxMin = 0;
+export const getCurrentJourneyResponseOneCurrentStageIdxMax = 5;
+
+export const GetCurrentJourneyResponse = zod
+  .object({
+    id: zod.number(),
+    userId: zod.string(),
+    status: zod.enum(["in_progress", "complete"]),
+    currentStageIdx: zod
+      .number()
+      .min(getCurrentJourneyResponseOneCurrentStageIdxMin)
+      .max(getCurrentJourneyResponseOneCurrentStageIdxMax),
+    selectedPrompts: zod.array(zod.string()),
+    purposeOptions: zod.array(zod.string()),
+    purposeStatement: zod.string().nullish(),
+    createdAt: zod.coerce.date(),
+    updatedAt: zod.coerce.date(),
+    completedAt: zod.coerce.date().nullish(),
+  })
+  .and(
+    zod.object({
+      messages: zod.object({
+        reveal: zod.array(
+          zod.object({
+            role: zod.enum(["user", "assistant"]),
+            content: zod.string(),
+          }),
+        ),
+        identify: zod.array(
+          zod.object({
+            role: zod.enum(["user", "assistant"]),
+            content: zod.string(),
+          }),
+        ),
+        pinpoint: zod.array(
+          zod.object({
+            role: zod.enum(["user", "assistant"]),
+            content: zod.string(),
+          }),
+        ),
+        personalize: zod.array(
+          zod.object({
+            role: zod.enum(["user", "assistant"]),
+            content: zod.string(),
+          }),
+        ),
+        live: zod.array(
+          zod.object({
+            role: zod.enum(["user", "assistant"]),
+            content: zod.string(),
+          }),
+        ),
+        expand: zod.array(
+          zod.object({
+            role: zod.enum(["user", "assistant"]),
+            content: zod.string(),
+          }),
+        ),
+      }),
+    }),
+  );
+
+/**
+ * @summary Save journey progress
+ */
+export const UpdateJourneyParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const updateJourneyBodyCurrentStageIdxMin = 0;
+export const updateJourneyBodyCurrentStageIdxMax = 5;
+
+export const UpdateJourneyBody = zod.object({
+  currentStageIdx: zod
+    .number()
+    .min(updateJourneyBodyCurrentStageIdxMin)
+    .max(updateJourneyBodyCurrentStageIdxMax)
+    .optional(),
+  selectedPrompts: zod.array(zod.string()).optional(),
+  purposeOptions: zod.array(zod.string()).optional(),
+  purposeStatement: zod.string().nullish(),
+  status: zod.enum(["in_progress", "complete"]).optional(),
+});
+
+export const updateJourneyResponseCurrentStageIdxMin = 0;
+export const updateJourneyResponseCurrentStageIdxMax = 5;
+
+export const UpdateJourneyResponse = zod.object({
+  id: zod.number(),
+  userId: zod.string(),
+  status: zod.enum(["in_progress", "complete"]),
+  currentStageIdx: zod
+    .number()
+    .min(updateJourneyResponseCurrentStageIdxMin)
+    .max(updateJourneyResponseCurrentStageIdxMax),
+  selectedPrompts: zod.array(zod.string()),
+  purposeOptions: zod.array(zod.string()),
+  purposeStatement: zod.string().nullish(),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+  completedAt: zod.coerce.date().nullish(),
+});
+
+/**
+ * @summary Archive the current journey and begin a new one
+ */
+export const RestartJourneyParams = zod.object({
+  id: zod.coerce.number(),
+});

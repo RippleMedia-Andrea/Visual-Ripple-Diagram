@@ -10,6 +10,8 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: journeys
+    description: Signed-in Purpose Lab journey progress
 paths:
   /healthz:
     get:
@@ -24,7 +26,70 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /journeys/current:
+    get:
+      operationId: getCurrentJourney
+      tags: [journeys]
+      summary: Load or create the signed-in user's current journey
+      responses:
+        "200":
+          description: Current journey
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Journey"
+        "401":
+          description: Sign in required
+  /journeys/{id}:
+    patch:
+      operationId: updateJourney
+      tags: [journeys]
+      summary: Save journey progress
+      parameters:
+        - $ref: "#/components/parameters/JourneyId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/JourneyUpdate"
+      responses:
+        "200":
+          description: Updated journey
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JourneyRecord"
+        "401":
+          description: Sign in required
+        "404":
+          description: Journey not found
+  /journeys/{id}/restart:
+    post:
+      operationId: restartJourney
+      tags: [journeys]
+      summary: Archive the current journey and begin a new one
+      parameters:
+        - $ref: "#/components/parameters/JourneyId"
+      responses:
+        "201":
+          description: New current journey
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Journey"
+        "401":
+          description: Sign in required
+        "404":
+          description: Journey not found
 components:
+  parameters:
+    JourneyId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
   schemas:
     HealthStatus:
       type: object
@@ -33,4 +98,111 @@ components:
           type: string
       required:
         - status
+    ChatMessage:
+      type: object
+      properties:
+        role:
+          type: string
+          enum: [user, assistant]
+        content:
+          type: string
+      required: [role, content]
+    StageMessages:
+      type: object
+      properties:
+        reveal:
+          type: array
+          items:
+            $ref: "#/components/schemas/ChatMessage"
+        identify:
+          type: array
+          items:
+            $ref: "#/components/schemas/ChatMessage"
+        pinpoint:
+          type: array
+          items:
+            $ref: "#/components/schemas/ChatMessage"
+        personalize:
+          type: array
+          items:
+            $ref: "#/components/schemas/ChatMessage"
+        live:
+          type: array
+          items:
+            $ref: "#/components/schemas/ChatMessage"
+        expand:
+          type: array
+          items:
+            $ref: "#/components/schemas/ChatMessage"
+      required: [reveal, identify, pinpoint, personalize, live, expand]
+    JourneyRecord:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: string
+        status:
+          type: string
+          enum: [in_progress, complete]
+        currentStageIdx:
+          type: integer
+          minimum: 0
+          maximum: 5
+        selectedPrompts:
+          type: array
+          items:
+            type: string
+        purposeOptions:
+          type: array
+          items:
+            type: string
+        purposeStatement:
+          type: [string, "null"]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        completedAt:
+          type: [string, "null"]
+          format: date-time
+      required:
+        - id
+        - userId
+        - status
+        - currentStageIdx
+        - selectedPrompts
+        - purposeOptions
+        - createdAt
+        - updatedAt
+    Journey:
+      allOf:
+        - $ref: "#/components/schemas/JourneyRecord"
+        - type: object
+          properties:
+            messages:
+              $ref: "#/components/schemas/StageMessages"
+          required: [messages]
+    JourneyUpdate:
+      type: object
+      properties:
+        currentStageIdx:
+          type: integer
+          minimum: 0
+          maximum: 5
+        selectedPrompts:
+          type: array
+          items:
+            type: string
+        purposeOptions:
+          type: array
+          items:
+            type: string
+        purposeStatement:
+          type: [string, "null"]
+        status:
+          type: string
+          enum: [in_progress, complete]
 
