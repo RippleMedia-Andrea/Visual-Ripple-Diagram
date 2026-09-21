@@ -1,0 +1,49 @@
+We're preparing Ripple Labs for launch as both a website and an iOS/Android app (the mobile app will be a separate Expo project later that uses this same API server). This step adds user accounts, saves Purpose Lab progress to the database, and protects the AI endpoint. Please make only the changes described here and keep everything else working exactly as it does now.
+
+Do not change
+Brand colors, fonts, layout, and visual design
+The six RIPPLE stages, their order, and the stage system prompts in artifacts/api-server/src/routes/ripple/chat.ts (content stays the same)
+StageChat.tsx streaming behavior
+The purpose statement format ("I am someone who [action], so others can [impact].") and the choose/edit/confirm flow
+The public pages: /, /ripple-method, /purpose-lab
+1. User accounts
+Add email + password sign up and sign in using Better Auth (Express handler + Drizzle adapter on our existing Postgres). Do not add Google, Facebook, or other social logins for now.
+Configure it so a future Expo mobile app can sign in against the same API (token/bearer support, not cookie-only). Set trusted origins for the web app.
+Sign up collects: first name, email, password.
+Add simple, on-brand Sign In and Create Account screens (Playfair Display headings, Poppins body, Deep Teal / Cream / Gold palette).
+/ripple-journey requires sign-in. If signed out, send the user to sign in and return them to the journey afterward. Public pages stay open to everyone.
+Add a small account menu (first name, Sign Out, Delete My Account).
+Delete My Account must permanently delete the user and all of their journey data after a confirmation step. (This is an App Store requirement.)
+2. Save progress to the database
+
+Replace the localStorage-only saving in ripple-journey.tsx with database saving. Remove the unused template tables conversations and messages in lib/db/src/schema and add:
+
+journeys: id, user_id (FK, cascade delete), status ("in_progress" | "complete"), current_stage_idx, selected_prompts (jsonb), purpose_options (jsonb), purpose_statement (text, nullable), created_at, updated_at, completed_at
+journey_messages: id, journey_id (FK, cascade delete), stage (reveal | identify | pinpoint | personalize | live | expand), role (user | assistant), content, created_at
+
+API routes (all require a signed-in user, and a user can only access their own journeys):
+
+GET /api/journeys/current: the user's in-progress journey with messages grouped by stage (create one if none exists)
+PATCH /api/journeys/:id: update current_stage_idx, selected_prompts, purpose_options, purpose_statement, status
+POST /api/journeys/:id/restart: mark current journey complete/archived and start a fresh one ("Begin a New Journey")
+
+The front end loads the journey from the API on page load and saves changes through these routes. Keep localStorage only as a temporary offline cache if helpful, never as the source of truth.
+
+3. Protect the AI endpoint
+
+Update POST /api/ripple/chat:
+
+Require a signed-in user; return 401 otherwise.
+Accept a journeyId and verify it belongs to the user.
+Save the user's message and the full assistant reply to journey_messages on the server (after the stream finishes), so conversations are saved even if the browser closes.
+Rate limit per user: 40 AI messages per hour and 200 per day. When the limit is hit, return a friendly message: "You've done a lot of meaningful reflection today. Take a breath and come back a little later to continue."
+Reject messages over 4,000 characters and invalid stages.
+Lower max_tokens from 8192 to 1500.
+Restrict CORS to our own web domains (and allow the future mobile app, which doesn't send an Origin header).
+4. Journey flow fixes
+Stage dots at the top may only jump to the current stage or earlier completed stages, not ahead.
+When finished
+Run the database push and pnpm run typecheck, and fix any errors.
+Test: create account → start journey → send a message in Stage 1 → refresh the page (progress still there) → sign out and back in (progress still there) → Delete My Account (user and data gone) → confirm signed-out users get a 401 from /api/ripple/chat.
+Update replit.md with the new auth, tables, and routes.
+Commit with the message: "Add accounts, database-saved journeys, and protected AI endpoint"
