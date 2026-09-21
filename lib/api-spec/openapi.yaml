@@ -19,7 +19,7 @@ paths:
     get:
       operationId: getPasswordResetAvailability
       tags: [account]
-      summary: Check whether password reset email delivery is configured
+      summary: Check whether password reset is enabled and configured
       responses:
         "200":
           description: Password reset capability
@@ -269,6 +269,7 @@ components:
       properties:
         available: { type: boolean }
         supportEmail: { type: string }
+        message: { type: string }
       required: [available, supportEmail]
     Account:
       type: object

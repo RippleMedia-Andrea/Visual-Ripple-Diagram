@@ -64,7 +64,7 @@ export const getGetPasswordResetAvailabilityUrl = () => {
 };
 
 /**
- * @summary Check whether password reset email delivery is configured
+ * @summary Check whether password reset is enabled and configured
  */
 export const getPasswordResetAvailability = async (
   options?: RequestInit,
@@ -116,7 +116,7 @@ export type GetPasswordResetAvailabilityQueryResult = NonNullable<
 export type GetPasswordResetAvailabilityQueryError = ErrorType<unknown>;
 
 /**
- * @summary Check whether password reset email delivery is configured
+ * @summary Check whether password reset is enabled and configured
  */
 
 export function useGetPasswordResetAvailability<

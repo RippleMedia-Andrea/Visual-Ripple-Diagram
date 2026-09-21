@@ -9,4 +9,5 @@
 export interface PasswordResetAvailability {
   available: boolean;
   supportEmail: string;
+  message?: string;
 }

@@ -3,11 +3,24 @@ import { eq } from "drizzle-orm";
 import { db, user } from "@workspace/db";
 import { ReplitConnectors } from "@replit/connectors-sdk";
 import { requireAuth } from "../middlewares/require-auth";
+import {
+  passwordResetEnabled,
+  passwordResetUnavailableMessage,
+} from "../lib/password-reset";
 
 const router = Router();
 const supportEmail = "admin@ripplemedia.space";
 
 router.get("/password-reset-availability", async (_req, res) => {
+  if (!passwordResetEnabled) {
+    res.json({
+      available: false,
+      supportEmail,
+      message: passwordResetUnavailableMessage,
+    });
+    return;
+  }
+
   try {
     const connectors = new ReplitConnectors();
     const connections = await connectors.listConnections({ connector_names: "resend" });
@@ -16,7 +29,11 @@ router.get("/password-reset-availability", async (_req, res) => {
       supportEmail,
     });
   } catch {
-    res.json({ available: false, supportEmail });
+    res.json({
+      available: false,
+      supportEmail,
+      message: passwordResetUnavailableMessage,
+    });
   }
 });
 

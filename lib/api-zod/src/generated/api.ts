@@ -8,11 +8,12 @@
 import * as zod from "zod";
 
 /**
- * @summary Check whether password reset email delivery is configured
+ * @summary Check whether password reset is enabled and configured
  */
 export const GetPasswordResetAvailabilityResponse = zod.object({
   available: zod.boolean(),
   supportEmail: zod.string(),
+  message: zod.string().optional(),
 });
 
 /**
