@@ -1,0 +1,9 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "DYP5-CYBUj-HRiHm_67li"
+uri = "file://artifacts/ripple-labs-video/public/audio/bg_music_2.mp3"
+type = "audio"
+title = "Ripple Labs Purpose Lab ambient score"
+description = "Generated music: Warm reflective ambient editorial instrumental for a faith-informed purpose discovery launch film. Gentle felt piano and soft plucked organic tones, subtle sea-glass atmosphere, low …"
