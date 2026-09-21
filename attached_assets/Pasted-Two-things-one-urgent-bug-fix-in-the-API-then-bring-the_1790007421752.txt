@@ -1,0 +1,48 @@
+Two things: one urgent bug fix in the API, then bring the Expo app (artifacts/purpose-lab-mobile) up to match the web journey. Don't change the web app (artifacts/ripple-labs) except where listed, and don't change the AI prompts in prompts.ts.
+
+Part A — URGENT: journey saving bug
+
+In artifacts/api-server/src/routes/journeys.ts, router.patch("/:id") currently runs:
+
+ts
+const [journey] = await db.insert(journeys).values({ userId }).returning();
+
+This creates a brand new empty journey on every save instead of updating the existing one, and because GET /current returns the most recently updated in-progress journey, users' progress appears to reset. Replace it with:
+
+ts
+const [journey] = await db
+  .update(journeys)
+  .set(update)
+  .where(and(eq(journeys.id, id), eq(journeys.userId, userId)))
+  .returning();
+
+Then clean up the database: delete journeys that have no messages, no story cards, no themes, no purpose statement, and current_stage_idx = 0, keeping each user's most recent journey that does have content. Show me how many rows will be deleted before deleting.
+
+Also check every other route in journeys.ts, discoveries.ts, ripple/chat.ts, and ripple/extract.ts for any other accidental insert where an update or select belongs.
+
+Part B — Story prompt labels for the AI
+
+In ripple/chat.ts, the promptLabels map uses ids that don't exist (supported, solved, created), so the AI sees raw ids like "alive" instead of the prompt text. Create one shared list of the 10 story prompts (ids and labels exactly as in STORY_PROMPTS in artifacts/ripple-labs/src/pages/ripple-journey.tsx) in a shared place the API can import, and use it for the labels.
+
+Part C — Phone app matches the web journey
+
+The Expo app currently has sign in, prompt selection, chat, purpose options, and delete account. Add the rest so it offers the same experience as the web, using the same API routes (no new backend features):
+
+Story prompts: use the same 10 prompts as the web, including determined and needed, with descriptions. Allow choosing 2 or more (the web has no maximum; match the web).
+Stage openings: stop pasting prior-stage transcripts into the opening message. The server now adds story cards, themes, season, and plan to the AI context. Openings should just ask the guide to begin the stage, matching the web's opening text.
+Review screens: when tapping Continue at the end of Reveal, Identify, Personalize, and Live, show "Gathering what you shared…", call POST /api/journeys/:id/discoveries/:stage, then show the "Here's what I heard" review with editable story cards, themes, season, and Start / Stop / Continue, matching the web's Discoveries.tsx. Button: "This feels right — continue". Include Try Again / Continue Anyway if it fails.
+My Discoveries: a button in the journey header that opens a bottom sheet with everything saved so far, editable, like the web's MyDiscoveries.tsx.
+Final Purpose Summary: same sections and order as the web summary (Purpose Statement, Themes with evidence, Stories, Current Season, Next Steps with one step this week in gold, closing line "What's within you creates a ripple."), with Begin a New Journey.
+Delete account: ask for the password in the confirmation step and send it with the delete request (Better Auth needs it when the session isn't fresh). Show errors clearly.
+Keyboard and safe areas: make sure the chat input stays above the keyboard and nothing hides under the notch or home bar on iPhone and Android.
+Part D — App store identifiers
+
+In artifacts/purpose-lab-mobile/app.json add:
+
+"ios": { "bundleIdentifier": "app.ripplelabs.purposelab", "supportsTablet": false, "infoPlist": { "ITSAppUsesNonExemptEncryption": false } }
+"android": { "package": "app.ripplelabs.purposelab", ... } (keep the existing adaptive icon) Don't change the app name yet.
+When finished
+Run pnpm run typecheck and fix errors.
+Web test: sign in → answer a Stage 1 question → pick prompts → refresh → confirm the SAME journey is still there with messages. Then confirm a purpose statement, refresh, and confirm it saved.
+Phone test (Expo Go or simulator): full journey start to summary, including one review screen edit and My Discoveries. Sign in on the web with the same account and confirm the progress matches.
+Commit with the message: "Fix journey saving, share story prompts, bring mobile app to parity"
