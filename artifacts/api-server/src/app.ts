@@ -37,6 +37,7 @@ app.use(
       callback(new Error("Origin not allowed"));
     },
     credentials: true,
+    exposedHeaders: ["set-auth-token"],
   }),
 );
 app.all("/api/auth/*splat", toNodeHandler(auth));

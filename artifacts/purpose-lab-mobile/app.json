@@ -1,0 +1,33 @@
+{
+  "expo": {
+    "name": "Purpose Lab",
+    "slug": "purpose-lab-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/purpose-lab-icon.png",
+    "scheme": "purpose-lab-mobile",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "supportsTablet": false
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/purpose-lab-icon.png",
+        "backgroundColor": "#0F2A36"
+      }
+    },
+    "splash": {
+      "image": "./assets/images/purpose-lab-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#F5F1E8"
+    },
+    "web": {
+      "favicon": "./assets/images/purpose-lab-icon.png"
+    },
+    "plugins": ["expo-router"],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    }
+  }
+}

@@ -1,0 +1,24 @@
+kind = "mobile"
+previewPath = "/purpose-lab-mobile/"
+title = "Purpose Lab"
+description = "The native Ripple Labs companion for continuing the six-stage Purpose Lab journey, including shared account access, saved progress, streaming AI guidance, and account controls on iPhone and Android."
+version = "1.0.0"
+id = "artifacts/purpose-lab-mobile"
+router = "expo-domain"
+
+[[services]]
+name = "expo"
+ensurePreviewReachable = "/status"
+paths = [ "/purpose-lab-mobile/" ]
+localPort = 26089
+
+[services.development]
+run = "pnpm --filter @workspace/purpose-lab-mobile run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/purpose-lab-mobile", "run", "build" ]
+run = [ "pnpm", "--filter", "@workspace/purpose-lab-mobile", "run", "serve" ]
+
+[services.env]
+PORT = "26089"
+BASE_PATH = "/purpose-lab-mobile/"

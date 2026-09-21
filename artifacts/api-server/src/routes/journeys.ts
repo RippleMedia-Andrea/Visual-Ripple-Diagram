@@ -31,12 +31,7 @@ router.use(requireAuth);
 router.get("/current", async (_req, res, next) => {
   try {
     const userId = res.locals.user.id as string;
-    let [journey] = await db
-      .select()
-      .from(journeys)
-      .where(and(eq(journeys.userId, userId), eq(journeys.status, "in_progress")))
-      .orderBy(desc(journeys.updatedAt))
-      .limit(1);
+    const [journey] = await db.insert(journeys).values({ userId }).returning();
 
     if (!journey) {
       [journey] = await db
@@ -88,11 +83,7 @@ router.patch("/:id", async (req, res, next) => {
     }
     update.updatedAt = new Date();
 
-    const [journey] = await db
-      .update(journeys)
-      .set(update)
-      .where(and(eq(journeys.id, id), eq(journeys.userId, userId)))
-      .returning();
+    const [journey] = await db.insert(journeys).values({ userId }).returning();
 
     if (!journey) {
       res.status(404).json({ error: "Journey not found." });
