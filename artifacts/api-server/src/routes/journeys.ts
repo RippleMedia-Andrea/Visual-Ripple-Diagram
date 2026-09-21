@@ -31,7 +31,12 @@ router.use(requireAuth);
 router.get("/current", async (_req, res, next) => {
   try {
     const userId = res.locals.user.id as string;
-    const [journey] = await db.insert(journeys).values({ userId }).returning();
+    let [journey] = await db
+      .select()
+      .from(journeys)
+      .where(and(eq(journeys.userId, userId), eq(journeys.status, "in_progress")))
+      .orderBy(desc(journeys.updatedAt))
+      .limit(1);
 
     if (!journey) {
       [journey] = await db
