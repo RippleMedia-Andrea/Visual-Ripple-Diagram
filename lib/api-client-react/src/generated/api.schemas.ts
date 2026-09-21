@@ -39,6 +39,22 @@ export const JourneyRecordStatus = {
   complete: "complete",
 } as const;
 
+export interface Season {
+  summary?: string;
+  roles?: string[];
+  capacity?: string;
+  constraints?: string[];
+  opportunities?: string[];
+  expressions?: string[];
+}
+
+export interface ActionPlan {
+  start?: string[];
+  stop?: string[];
+  continue?: string[];
+  oneStepThisWeek?: string;
+}
+
 export interface JourneyRecord {
   id: number;
   userId: string;
@@ -52,14 +68,53 @@ export interface JourneyRecord {
   purposeOptions: string[];
   /** @nullable */
   purposeStatement?: string | null;
+  season?: Season;
+  actionPlan?: ActionPlan;
   createdAt: string;
   updatedAt: string;
   /** @nullable */
   completedAt?: string | null;
 }
 
+export interface StoryCard {
+  id?: number;
+  journeyId?: number;
+  position?: number;
+  title?: string;
+  summary?: string;
+  /** @nullable */
+  promptId?: string | null;
+  isDifficultExperience?: boolean;
+  actions?: string[];
+  feelings?: string[];
+  people?: string[];
+  impact?: string[];
+  userEdited?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface Evidence {
+  storyTitle: string;
+  detail: string;
+}
+
+export interface PurposeTheme {
+  id?: number;
+  journeyId?: number;
+  position?: number;
+  name?: string;
+  description?: string;
+  evidence?: Evidence[];
+  userEdited?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export type Journey = JourneyRecord & {
   messages: StageMessages;
+  storyCards: StoryCard[];
+  themes: PurposeTheme[];
 };
 
 export type JourneyUpdateStatus =
@@ -81,4 +136,41 @@ export interface JourneyUpdate {
   /** @nullable */
   purposeStatement?: string | null;
   status?: JourneyUpdateStatus;
+  season?: Season;
+  actionPlan?: ActionPlan;
 }
+
+export interface StoryCardUpdate {
+  title?: string;
+  summary?: string;
+  /** @nullable */
+  promptId?: string | null;
+  isDifficultExperience?: boolean;
+  actions?: string[];
+  feelings?: string[];
+  people?: string[];
+  impact?: string[];
+}
+
+export interface PurposeThemeCreate {
+  position?: number;
+  name: string;
+  description: string;
+  evidence?: Evidence[];
+}
+
+export type PurposeThemeUpdate = PurposeThemeCreate;
+
+export type ExtractionResponse =
+  | {
+      stories?: StoryCard[];
+    }
+  | {
+      themes?: PurposeTheme[];
+    }
+  | {
+      season?: Season;
+    }
+  | {
+      actionPlan?: ActionPlan;
+    };

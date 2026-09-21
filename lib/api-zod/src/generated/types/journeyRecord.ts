@@ -5,7 +5,9 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { ActionPlan } from "./actionPlan";
 import type { JourneyRecordStatus } from "./journeyRecordStatus";
+import type { Season } from "./season";
 
 export interface JourneyRecord {
   id: number;
@@ -20,6 +22,8 @@ export interface JourneyRecord {
   purposeOptions: string[];
   /** @nullable */
   purposeStatement?: string | null;
+  season?: Season;
+  actionPlan?: ActionPlan;
   createdAt: Date;
   updatedAt: Date;
   /** @nullable */

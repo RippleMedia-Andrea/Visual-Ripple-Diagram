@@ -6,8 +6,12 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { JourneyRecord } from "./journeyRecord";
+import type { PurposeTheme } from "./purposeTheme";
 import type { StageMessages } from "./stageMessages";
+import type { StoryCard } from "./storyCard";
 
 export type Journey = JourneyRecord & {
   messages: StageMessages;
+  storyCards: StoryCard[];
+  themes: PurposeTheme[];
 };

@@ -54,14 +54,18 @@ Express 5 (port 8080)
 **Routes:**
 - `GET /api/healthz` — health check
 - `POST /api/ripple/chat` — Streaming SSE endpoint for AI journey chat. Accepts `{ stage, messages, context }`, returns SSE stream from Claude.
+- `POST /api/ripple/extract` — Authenticated, rate-limited structured discovery extraction for Reveal, Identify, Personalize, and Live.
 - `/api/auth/*` — Better Auth account/session endpoints (cookie and bearer-token support)
 - `GET /api/journeys/current` — Load or create the signed-in user's current journey and grouped messages
 - `PATCH /api/journeys/:id` — Save signed-in user's journey progress
 - `POST /api/journeys/:id/restart` — Archive the current journey and begin a new one
+- `POST /api/journeys/:id/themes`, `PATCH/DELETE /api/themes/:id` — Ownership-protected purpose theme CRUD
+- `PATCH/DELETE /api/story-cards/:id` — Ownership-protected story card editing
 
 **Database tables:**
 - Better Auth: `user`, `session`, `account`, `verification`
 - Purpose Lab: `journeys`, `journey_messages`
+- Discoveries: `story_cards`, `purpose_themes`; `journeys.season` and `journeys.action_plan` JSONB fields
 
 **Lib packages used:**
 - `@workspace/integrations-anthropic-ai` — Anthropic SDK client with Replit AI proxy env vars
@@ -70,6 +74,11 @@ Express 5 (port 8080)
 - `AI_INTEGRATIONS_ANTHROPIC_BASE_URL`
 - `AI_INTEGRATIONS_ANTHROPIC_API_KEY`
 - `SESSION_SECRET`
+- `APP_ORIGINS` — comma-separated trusted production origins
+
+The Drizzle schema changes require the normal development `pnpm --filter @workspace/db run push` (or publish schema diff); no database migration was applied by this task.
+
+AI guide prompts live in `artifacts/api-server/src/routes/ripple/prompts.ts`; chat context is assembled from persisted journey discoveries rather than client-provided context.
 
 ## Brand Identity
 - Deep Teal `#0F2A36`, Ripple Teal `#2F7F7B`, Soft Teal `#5FA8A5`, Soft Aqua `#D7ECEB`

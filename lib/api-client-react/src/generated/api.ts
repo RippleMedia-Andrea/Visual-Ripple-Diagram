@@ -17,10 +17,15 @@ import type {
 } from "@tanstack/react-query";
 
 import type {
+  ExtractionResponse,
   HealthStatus,
   Journey,
   JourneyRecord,
   JourneyUpdate,
+  PurposeTheme,
+  PurposeThemeCreate,
+  StoryCard,
+  StoryCardUpdate,
 } from "./api.schemas";
 
 import { customFetch } from "../custom-fetch";
@@ -268,6 +273,526 @@ export const useUpdateJourney = <
   TContext
 > => {
   return useMutation(getUpdateJourneyMutationOptions(options));
+};
+
+/**
+ * @summary Extract and save discoveries from a journey stage
+ */
+export const getExtractJourneyDiscoveriesUrl = (
+  id: number,
+  stage: "reveal" | "identify" | "personalize" | "live",
+) => {
+  return `/api/journeys/${id}/discoveries/${stage}`;
+};
+
+export const extractJourneyDiscoveries = async (
+  id: number,
+  stage: "reveal" | "identify" | "personalize" | "live",
+  options?: RequestInit,
+): Promise<ExtractionResponse> => {
+  return customFetch<ExtractionResponse>(
+    getExtractJourneyDiscoveriesUrl(id, stage),
+    {
+      ...options,
+      method: "POST",
+    },
+  );
+};
+
+export const getExtractJourneyDiscoveriesMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof extractJourneyDiscoveries>>,
+    TError,
+    { id: number; stage: "reveal" | "identify" | "personalize" | "live" },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof extractJourneyDiscoveries>>,
+  TError,
+  { id: number; stage: "reveal" | "identify" | "personalize" | "live" },
+  TContext
+> => {
+  const mutationKey = ["extractJourneyDiscoveries"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof extractJourneyDiscoveries>>,
+    { id: number; stage: "reveal" | "identify" | "personalize" | "live" }
+  > = (props) => {
+    const { id, stage } = props ?? {};
+
+    return extractJourneyDiscoveries(id, stage, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type ExtractJourneyDiscoveriesMutationResult = NonNullable<
+  Awaited<ReturnType<typeof extractJourneyDiscoveries>>
+>;
+
+export type ExtractJourneyDiscoveriesMutationError = ErrorType<void>;
+
+/**
+ * @summary Extract and save discoveries from a journey stage
+ */
+export const useExtractJourneyDiscoveries = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof extractJourneyDiscoveries>>,
+    TError,
+    { id: number; stage: "reveal" | "identify" | "personalize" | "live" },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof extractJourneyDiscoveries>>,
+  TError,
+  { id: number; stage: "reveal" | "identify" | "personalize" | "live" },
+  TContext
+> => {
+  return useMutation(getExtractJourneyDiscoveriesMutationOptions(options));
+};
+
+/**
+ * @summary Update an owned story card
+ */
+export const getUpdateStoryCardUrl = (id: number) => {
+  return `/api/story-cards/${id}`;
+};
+
+export const updateStoryCard = async (
+  id: number,
+  storyCardUpdate: StoryCardUpdate,
+  options?: RequestInit,
+): Promise<StoryCard> => {
+  return customFetch<StoryCard>(getUpdateStoryCardUrl(id), {
+    ...options,
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(storyCardUpdate),
+  });
+};
+
+export const getUpdateStoryCardMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateStoryCard>>,
+    TError,
+    { id: number; data: BodyType<StoryCardUpdate> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateStoryCard>>,
+  TError,
+  { id: number; data: BodyType<StoryCardUpdate> },
+  TContext
+> => {
+  const mutationKey = ["updateStoryCard"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateStoryCard>>,
+    { id: number; data: BodyType<StoryCardUpdate> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return updateStoryCard(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateStoryCardMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateStoryCard>>
+>;
+export type UpdateStoryCardMutationBody = BodyType<StoryCardUpdate>;
+export type UpdateStoryCardMutationError = ErrorType<void>;
+
+/**
+ * @summary Update an owned story card
+ */
+export const useUpdateStoryCard = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateStoryCard>>,
+    TError,
+    { id: number; data: BodyType<StoryCardUpdate> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateStoryCard>>,
+  TError,
+  { id: number; data: BodyType<StoryCardUpdate> },
+  TContext
+> => {
+  return useMutation(getUpdateStoryCardMutationOptions(options));
+};
+
+/**
+ * @summary Delete an owned story card
+ */
+export const getDeleteStoryCardUrl = (id: number) => {
+  return `/api/story-cards/${id}`;
+};
+
+export const deleteStoryCard = async (
+  id: number,
+  options?: RequestInit,
+): Promise<void> => {
+  return customFetch<void>(getDeleteStoryCardUrl(id), {
+    ...options,
+    method: "DELETE",
+  });
+};
+
+export const getDeleteStoryCardMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteStoryCard>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteStoryCard>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  const mutationKey = ["deleteStoryCard"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteStoryCard>>,
+    { id: number }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return deleteStoryCard(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteStoryCardMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteStoryCard>>
+>;
+
+export type DeleteStoryCardMutationError = ErrorType<void>;
+
+/**
+ * @summary Delete an owned story card
+ */
+export const useDeleteStoryCard = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteStoryCard>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof deleteStoryCard>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  return useMutation(getDeleteStoryCardMutationOptions(options));
+};
+
+/**
+ * @summary Add a purpose theme to an owned journey
+ */
+export const getCreatePurposeThemeUrl = (id: number) => {
+  return `/api/journeys/${id}/themes`;
+};
+
+export const createPurposeTheme = async (
+  id: number,
+  purposeThemeCreate: PurposeThemeCreate,
+  options?: RequestInit,
+): Promise<PurposeTheme> => {
+  return customFetch<PurposeTheme>(getCreatePurposeThemeUrl(id), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(purposeThemeCreate),
+  });
+};
+
+export const getCreatePurposeThemeMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createPurposeTheme>>,
+    TError,
+    { id: number; data: BodyType<PurposeThemeCreate> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createPurposeTheme>>,
+  TError,
+  { id: number; data: BodyType<PurposeThemeCreate> },
+  TContext
+> => {
+  const mutationKey = ["createPurposeTheme"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createPurposeTheme>>,
+    { id: number; data: BodyType<PurposeThemeCreate> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return createPurposeTheme(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreatePurposeThemeMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createPurposeTheme>>
+>;
+export type CreatePurposeThemeMutationBody = BodyType<PurposeThemeCreate>;
+export type CreatePurposeThemeMutationError = ErrorType<void>;
+
+/**
+ * @summary Add a purpose theme to an owned journey
+ */
+export const useCreatePurposeTheme = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createPurposeTheme>>,
+    TError,
+    { id: number; data: BodyType<PurposeThemeCreate> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createPurposeTheme>>,
+  TError,
+  { id: number; data: BodyType<PurposeThemeCreate> },
+  TContext
+> => {
+  return useMutation(getCreatePurposeThemeMutationOptions(options));
+};
+
+/**
+ * @summary Update an owned purpose theme
+ */
+export const getUpdatePurposeThemeUrl = (id: number) => {
+  return `/api/themes/${id}`;
+};
+
+export const updatePurposeTheme = async (
+  id: number,
+  purposeThemeCreate: PurposeThemeCreate,
+  options?: RequestInit,
+): Promise<PurposeTheme> => {
+  return customFetch<PurposeTheme>(getUpdatePurposeThemeUrl(id), {
+    ...options,
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(purposeThemeCreate),
+  });
+};
+
+export const getUpdatePurposeThemeMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updatePurposeTheme>>,
+    TError,
+    { id: number; data: BodyType<PurposeThemeCreate> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updatePurposeTheme>>,
+  TError,
+  { id: number; data: BodyType<PurposeThemeCreate> },
+  TContext
+> => {
+  const mutationKey = ["updatePurposeTheme"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updatePurposeTheme>>,
+    { id: number; data: BodyType<PurposeThemeCreate> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return updatePurposeTheme(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdatePurposeThemeMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updatePurposeTheme>>
+>;
+export type UpdatePurposeThemeMutationBody = BodyType<PurposeThemeCreate>;
+export type UpdatePurposeThemeMutationError = ErrorType<void>;
+
+/**
+ * @summary Update an owned purpose theme
+ */
+export const useUpdatePurposeTheme = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updatePurposeTheme>>,
+    TError,
+    { id: number; data: BodyType<PurposeThemeCreate> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updatePurposeTheme>>,
+  TError,
+  { id: number; data: BodyType<PurposeThemeCreate> },
+  TContext
+> => {
+  return useMutation(getUpdatePurposeThemeMutationOptions(options));
+};
+
+/**
+ * @summary Delete an owned purpose theme
+ */
+export const getDeletePurposeThemeUrl = (id: number) => {
+  return `/api/themes/${id}`;
+};
+
+export const deletePurposeTheme = async (
+  id: number,
+  options?: RequestInit,
+): Promise<void> => {
+  return customFetch<void>(getDeletePurposeThemeUrl(id), {
+    ...options,
+    method: "DELETE",
+  });
+};
+
+export const getDeletePurposeThemeMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deletePurposeTheme>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deletePurposeTheme>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  const mutationKey = ["deletePurposeTheme"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deletePurposeTheme>>,
+    { id: number }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return deletePurposeTheme(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeletePurposeThemeMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deletePurposeTheme>>
+>;
+
+export type DeletePurposeThemeMutationError = ErrorType<void>;
+
+/**
+ * @summary Delete an owned purpose theme
+ */
+export const useDeletePurposeTheme = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deletePurposeTheme>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof deletePurposeTheme>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  return useMutation(getDeletePurposeThemeMutationOptions(options));
 };
 
 /**

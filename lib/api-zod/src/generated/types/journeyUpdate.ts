@@ -5,7 +5,9 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { ActionPlan } from "./actionPlan";
 import type { JourneyUpdateStatus } from "./journeyUpdateStatus";
+import type { Season } from "./season";
 
 export interface JourneyUpdate {
   /**
@@ -18,4 +20,6 @@ export interface JourneyUpdate {
   /** @nullable */
   purposeStatement?: string | null;
   status?: JourneyUpdateStatus;
+  season?: Season;
+  actionPlan?: ActionPlan;
 }

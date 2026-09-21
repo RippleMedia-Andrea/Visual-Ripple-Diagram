@@ -3,6 +3,9 @@ import { Link } from "wouter";
 import rippleLabsLogo from "@assets/2876A1D3-1596-40F7-9384-F5AAA5F311E8_1777042604510.png";
 import { StageChat, type ChatMessage } from "@/components/StageChat";
 import { AccountMenu } from "@/components/AccountMenu";
+import { StoryCard, PurposeTheme, Season, ActionPlan, JourneyResponse } from "@/lib/types";
+import { StoryCardView, ThemeCardView, SeasonFormView, ActionPlanFormView } from "@/components/Discoveries";
+import { MyDiscoveries } from "@/components/MyDiscoveries";
 
 const BASE_URL = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -46,6 +49,16 @@ const STORY_PROMPTS = [
     id: "memory",
     label: "A memory I keep returning to",
     description: "One that still holds meaning — even if you can't fully explain why.",
+  },
+  {
+    id: "determined",
+    label: "Something I went through that I don't want others to experience",
+    description: "A hard season that left you determined to make things different for someone else.",
+  },
+  {
+    id: "needed",
+    label: "What I needed that I now give others",
+    description: "Something you longed for in a difficult time that you now find yourself offering people.",
   },
 ];
 
@@ -167,37 +180,9 @@ function extractPurposeOptions(messages: ChatMessage[]): string[] {
   return options.slice(0, 3);
 }
 
-interface JourneyContext {
-  purposeStatement: string;
-  purposeOptions: string[];
-  patterns: string;
-  season: string;
-  startItems: string;
-  stopItems: string;
-  continueItems: string;
-}
-
 type AllMessages = ChatMessage[][];
 
-interface JourneyResponse {
-  id: number;
-  currentStageIdx: number;
-  selectedPrompts: string[];
-  purposeOptions: string[];
-  purposeStatement: string | null;
-  messages: Record<string, ChatMessage[]>;
-}
-
 const emptyMessages = (): AllMessages => STAGES.map(() => []);
-const emptyContext = (): JourneyContext => ({
-  purposeStatement: "",
-  purposeOptions: [],
-  patterns: "",
-  season: "",
-  startItems: "",
-  stopItems: "",
-  continueItems: "",
-});
 
 export default function RippleJourney() {
   const [journeyId, setJourneyId] = useState<number | null>(null);
@@ -206,22 +191,34 @@ export default function RippleJourney() {
   const [stageIdx, setStageIdx] = useState(0);
   const [highestStageIdx, setHighestStageIdx] = useState(0);
   const [allMessages, setAllMessages] = useState<AllMessages>(emptyMessages);
-  const [context, setContext] = useState<JourneyContext>(emptyContext);
+
+  const [storyCards, setStoryCards] = useState<StoryCard[]>([]);
+  const [themes, setThemes] = useState<PurposeTheme[]>([]);
+  const [season, setSeason] = useState<Season | null>(null);
+  const [actionPlan, setActionPlan] = useState<ActionPlan | null>(null);
+  const [purposeStatement, setPurposeStatement] = useState("");
+
   const [isStreaming, setIsStreaming] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
+  const [isDiscoveriesOpen, setIsDiscoveriesOpen] = useState(false);
 
   // Stage 1: prompt selection
   const [selectedPrompts, setSelectedPrompts] = useState<string[]>([]);
   const [promptsConfirmed, setPromptsConfirmed] = useState(false);
 
-  // Stage-3-specific: purpose picker UI
+  // Stage 3: purpose picker UI
   const [purposeOptions, setPurposeOptions] = useState<string[]>([]);
   const [selectedOption, setSelectedOption] = useState<string>("");
   const [editedPurpose, setEditedPurpose] = useState("");
   const [purposeConfirmed, setPurposeConfirmed] = useState(false);
 
-  // Stage-5-specific: structured SSC
-  const [sscMode, setSscMode] = useState<"chat" | "structured">("chat");
+  // Review State
+  const [reviewState, setReviewState] = useState({
+    isReviewing: false,
+    stageId: "",
+    isExtracting: false,
+    extractionFailed: false,
+  });
 
   const stage = STAGES[stageIdx];
 
@@ -235,7 +232,7 @@ export default function RippleJourney() {
       .then((journey) => {
         if (cancelled) return;
         const messages = STAGES.map((item) => journey.messages[item.id] ?? []);
-        const purposeStatement = journey.purposeStatement ?? "";
+        const pStmt = journey.purposeStatement ?? "";
         setJourneyId(journey.id);
         setStageIdx(journey.currentStageIdx);
         setHighestStageIdx(journey.currentStageIdx);
@@ -245,13 +242,19 @@ export default function RippleJourney() {
           (journey.selectedPrompts?.length ?? 0) >= 2 && messages[0].length > 0,
         );
         setPurposeOptions(journey.purposeOptions ?? []);
-        setEditedPurpose(purposeStatement);
-        setPurposeConfirmed(Boolean(purposeStatement));
-        setContext((previous) => ({
-          ...previous,
-          purposeOptions: journey.purposeOptions ?? [],
-          purposeStatement,
-        }));
+        setEditedPurpose(pStmt);
+        setPurposeConfirmed(Boolean(pStmt));
+        setPurposeStatement(pStmt);
+
+        setStoryCards(journey.storyCards ?? []);
+        setThemes(journey.themes ?? []);
+        setSeason(journey.season ?? null);
+        setActionPlan(journey.actionPlan ?? null);
+
+        if (journey.status === "complete") {
+          setIsComplete(true);
+        }
+
         setIsLoadingJourney(false);
       })
       .catch((error: Error) => {
@@ -276,7 +279,7 @@ export default function RippleJourney() {
           currentStageIdx: highestStageIdx,
           selectedPrompts,
           purposeOptions,
-          purposeStatement: context.purposeStatement || null,
+          purposeStatement: purposeStatement || null,
         }),
       }).catch(() => {});
     }, 350);
@@ -287,85 +290,18 @@ export default function RippleJourney() {
     highestStageIdx,
     selectedPrompts,
     purposeOptions,
-    context.purposeStatement,
+    purposeStatement,
   ]);
 
-  // Auto-open each stage — send opening prompt if messages are empty
   const hasOpened = useRef<Record<number, boolean>>({});
 
-  const sendOpening = useCallback(
-    async (idx: number) => {
-      if (hasOpened.current[idx]) return;
-      const s = STAGES[idx];
-      if (!s.openingPrompt && idx > 0) {
-        hasOpened.current[idx] = true;
-        return;
-      }
-      const openingMsg = s.openingPrompt;
-      if (!openingMsg) { hasOpened.current[idx] = true; return; }
-      if (allMessages[idx].length > 0) { hasOpened.current[idx] = true; return; }
-
-      hasOpened.current[idx] = true;
-      setIsStreaming(true);
-
-      try {
-        const res = await fetch(`${BASE_URL}/api/ripple/chat`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            journeyId,
-            stage: s.id,
-            messages: [{ role: "user", content: "__OPEN__" }],
-            context: buildContext(idx),
-            saveUserMessage: false,
-          }),
-        });
-
-        if (!res.ok || !res.body) throw new Error("Stream error");
-        const reader = res.body.getReader();
-        const decoder = new TextDecoder();
-        let text = "";
-
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          const chunk = decoder.decode(value, { stream: true });
-          for (const line of chunk.split("\n")) {
-            if (!line.startsWith("data: ")) continue;
-            try {
-              const data = JSON.parse(line.slice(6));
-              if (data.content) text += data.content;
-              if (data.done) {
-                setAllMessages((prev) => {
-                  const next = [...prev];
-                  next[idx] = [{ role: "assistant", content: text }];
-                  return next;
-                });
-                setIsStreaming(false);
-              }
-            } catch {}
-          }
-        }
-      } catch {
-        setAllMessages((prev) => {
-          const next = [...prev];
-          next[idx] = [{ role: "assistant", content: openingMsg }];
-          return next;
-        });
-        setIsStreaming(false);
-      }
-    },
-    [allMessages, journeyId]
-  );
-
-  // Stage 0 no longer auto-opens — user must select prompts first
   async function triggerRevealOpening(prompts: string[]) {
     if (allMessages[0].length > 0) return;
     const promptLabels = prompts
       .map((id) => STORY_PROMPTS.find((p) => p.id === id)?.label ?? id)
       .join(", ");
     const openingText = `The person has chosen to share stories around these themes: ${promptLabels}. Please warmly welcome them to Stage 1: Reveal — Your Story. Acknowledge the themes they chose, then gently invite them to begin with whichever one feels most natural right now. Ask one open, warm question to get them started. Keep your opening under 100 words.`;
-    await streamAIOpening("reveal", openingText, 0, { selectedPrompts: prompts, purposeStatement: "", patterns: [], season: "" });
+    await streamAIOpening("reveal", openingText, 0);
   }
 
   function confirmAndBegin() {
@@ -374,16 +310,6 @@ export default function RippleJourney() {
     triggerRevealOpening(selectedPrompts);
   }
 
-  function buildContext(idx: number) {
-    return {
-      purposeStatement: context.purposeStatement,
-      patterns: context.patterns ? [context.patterns] : [],
-      season: context.season,
-      selectedPrompts,
-    };
-  }
-
-  // When stage changes to Identify, auto-launch with full Stage 1 conversation
   useEffect(() => {
     if (stageIdx === 1 && allMessages[1].length === 0 && !isStreaming) {
       triggerIdentifyOpening();
@@ -402,7 +328,7 @@ export default function RippleJourney() {
     }
   }, [stageIdx]);
 
-  async function streamAIOpening(stageId: string, prompt: string, idx: number, ctx?: object) {
+  async function streamAIOpening(stageId: string, prompt: string, idx: number) {
     if (allMessages[idx].length > 0) return;
     setIsStreaming(true);
     try {
@@ -413,7 +339,7 @@ export default function RippleJourney() {
           journeyId,
           stage: stageId,
           messages: [{ role: "user", content: prompt }],
-          context: ctx ?? buildContext(idx),
+          context: {}, // Let server build context
           saveUserMessage: false,
         }),
       });
@@ -446,64 +372,23 @@ export default function RippleJourney() {
   }
 
   function triggerIdentifyOpening() {
-    const revealSummary = allMessages[0]
-      .map((m) => `${m.role === "user" ? "Person" : "Guide"}: ${m.content}`)
-      .join("\n\n");
-    streamAIOpening(
-      "identify",
-      `Here is the full conversation from Stage 1 where the person shared their stories:\n\n${revealSummary}\n\nPlease reflect back the patterns, themes, and recurring elements you noticed. Present them clearly, then ask the person to confirm or refine.`,
-      1
-    );
+    streamAIOpening("identify", "I'm ready for Stage 2. Please reflect back the patterns and themes you noticed in my stories, and ask me to confirm or refine them.", 1);
   }
 
   function triggerPinpointOpening() {
-    const patternsSummary = allMessages[1]
-      .map((m) => `${m.role === "user" ? "Person" : "Guide"}: ${m.content}`)
-      .join("\n\n");
-    streamAIOpening(
-      "pinpoint",
-      `Based on these confirmed patterns:\n\n${patternsSummary}\n\nPlease generate exactly 3 purpose statement options using the format: "I am someone who [action], so others can [impact]." Present them clearly labeled as Option 1, Option 2, and Option 3.`,
-      2
-    );
+    streamAIOpening("pinpoint", "I'm ready for Stage 3. Based on my confirmed themes and stories, please generate exactly 3 purpose statement options.", 2);
   }
 
   function triggerPersonalizeOpening() {
-    streamAIOpening(
-      "personalize",
-      `The person's purpose statement is: "${context.purposeStatement || editedPurpose}"\n\nPlease begin Stage 4: Personalize — Your Season. Start by asking about their current season of life and roles.`,
-      3,
-      {
-        purposeStatement: context.purposeStatement || editedPurpose,
-        patterns: context.patterns ? [context.patterns] : [],
-        season: context.season,
-      }
-    );
+    streamAIOpening("personalize", "I'm ready for Stage 4. Please begin by asking about my current season of life and roles.", 3);
   }
 
   function triggerLiveOpening() {
-    streamAIOpening(
-      "live",
-      `The person's purpose statement is: "${context.purposeStatement}"\nTheir current season: "${context.season}"\n\nPlease begin Stage 5: Live — Your Ripple. Start by introducing the Start / Stop / Continue framework and asking the first question.`,
-      4,
-      {
-        purposeStatement: context.purposeStatement,
-        patterns: context.patterns ? [context.patterns] : [],
-        season: context.season,
-      }
-    );
+    streamAIOpening("live", "I'm ready for Stage 5. Please introduce the Start / Stop / Continue framework and ask the first question.", 4);
   }
 
   function triggerExpandOpening() {
-    streamAIOpening(
-      "expand",
-      `The person has completed all stages of The Ripple Method. Their purpose statement is: "${context.purposeStatement}". Their season is: "${context.season}". Please begin Stage 6: Expand — Your Growth. Celebrate what they've done and guide them into reflection and integration.`,
-      5,
-      {
-        purposeStatement: context.purposeStatement,
-        patterns: context.patterns ? [context.patterns] : [],
-        season: context.season,
-      }
-    );
+    streamAIOpening("expand", "I've completed all stages. Please begin Stage 6 and guide me into reflection.", 5);
   }
 
   // Detect purpose options after stage 2 AI responses
@@ -512,7 +397,6 @@ export default function RippleJourney() {
       const opts = extractPurposeOptions(allMessages[2]);
       if (opts.length > 0) {
         setPurposeOptions(opts);
-        setContext((prev) => ({ ...prev, purposeOptions: opts }));
       }
     }
   }, [allMessages[2]]);
@@ -543,14 +427,50 @@ export default function RippleJourney() {
     }
   }
 
+  function handleContinue() {
+    const stageId = stage.id;
+    if (["reveal", "identify", "personalize", "live"].includes(stageId)) {
+      setReviewState({ isReviewing: true, stageId, isExtracting: true, extractionFailed: false });
+      runExtraction(stageId);
+    } else {
+      goNext();
+    }
+  }
+
+  async function runExtraction(stageId: string) {
+    setReviewState(prev => ({ ...prev, isExtracting: true, extractionFailed: false }));
+    try {
+      const res = await fetch(`${BASE_URL}/api/journeys/${journeyId}/discoveries/${stageId}`, {
+        method: "POST",
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("Extraction failed");
+
+      const currentRes = await fetch(`${BASE_URL}/api/journeys/current`, { credentials: "include" });
+      const journey = await currentRes.json();
+      setStoryCards(journey.storyCards ?? []);
+      setThemes(journey.themes ?? []);
+      setSeason(journey.season ?? null);
+      setActionPlan(journey.actionPlan ?? null);
+
+      setReviewState(prev => ({ ...prev, isExtracting: false }));
+    } catch {
+      setReviewState(prev => ({ ...prev, isExtracting: false, extractionFailed: true }));
+    }
+  }
+
   function goPrev() {
+    if (reviewState.isReviewing) {
+      setReviewState({ isReviewing: false, stageId: "", isExtracting: false, extractionFailed: false });
+      return;
+    }
     if (stageIdx > 0) setStageIdx((i) => i - 1);
   }
 
   function confirmPurpose() {
     const stmt = editedPurpose.trim() || selectedOption;
     if (!stmt) return;
-    setContext((prev) => ({ ...prev, purposeStatement: stmt }));
+    setPurposeStatement(stmt);
     setPurposeConfirmed(true);
   }
 
@@ -566,15 +486,73 @@ export default function RippleJourney() {
     setStageIdx(0);
     setHighestStageIdx(0);
     setAllMessages(emptyMessages());
-    setContext(emptyContext());
     setPurposeOptions([]);
     setSelectedOption("");
     setEditedPurpose("");
     setPurposeConfirmed(false);
+    setPurposeStatement("");
     setSelectedPrompts([]);
     setPromptsConfirmed(false);
     setIsComplete(false);
+    setStoryCards([]);
+    setThemes([]);
+    setSeason(null);
+    setActionPlan(null);
     hasOpened.current = {};
+    setReviewState({ isReviewing: false, stageId: "", isExtracting: false, extractionFailed: false });
+  }
+
+  // Update Discovery API calls
+  async function updateStoryCard(card: StoryCard) {
+    setStoryCards(prev => prev.map(c => c.id === card.id ? card : c));
+    await fetch(`${BASE_URL}/api/story-cards/${card.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(card),
+      credentials: "include",
+    });
+  }
+
+  async function deleteStoryCard(id: string) {
+    setStoryCards(prev => prev.filter(c => c.id !== id));
+    await fetch(`${BASE_URL}/api/story-cards/${id}`, { method: "DELETE", credentials: "include" });
+  }
+
+  async function updateTheme(theme: PurposeTheme) {
+    setThemes(prev => prev.map(t => t.id === theme.id ? theme : t));
+    await fetch(`${BASE_URL}/api/themes/${theme.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(theme),
+      credentials: "include",
+    });
+  }
+
+  async function deleteTheme(id: string) {
+    setThemes(prev => prev.filter(t => t.id !== id));
+    await fetch(`${BASE_URL}/api/themes/${id}`, { method: "DELETE", credentials: "include" });
+  }
+
+  async function updateSeasonApi(s: Season) {
+    setSeason(s);
+    if (!journeyId) return;
+    await fetch(`${BASE_URL}/api/journeys/${journeyId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ season: s }),
+      credentials: "include",
+    });
+  }
+
+  async function updateActionPlanApi(plan: ActionPlan) {
+    setActionPlan(plan);
+    if (!journeyId) return;
+    await fetch(`${BASE_URL}/api/journeys/${journeyId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ actionPlan: plan }),
+      credentials: "include",
+    });
   }
 
   if (isLoadingJourney) {
@@ -594,7 +572,34 @@ export default function RippleJourney() {
   }
 
   if (isComplete) {
-    return <JourneySummary context={context} allMessages={allMessages} onReset={resetJourney} />;
+    return (
+      <>
+        <MyDiscoveries
+          isOpen={isDiscoveriesOpen}
+          onClose={() => setIsDiscoveriesOpen(false)}
+          storyCards={storyCards}
+          themes={themes}
+          season={season}
+          actionPlan={actionPlan}
+          purposeStatement={purposeStatement}
+          onUpdateStoryCard={updateStoryCard}
+          onDeleteStoryCard={deleteStoryCard}
+          onUpdateTheme={updateTheme}
+          onDeleteTheme={deleteTheme}
+          onUpdateSeason={updateSeasonApi}
+          onUpdateActionPlan={updateActionPlanApi}
+        />
+        <JourneySummary
+          storyCards={storyCards}
+          themes={themes}
+          season={season}
+          actionPlan={actionPlan}
+          purposeStatement={purposeStatement}
+          onReset={resetJourney}
+          onOpenDiscoveries={() => setIsDiscoveriesOpen(true)}
+        />
+      </>
+    );
   }
 
   const progressPct = ((stageIdx + 1) / STAGES.length) * 100;
@@ -605,6 +610,22 @@ export default function RippleJourney() {
       style={{ backgroundColor: stage.color }}
       data-testid="ripple-journey-page"
     >
+      <MyDiscoveries
+        isOpen={isDiscoveriesOpen}
+        onClose={() => setIsDiscoveriesOpen(false)}
+        storyCards={storyCards}
+        themes={themes}
+        season={season}
+        actionPlan={actionPlan}
+        purposeStatement={purposeStatement}
+        onUpdateStoryCard={updateStoryCard}
+        onDeleteStoryCard={deleteStoryCard}
+        onUpdateTheme={updateTheme}
+        onDeleteTheme={deleteTheme}
+        onUpdateSeason={updateSeasonApi}
+        onUpdateActionPlan={updateActionPlanApi}
+      />
+
       {/* Nav */}
       <nav
         className="w-full px-5 md:px-10 py-3 flex items-center justify-between sticky top-0 z-50"
@@ -620,12 +641,18 @@ export default function RippleJourney() {
           />
         </Link>
         <div className="flex items-center gap-4">
-          <span className="text-xs font-sans opacity-50" style={{ color: stage.textColor }}>
-            The Ripple Method™ Journey
-          </span>
+          <button
+            onClick={() => setIsDiscoveriesOpen(true)}
+            className="text-xs font-sans opacity-60 hover:opacity-100 transition-opacity flex items-center gap-1.5"
+            style={{ color: stage.textColor }}
+          >
+            <span className="hidden sm:inline">My Discoveries</span>
+            <span className="sm:hidden">Discoveries</span>
+          </button>
+          <span className="hidden sm:inline text-xs font-sans opacity-30" style={{ color: stage.textColor }}>|</span>
           <Link
             href="/purpose-lab"
-            className="text-xs font-sans opacity-60 hover:opacity-100 transition-opacity"
+            className="hidden sm:inline text-xs font-sans opacity-60 hover:opacity-100 transition-opacity"
             style={{ color: stage.textColor }}
           >
             ← Purpose Lab
@@ -648,16 +675,16 @@ export default function RippleJourney() {
         {STAGES.map((s, i) => (
           <button
             key={s.id}
-            onClick={() => !isStreaming && i <= highestStageIdx && setStageIdx(i)}
+            onClick={() => !isStreaming && !reviewState.isExtracting && i <= highestStageIdx && setStageIdx(i)}
             data-testid={`stage-dot-${s.id}`}
             className="flex items-center gap-1.5 transition-all"
-            disabled={isStreaming || i > highestStageIdx}
+            disabled={isStreaming || reviewState.isExtracting || i > highestStageIdx}
           >
             <div
               className={`rounded-full transition-all duration-300 flex items-center justify-center text-[9px] font-bold ${
-                i === stageIdx
+                i === stageIdx && !reviewState.isReviewing
                   ? "w-7 h-7 shadow-lg"
-                  : i < stageIdx
+                  : i < stageIdx || (i === stageIdx && reviewState.isReviewing)
                   ? "w-5 h-5"
                   : "w-4 h-4 opacity-30"
               }`}
@@ -666,13 +693,13 @@ export default function RippleJourney() {
                 color: "#0F2A36",
               }}
             >
-              {i < stageIdx ? "✓" : i === stageIdx ? s.number : ""}
+              {i < stageIdx || (i === stageIdx && reviewState.isReviewing) ? "✓" : i === stageIdx ? s.number : ""}
             </div>
             {i < STAGES.length - 1 && (
               <div
                 className="w-5 md:w-10 h-px"
                 style={{
-                  backgroundColor: i < stageIdx ? "#C8A96A" : "rgba(255,255,255,0.15)",
+                  backgroundColor: i < stageIdx || (i === stageIdx && reviewState.isReviewing) ? "#C8A96A" : "rgba(255,255,255,0.15)",
                 }}
               />
             )}
@@ -739,8 +766,7 @@ export default function RippleJourney() {
               {stage.guidance}
             </div>
 
-            {/* Show purpose statement from stage 3 onward */}
-            {stageIdx >= 3 && context.purposeStatement && (
+            {stageIdx >= 3 && purposeStatement && (
               <div
                 className="rounded-xl px-4 py-4"
                 style={{ backgroundColor: "rgba(200,169,106,0.1)", border: "1px solid rgba(200,169,106,0.25)" }}
@@ -750,39 +776,77 @@ export default function RippleJourney() {
                   Your Purpose
                 </p>
                 <p className="font-script text-sm leading-relaxed" style={{ color: stage.textColor }}>
-                  {context.purposeStatement}
+                  {purposeStatement}
                 </p>
               </div>
             )}
 
-            {/* Navigation buttons */}
             <div className="flex items-center gap-3 pt-2">
               <button
                 onClick={goPrev}
-                disabled={stageIdx === 0 || isStreaming}
+                disabled={stageIdx === 0 || isStreaming || reviewState.isExtracting}
                 className="px-4 py-2 rounded-full text-xs font-sans border transition-all disabled:opacity-30"
                 style={{ borderColor: "rgba(255,255,255,0.2)", color: stage.textColor }}
                 data-testid="prev-stage-btn"
               >
                 ← Back
               </button>
-              <button
-                onClick={goNext}
-                disabled={isStreaming || (stageIdx === 2 && !purposeConfirmed)}
-                className="flex-1 px-4 py-2 rounded-full text-xs font-sans font-medium transition-all disabled:opacity-40 hover:opacity-90"
-                style={{ backgroundColor: "#C8A96A", color: "#0F2A36" }}
-                data-testid="next-stage-btn"
-              >
-                {stageIdx === STAGES.length - 1 ? "Complete Journey →" : `Continue to ${STAGES[Math.min(stageIdx + 1, STAGES.length - 1)].title} →`}
-              </button>
+              {!reviewState.isReviewing && (
+                <button
+                  onClick={stageIdx === 2 || stageIdx === 5 ? goNext : handleContinue}
+                  disabled={isStreaming || (stageIdx === 2 && !purposeConfirmed)}
+                  className="flex-1 px-4 py-2 rounded-full text-xs font-sans font-medium transition-all disabled:opacity-40 hover:opacity-90"
+                  style={{ backgroundColor: "#C8A96A", color: "#0F2A36" }}
+                  data-testid="next-stage-btn"
+                >
+                  {stageIdx === STAGES.length - 1 ? "Complete Journey →" : `Continue to ${STAGES[Math.min(stageIdx + 1, STAGES.length - 1)].title} →`}
+                </button>
+              )}
             </div>
           </div>
 
           {/* Right: Chat + stage-specific UI */}
           <div className="space-y-5">
+            {reviewState.isReviewing ? (
+              <div className="rounded-2xl p-6 md:p-8" style={{ backgroundColor: "rgba(255,255,255,0.05)", border: "1px solid rgba(200,169,106,0.18)" }}>
+                {reviewState.isExtracting ? (
+                  <div className="flex flex-col items-center justify-center py-16">
+                    <span className="w-8 h-8 border-2 border-[#C8A96A] border-t-transparent rounded-full animate-spin mb-5" />
+                    <p className="text-sm font-sans" style={{ color: stage.textColor }}>Gathering what you shared…</p>
+                  </div>
+                ) : reviewState.extractionFailed ? (
+                  <div className="flex flex-col items-center justify-center py-12 text-center">
+                    <p className="text-sm font-sans mb-6" style={{ color: stage.textColor }}>We couldn't gather this right now.</p>
+                    <div className="flex gap-4">
+                      <button onClick={() => runExtraction(reviewState.stageId)} className="px-5 py-2.5 rounded-full text-xs font-sans border border-[#C8A96A] text-[#C8A96A] hover:bg-[#C8A96A]/10 transition-colors">Try Again</button>
+                      <button onClick={() => { setReviewState(prev => ({...prev, isReviewing: false})); goNext(); }} className="px-5 py-2.5 rounded-full text-xs font-sans bg-[#C8A96A] text-[#0F2A36] hover:opacity-90 transition-opacity">Continue Anyway</button>
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    <div className="mb-6">
+                      <h2 className="font-serif text-3xl mb-2" style={{ color: stage.textColor }}>Here's what I heard</h2>
+                      <p className="text-xs font-sans opacity-60" style={{ color: stage.textColor }}>You can change these anytime.</p>
+                    </div>
 
-            {/* Stage 0: prompt selection screen (shown before chat begins) */}
-            {stageIdx === 0 && !promptsConfirmed ? (
+                    <div className="space-y-4 mb-8">
+                      {stage.id === "reveal" && storyCards.map(c => <StoryCardView key={c.id} card={c} onUpdate={updateStoryCard} onDelete={() => deleteStoryCard(c.id)} />)}
+                      {stage.id === "identify" && themes.map(t => <ThemeCardView key={t.id} theme={t} onUpdate={updateTheme} onDelete={() => deleteTheme(t.id)} />)}
+                      {stage.id === "personalize" && season && <SeasonFormView season={season} onUpdate={updateSeasonApi} />}
+                      {stage.id === "live" && actionPlan && <ActionPlanFormView actionPlan={actionPlan} onUpdate={updateActionPlanApi} />}
+                    </div>
+
+                    <button
+                      onClick={() => { setReviewState(prev => ({...prev, isReviewing: false})); goNext(); }}
+                      className="w-full py-3.5 rounded-full text-sm font-sans font-medium transition-all hover:opacity-90"
+                      style={{ backgroundColor: "#C8A96A", color: "#0F2A36" }}
+                    >
+                      This feels right — continue →
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : stageIdx === 0 && !promptsConfirmed ? (
               <div
                 className="rounded-2xl p-6 space-y-5"
                 style={{ backgroundColor: "rgba(255,255,255,0.05)", border: "1px solid rgba(200,169,106,0.18)" }}
@@ -890,7 +954,7 @@ export default function RippleJourney() {
                 stage={stage.id}
                 messages={allMessages[stageIdx]}
                 onMessages={(msgs) => updateStageMessages(stageIdx, msgs)}
-                context={buildContext(stageIdx)}
+                context={{}} // Server builds context
                 stageColor={stage.color}
                 stageTextColor={stage.textColor}
                 cardBg={stage.cardBg}
@@ -902,7 +966,7 @@ export default function RippleJourney() {
             )}
 
             {/* Stage 2 (Pinpoint): Purpose statement picker */}
-            {stageIdx === 2 && purposeOptions.length > 0 && (
+            {!reviewState.isReviewing && stageIdx === 2 && purposeOptions.length > 0 && (
               <div
                 className="rounded-2xl p-5 space-y-4"
                 style={{ backgroundColor: "rgba(255,255,255,0.05)", border: "1px solid rgba(200,169,106,0.2)" }}
@@ -962,7 +1026,7 @@ export default function RippleJourney() {
                     Make it yours
                   </p>
                   <textarea
-                    className="w-full rounded-xl px-4 py-3 text-sm font-sans leading-relaxed resize-none outline-none"
+                    className="w-full rounded-xl px-4 py-3 text-sm font-sans leading-relaxed resize-none outline-none focus:border-[#C8A96A] transition-colors"
                     rows={3}
                     style={{
                       backgroundColor: "rgba(255,255,255,0.06)",
@@ -996,7 +1060,7 @@ export default function RippleJourney() {
                     data-testid="confirmed-purpose"
                   >
                     <p className="font-script text-base leading-relaxed" style={{ color: stage.textColor }}>
-                      {context.purposeStatement}
+                      {purposeStatement}
                     </p>
                   </div>
                 )}
@@ -1010,14 +1074,24 @@ export default function RippleJourney() {
 }
 
 function JourneySummary({
-  context,
-  allMessages,
+  storyCards,
+  themes,
+  season,
+  actionPlan,
+  purposeStatement,
   onReset,
+  onOpenDiscoveries,
 }: {
-  context: JourneyContext;
-  allMessages: AllMessages;
+  storyCards: StoryCard[];
+  themes: PurposeTheme[];
+  season: Season | null;
+  actionPlan: ActionPlan | null;
+  purposeStatement: string | null;
   onReset: () => void;
+  onOpenDiscoveries: () => void;
 }) {
+  const [storiesOpen, setStoriesOpen] = useState(false);
+
   return (
     <div
       className="min-h-screen flex flex-col"
@@ -1025,18 +1099,29 @@ function JourneySummary({
       data-testid="journey-summary"
     >
       <nav
-        className="w-full px-5 py-3 flex items-center justify-between"
-        style={{ backgroundColor: "rgba(0,0,0,0.2)" }}
+        className="w-full px-5 md:px-10 py-3 flex items-center justify-between sticky top-0 z-50"
+        style={{ backgroundColor: "rgba(0,0,0,0.25)", backdropFilter: "blur(8px)" }}
       >
         <Link href="/">
-          <img src={rippleLabsLogo} alt="Ripple Labs" className="h-7 w-auto object-contain rounded-md" />
+          <img src={rippleLabsLogo} alt="Ripple Labs" className="h-7 w-auto object-contain rounded-md cursor-pointer" />
         </Link>
-        <Link href="/purpose-lab" className="text-[#D7ECEB] text-xs font-sans opacity-60 hover:opacity-100">
-          ← Purpose Lab
-        </Link>
+        <div className="flex items-center gap-4">
+          <button
+            onClick={onOpenDiscoveries}
+            className="text-xs font-sans opacity-60 hover:opacity-100 transition-opacity flex items-center gap-1.5 text-[#D7ECEB]"
+          >
+            <span className="hidden sm:inline">My Discoveries</span>
+            <span className="sm:hidden">Discoveries</span>
+          </button>
+          <span className="hidden sm:inline text-xs font-sans opacity-30 text-[#D7ECEB]">|</span>
+          <Link href="/purpose-lab" className="hidden sm:inline text-[#D7ECEB] text-xs font-sans opacity-60 hover:opacity-100">
+            ← Purpose Lab
+          </Link>
+          <AccountMenu color="#D7ECEB" />
+        </div>
       </nav>
 
-      <div className="flex-1 px-6 md:px-12 py-12 max-w-3xl mx-auto w-full">
+      <div className="flex-1 px-6 md:px-12 py-12 max-w-3xl mx-auto w-full text-[#D7ECEB]">
         <div className="text-center mb-12">
           <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-5 text-2xl"
             style={{ backgroundColor: "#C8A96A", color: "#0F2A36" }}>
@@ -1054,60 +1139,134 @@ function JourneySummary({
           <div className="w-24 h-px mx-auto" style={{ backgroundColor: "#C8A96A" }} />
         </div>
 
-        <div className="space-y-5">
-          {context.purposeStatement && (
+        <div className="space-y-10">
+          {purposeStatement && (
             <div
-              className="rounded-2xl px-7 py-7"
+              className="rounded-2xl px-7 py-10 text-center"
               style={{ backgroundColor: "rgba(200,169,106,0.1)", border: "1px solid rgba(200,169,106,0.25)" }}
               data-testid="summary-purpose"
             >
-              <p className="text-[10px] font-sans uppercase tracking-widest mb-3" style={{ color: "#C8A96A" }}>
+              <p className="text-[10px] font-sans uppercase tracking-widest mb-6 opacity-80" style={{ color: "#C8A96A" }}>
                 Your Purpose Statement
               </p>
-              <p className="font-script text-xl md:text-2xl text-white leading-relaxed">
-                {context.purposeStatement}
+              <p className="font-script text-3xl md:text-4xl text-white leading-relaxed max-w-full overflow-hidden break-words mx-auto">
+                {purposeStatement}
               </p>
             </div>
           )}
 
-          {[0, 1, 2, 3, 4, 5].map((idx) => {
-            const s = STAGES[idx];
-            const msgs = allMessages[idx];
-            const lastAssistant = [...msgs].reverse().find((m) => m.role === "assistant");
-            if (!lastAssistant) return null;
-            return (
-              <div
-                key={idx}
-                className="rounded-2xl px-6 py-5"
-                style={{ backgroundColor: "rgba(215,236,235,0.05)", border: "1px solid rgba(215,236,235,0.08)" }}
-                data-testid={`summary-stage-${idx}`}
-              >
-                <p className="text-[10px] font-sans uppercase tracking-widest mb-2" style={{ color: "#C8A96A" }}>
-                  Stage {s.number} · {s.title} — {s.subtitle}
-                </p>
-                <p className="text-sm font-sans text-[#D7ECEB] leading-relaxed opacity-75 line-clamp-4">
-                  {lastAssistant.content}
-                </p>
+          {themes.length > 0 && (
+            <div>
+              <p className="text-[10px] font-sans uppercase tracking-widest mb-4 text-center opacity-60">Your Purpose Themes</p>
+              <div className="grid gap-4">
+                {themes.map(t => (
+                  <div key={t.id} className="bg-white/5 border border-white/10 rounded-xl p-5 md:p-6">
+                    <h3 className="font-serif text-xl text-[#5FA8A5] mb-2">{t.name}</h3>
+                    <p className="text-sm font-sans opacity-80 mb-5">{t.description}</p>
+                    {t.evidence && t.evidence.length > 0 && (
+                      <div className="border-t border-white/10 pt-4">
+                        <p className="text-[10px] uppercase tracking-widest opacity-50 mb-3">Where this showed up</p>
+                        <ul className="space-y-3">
+                          {t.evidence.map((ev, i) => (
+                            <li key={i} className="text-sm flex gap-3 leading-relaxed">
+                              <span className="text-[#C8A96A] mt-0.5">✦</span>
+                              <span><strong className="font-medium">{ev.storyTitle}:</strong> <span className="opacity-75">{ev.detail}</span></span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                ))}
               </div>
-            );
-          })}
+            </div>
+          )}
 
-          <div className="flex flex-col sm:flex-row gap-4 pt-4">
-            <Link
-              href="/purpose-lab"
-              className="flex-1 py-3 px-6 rounded-full text-sm font-sans font-medium text-center transition-all hover:opacity-90"
-              style={{ backgroundColor: "#2F7F7B", color: "#ffffff" }}
-            >
-              Return to Purpose Lab
-            </Link>
-            <button
-              onClick={onReset}
-              className="flex-1 py-3 px-6 rounded-full text-sm font-sans font-medium border transition-all hover:opacity-80"
-              style={{ borderColor: "rgba(200,169,106,0.3)", color: "#C8A96A" }}
-              data-testid="start-over-journey"
-            >
-              Begin a New Journey
-            </button>
+          {storyCards.length > 0 && (
+            <div>
+              <button
+                onClick={() => setStoriesOpen(!storiesOpen)}
+                className="w-full flex items-center justify-between px-6 py-4 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-colors"
+              >
+                <span className="text-[10px] font-sans uppercase tracking-widest opacity-80">Your Stories</span>
+                <span className="text-xs opacity-50 uppercase tracking-wider">{storiesOpen ? "Hide" : "Show"}</span>
+              </button>
+              {storiesOpen && (
+                <div className="mt-4 grid gap-4">
+                  {storyCards.map(c => (
+                    <div key={c.id} className="bg-white/5 border border-white/10 rounded-xl p-5 md:p-6">
+                      <h3 className="font-serif text-lg text-[#C8A96A] mb-2">{c.title}</h3>
+                      <p className="text-sm font-sans opacity-80 leading-relaxed">{c.summary}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {season && (
+            <div>
+              <p className="text-[10px] font-sans uppercase tracking-widest mb-4 text-center opacity-60">Your Current Season</p>
+              <div className="bg-white/5 border border-white/10 rounded-xl p-6 md:p-8">
+                <p className="text-sm font-sans leading-relaxed opacity-90 mb-6">{season.summary}</p>
+                <div className="border-t border-white/10 pt-5">
+                  <p className="text-[10px] uppercase tracking-widest opacity-50 mb-3 text-[#5FA8A5]">Ways to live your purpose now</p>
+                  <ul className="space-y-3">
+                    {season.expressions?.map((exp, i) => (
+                      <li key={i} className="text-sm flex gap-3 leading-relaxed">
+                        <span className="text-[#C8A96A]">•</span> <span className="opacity-80">{exp}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {actionPlan && (
+            <div>
+              <p className="text-[10px] font-sans uppercase tracking-widest mb-4 text-center opacity-60">Your Next Steps</p>
+              <div className="bg-white/5 border border-[#C8A96A]/30 rounded-xl p-6 md:p-8">
+                <div className="grid sm:grid-cols-3 gap-8 mb-8">
+                  <div>
+                    <p className="text-[10px] uppercase tracking-widest opacity-50 mb-3">Start</p>
+                    <ul className="space-y-2">{actionPlan.start?.map((s,i)=><li key={i} className="text-sm opacity-80 leading-snug">- {s}</li>)}</ul>
+                  </div>
+                  <div>
+                    <p className="text-[10px] uppercase tracking-widest opacity-50 mb-3">Stop</p>
+                    <ul className="space-y-2">{actionPlan.stop?.map((s,i)=><li key={i} className="text-sm opacity-80 leading-snug">- {s}</li>)}</ul>
+                  </div>
+                  <div>
+                    <p className="text-[10px] uppercase tracking-widest opacity-50 mb-3">Continue</p>
+                    <ul className="space-y-2">{actionPlan.continue?.map((s,i)=><li key={i} className="text-sm opacity-80 leading-snug">- {s}</li>)}</ul>
+                  </div>
+                </div>
+                {actionPlan.oneStepThisWeek && (
+                  <div className="bg-[#C8A96A]/10 border border-[#C8A96A]/30 rounded-lg p-5 text-center">
+                    <p className="text-[10px] uppercase tracking-widest text-[#C8A96A] mb-2">One Step This Week</p>
+                    <p className="text-base font-medium">{actionPlan.oneStepThisWeek}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          <div className="pt-16 pb-8 text-center border-t border-white/10 mt-12">
+            <p className="font-script text-3xl md:text-4xl text-[#C8A96A] mb-12">What's within you creates a ripple.</p>
+            <div className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
+              <Link
+                href="/purpose-lab"
+                className="flex-1 py-3.5 px-6 rounded-full text-sm font-sans font-medium text-center transition-all hover:opacity-90 bg-[#2F7F7B] text-white"
+              >
+                Return to Purpose Lab
+              </Link>
+              <button
+                onClick={onReset}
+                className="flex-1 py-3.5 px-6 rounded-full text-sm font-sans font-medium border transition-all hover:bg-white/5 border-[#C8A96A]/40 text-[#C8A96A]"
+              >
+                Begin a New Journey
+              </button>
+            </div>
           </div>
         </div>
       </div>

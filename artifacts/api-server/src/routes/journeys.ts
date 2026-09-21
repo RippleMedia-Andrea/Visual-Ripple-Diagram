@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { and, asc, eq } from "drizzle-orm";
-import { db, journeyMessages, journeys } from "@workspace/db";
+import { and, asc, desc, eq } from "drizzle-orm";
+import { db, journeyMessages, journeys, purposeThemes, storyCards } from "@workspace/db";
 import { requireAuth } from "../middlewares/require-auth";
 
 const router = Router();
@@ -35,13 +35,28 @@ router.get("/current", async (_req, res, next) => {
       .select()
       .from(journeys)
       .where(and(eq(journeys.userId, userId), eq(journeys.status, "in_progress")))
+      .orderBy(desc(journeys.updatedAt))
       .limit(1);
+
+    if (!journey) {
+      [journey] = await db
+        .select()
+        .from(journeys)
+        .where(eq(journeys.userId, userId))
+        .orderBy(desc(journeys.updatedAt))
+        .limit(1);
+    }
 
     if (!journey) {
       [journey] = await db.insert(journeys).values({ userId }).returning();
     }
 
-    res.json(await getJourneyPayload(journey.id));
+    const payload = await getJourneyPayload(journey.id);
+    const [cards, themes] = await Promise.all([
+      db.select().from(storyCards).where(eq(storyCards.journeyId, journey.id)).orderBy(asc(storyCards.position)),
+      db.select().from(purposeThemes).where(eq(purposeThemes.journeyId, journey.id)).orderBy(asc(purposeThemes.position)),
+    ]);
+    res.json({ ...payload, storyCards: cards, themes });
   } catch (error) {
     next(error);
   }
@@ -65,6 +80,8 @@ router.patch("/:id", async (req, res, next) => {
     if (typeof req.body.purposeStatement === "string" || req.body.purposeStatement === null) {
       update.purposeStatement = req.body.purposeStatement;
     }
+    if (req.body.season === null || (req.body.season && typeof req.body.season === "object")) update.season = req.body.season;
+    if (req.body.actionPlan === null || (req.body.actionPlan && typeof req.body.actionPlan === "object")) update.actionPlan = req.body.actionPlan;
     if (req.body.status === "in_progress" || req.body.status === "complete") {
       update.status = req.body.status;
       update.completedAt = req.body.status === "complete" ? new Date() : null;
@@ -86,6 +103,7 @@ router.patch("/:id", async (req, res, next) => {
     next(error);
   }
 });
+
 
 router.post("/:id/restart", async (req, res, next) => {
   try {

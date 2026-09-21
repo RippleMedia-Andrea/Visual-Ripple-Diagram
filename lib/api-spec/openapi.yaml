@@ -64,6 +64,94 @@ paths:
           description: Sign in required
         "404":
           description: Journey not found
+  /journeys/{id}/discoveries/{stage}:
+    post:
+      operationId: extractJourneyDiscoveries
+      tags: [journeys]
+      summary: Extract and save discoveries from a journey stage
+      security: [{ cookieAuth: [] }]
+      parameters:
+        - $ref: "#/components/parameters/JourneyId"
+        - $ref: "#/components/parameters/DiscoveryStage"
+      responses:
+        "200":
+          description: Structured discoveries for the requested stage
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExtractionResponse"
+        "400": { description: Invalid discovery stage }
+        "401": { description: Sign in required }
+        "404": { description: Journey not found }
+        "429": { description: Extraction limit reached }
+  /story-cards/{id}:
+    patch:
+      operationId: updateStoryCard
+      tags: [journeys]
+      summary: Update an owned story card
+      security: [{ cookieAuth: [] }]
+      parameters: [{ $ref: "#/components/parameters/StoryCardId" }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/StoryCardUpdate" }
+      responses:
+        "200": { description: Updated story card, content: { application/json: { schema: { $ref: "#/components/schemas/StoryCard" } } } }
+        "401": { description: Sign in required }
+        "404": { description: Story card not found }
+    delete:
+      operationId: deleteStoryCard
+      tags: [journeys]
+      summary: Delete an owned story card
+      security: [{ cookieAuth: [] }]
+      parameters: [{ $ref: "#/components/parameters/StoryCardId" }]
+      responses:
+        "204": { description: Story card deleted }
+        "401": { description: Sign in required }
+        "404": { description: Story card not found }
+  /journeys/{id}/themes:
+    post:
+      operationId: createPurposeTheme
+      tags: [journeys]
+      summary: Add a purpose theme to an owned journey
+      security: [{ cookieAuth: [] }]
+      parameters: [{ $ref: "#/components/parameters/JourneyId" }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/PurposeThemeCreate" }
+      responses:
+        "201": { description: Created theme, content: { application/json: { schema: { $ref: "#/components/schemas/PurposeTheme" } } } }
+        "401": { description: Sign in required }
+        "404": { description: Journey not found }
+  /themes/{id}:
+    patch:
+      operationId: updatePurposeTheme
+      tags: [journeys]
+      summary: Update an owned purpose theme
+      security: [{ cookieAuth: [] }]
+      parameters: [{ $ref: "#/components/parameters/ThemeId" }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/PurposeThemeUpdate" }
+      responses:
+        "200": { description: Updated theme, content: { application/json: { schema: { $ref: "#/components/schemas/PurposeTheme" } } } }
+        "401": { description: Sign in required }
+        "404": { description: Theme not found }
+    delete:
+      operationId: deletePurposeTheme
+      tags: [journeys]
+      summary: Delete an owned purpose theme
+      security: [{ cookieAuth: [] }]
+      parameters: [{ $ref: "#/components/parameters/ThemeId" }]
+      responses:
+        "204": { description: Theme deleted }
+        "401": { description: Sign in required }
+        "404": { description: Theme not found }
   /journeys/{id}/restart:
     post:
       operationId: restartJourney
@@ -90,6 +178,23 @@ components:
       required: true
       schema:
         type: integer
+    StoryCardId:
+      name: id
+      in: path
+      required: true
+      schema: { type: integer }
+    ThemeId:
+      name: id
+      in: path
+      required: true
+      schema: { type: integer }
+    DiscoveryStage:
+      name: stage
+      in: path
+      required: true
+      schema:
+        type: string
+        enum: [reveal, identify, personalize, live]
   schemas:
     HealthStatus:
       type: object
@@ -159,6 +264,10 @@ components:
             type: string
         purposeStatement:
           type: [string, "null"]
+        season:
+          $ref: "#/components/schemas/Season"
+        actionPlan:
+          $ref: "#/components/schemas/ActionPlan"
         createdAt:
           type: string
           format: date-time
@@ -184,7 +293,13 @@ components:
           properties:
             messages:
               $ref: "#/components/schemas/StageMessages"
-          required: [messages]
+            storyCards:
+              type: array
+              items: { $ref: "#/components/schemas/StoryCard" }
+            themes:
+              type: array
+              items: { $ref: "#/components/schemas/PurposeTheme" }
+          required: [messages, storyCards, themes]
     JourneyUpdate:
       type: object
       properties:
@@ -205,4 +320,92 @@ components:
         status:
           type: string
           enum: [in_progress, complete]
+        season: { $ref: "#/components/schemas/Season" }
+        actionPlan: { $ref: "#/components/schemas/ActionPlan" }
+    Evidence:
+      type: object
+      required: [storyTitle, detail]
+      properties:
+        storyTitle: { type: string }
+        detail: { type: string }
+    StoryCard:
+      type: object
+      properties:
+        id: { type: integer }
+        journeyId: { type: integer }
+        position: { type: integer }
+        title: { type: string }
+        summary: { type: string }
+        promptId: { type: [string, "null"] }
+        isDifficultExperience: { type: boolean }
+        actions: { type: array, items: { type: string } }
+        feelings: { type: array, items: { type: string } }
+        people: { type: array, items: { type: string } }
+        impact: { type: array, items: { type: string } }
+        userEdited: { type: boolean }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    PurposeTheme:
+      type: object
+      properties:
+        id: { type: integer }
+        journeyId: { type: integer }
+        position: { type: integer }
+        name: { type: string }
+        description: { type: string }
+        evidence: { type: array, items: { $ref: "#/components/schemas/Evidence" } }
+        userEdited: { type: boolean }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    Season:
+      type: object
+      properties:
+        summary: { type: string }
+        roles: { type: array, items: { type: string } }
+        capacity: { type: string }
+        constraints: { type: array, items: { type: string } }
+        opportunities: { type: array, items: { type: string } }
+        expressions: { type: array, items: { type: string } }
+    ActionPlan:
+      type: object
+      properties:
+        start: { type: array, items: { type: string } }
+        stop: { type: array, items: { type: string } }
+        continue: { type: array, items: { type: string } }
+        oneStepThisWeek: { type: string }
+    StoryCardUpdate:
+      type: object
+      properties:
+        title: { type: string }
+        summary: { type: string }
+        promptId: { type: [string, "null"] }
+        isDifficultExperience: { type: boolean }
+        actions: { type: array, items: { type: string } }
+        feelings: { type: array, items: { type: string } }
+        people: { type: array, items: { type: string } }
+        impact: { type: array, items: { type: string } }
+    PurposeThemeCreate:
+      type: object
+      required: [name, description]
+      properties:
+        position: { type: integer }
+        name: { type: string }
+        description: { type: string }
+        evidence: { type: array, items: { $ref: "#/components/schemas/Evidence" } }
+    PurposeThemeUpdate:
+      $ref: "#/components/schemas/PurposeThemeCreate"
+    ExtractionResponse:
+      oneOf:
+        - type: object
+          properties:
+            stories: { type: array, items: { $ref: "#/components/schemas/StoryCard" } }
+        - type: object
+          properties:
+            themes: { type: array, items: { $ref: "#/components/schemas/PurposeTheme" } }
+        - type: object
+          properties:
+            season: { $ref: "#/components/schemas/Season" }
+        - type: object
+          properties:
+            actionPlan: { $ref: "#/components/schemas/ActionPlan" }
 

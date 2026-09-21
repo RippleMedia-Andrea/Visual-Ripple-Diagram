@@ -33,6 +33,24 @@ export const GetCurrentJourneyResponse = zod
     selectedPrompts: zod.array(zod.string()),
     purposeOptions: zod.array(zod.string()),
     purposeStatement: zod.string().nullish(),
+    season: zod
+      .object({
+        summary: zod.string().optional(),
+        roles: zod.array(zod.string()).optional(),
+        capacity: zod.string().optional(),
+        constraints: zod.array(zod.string()).optional(),
+        opportunities: zod.array(zod.string()).optional(),
+        expressions: zod.array(zod.string()).optional(),
+      })
+      .optional(),
+    actionPlan: zod
+      .object({
+        start: zod.array(zod.string()).optional(),
+        stop: zod.array(zod.string()).optional(),
+        continue: zod.array(zod.string()).optional(),
+        oneStepThisWeek: zod.string().optional(),
+      })
+      .optional(),
     createdAt: zod.coerce.date(),
     updatedAt: zod.coerce.date(),
     completedAt: zod.coerce.date().nullish(),
@@ -77,6 +95,44 @@ export const GetCurrentJourneyResponse = zod
           }),
         ),
       }),
+      storyCards: zod.array(
+        zod.object({
+          id: zod.number().optional(),
+          journeyId: zod.number().optional(),
+          position: zod.number().optional(),
+          title: zod.string().optional(),
+          summary: zod.string().optional(),
+          promptId: zod.string().nullish(),
+          isDifficultExperience: zod.boolean().optional(),
+          actions: zod.array(zod.string()).optional(),
+          feelings: zod.array(zod.string()).optional(),
+          people: zod.array(zod.string()).optional(),
+          impact: zod.array(zod.string()).optional(),
+          userEdited: zod.boolean().optional(),
+          createdAt: zod.coerce.date().optional(),
+          updatedAt: zod.coerce.date().optional(),
+        }),
+      ),
+      themes: zod.array(
+        zod.object({
+          id: zod.number().optional(),
+          journeyId: zod.number().optional(),
+          position: zod.number().optional(),
+          name: zod.string().optional(),
+          description: zod.string().optional(),
+          evidence: zod
+            .array(
+              zod.object({
+                storyTitle: zod.string(),
+                detail: zod.string(),
+              }),
+            )
+            .optional(),
+          userEdited: zod.boolean().optional(),
+          createdAt: zod.coerce.date().optional(),
+          updatedAt: zod.coerce.date().optional(),
+        }),
+      ),
     }),
   );
 
@@ -100,6 +156,24 @@ export const UpdateJourneyBody = zod.object({
   purposeOptions: zod.array(zod.string()).optional(),
   purposeStatement: zod.string().nullish(),
   status: zod.enum(["in_progress", "complete"]).optional(),
+  season: zod
+    .object({
+      summary: zod.string().optional(),
+      roles: zod.array(zod.string()).optional(),
+      capacity: zod.string().optional(),
+      constraints: zod.array(zod.string()).optional(),
+      opportunities: zod.array(zod.string()).optional(),
+      expressions: zod.array(zod.string()).optional(),
+    })
+    .optional(),
+  actionPlan: zod
+    .object({
+      start: zod.array(zod.string()).optional(),
+      stop: zod.array(zod.string()).optional(),
+      continue: zod.array(zod.string()).optional(),
+      oneStepThisWeek: zod.string().optional(),
+    })
+    .optional(),
 });
 
 export const updateJourneyResponseCurrentStageIdxMin = 0;
@@ -116,9 +190,216 @@ export const UpdateJourneyResponse = zod.object({
   selectedPrompts: zod.array(zod.string()),
   purposeOptions: zod.array(zod.string()),
   purposeStatement: zod.string().nullish(),
+  season: zod
+    .object({
+      summary: zod.string().optional(),
+      roles: zod.array(zod.string()).optional(),
+      capacity: zod.string().optional(),
+      constraints: zod.array(zod.string()).optional(),
+      opportunities: zod.array(zod.string()).optional(),
+      expressions: zod.array(zod.string()).optional(),
+    })
+    .optional(),
+  actionPlan: zod
+    .object({
+      start: zod.array(zod.string()).optional(),
+      stop: zod.array(zod.string()).optional(),
+      continue: zod.array(zod.string()).optional(),
+      oneStepThisWeek: zod.string().optional(),
+    })
+    .optional(),
   createdAt: zod.coerce.date(),
   updatedAt: zod.coerce.date(),
   completedAt: zod.coerce.date().nullish(),
+});
+
+/**
+ * @summary Extract and save discoveries from a journey stage
+ */
+export const ExtractJourneyDiscoveriesParams = zod.object({
+  id: zod.coerce.number(),
+  stage: zod.enum(["reveal", "identify", "personalize", "live"]),
+});
+
+export const ExtractJourneyDiscoveriesResponse = zod.union([
+  zod.object({
+    stories: zod
+      .array(
+        zod.object({
+          id: zod.number().optional(),
+          journeyId: zod.number().optional(),
+          position: zod.number().optional(),
+          title: zod.string().optional(),
+          summary: zod.string().optional(),
+          promptId: zod.string().nullish(),
+          isDifficultExperience: zod.boolean().optional(),
+          actions: zod.array(zod.string()).optional(),
+          feelings: zod.array(zod.string()).optional(),
+          people: zod.array(zod.string()).optional(),
+          impact: zod.array(zod.string()).optional(),
+          userEdited: zod.boolean().optional(),
+          createdAt: zod.coerce.date().optional(),
+          updatedAt: zod.coerce.date().optional(),
+        }),
+      )
+      .optional(),
+  }),
+  zod.object({
+    themes: zod
+      .array(
+        zod.object({
+          id: zod.number().optional(),
+          journeyId: zod.number().optional(),
+          position: zod.number().optional(),
+          name: zod.string().optional(),
+          description: zod.string().optional(),
+          evidence: zod
+            .array(
+              zod.object({
+                storyTitle: zod.string(),
+                detail: zod.string(),
+              }),
+            )
+            .optional(),
+          userEdited: zod.boolean().optional(),
+          createdAt: zod.coerce.date().optional(),
+          updatedAt: zod.coerce.date().optional(),
+        }),
+      )
+      .optional(),
+  }),
+  zod.object({
+    season: zod
+      .object({
+        summary: zod.string().optional(),
+        roles: zod.array(zod.string()).optional(),
+        capacity: zod.string().optional(),
+        constraints: zod.array(zod.string()).optional(),
+        opportunities: zod.array(zod.string()).optional(),
+        expressions: zod.array(zod.string()).optional(),
+      })
+      .optional(),
+  }),
+  zod.object({
+    actionPlan: zod
+      .object({
+        start: zod.array(zod.string()).optional(),
+        stop: zod.array(zod.string()).optional(),
+        continue: zod.array(zod.string()).optional(),
+        oneStepThisWeek: zod.string().optional(),
+      })
+      .optional(),
+  }),
+]);
+
+/**
+ * @summary Update an owned story card
+ */
+export const UpdateStoryCardParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateStoryCardBody = zod.object({
+  title: zod.string().optional(),
+  summary: zod.string().optional(),
+  promptId: zod.string().nullish(),
+  isDifficultExperience: zod.boolean().optional(),
+  actions: zod.array(zod.string()).optional(),
+  feelings: zod.array(zod.string()).optional(),
+  people: zod.array(zod.string()).optional(),
+  impact: zod.array(zod.string()).optional(),
+});
+
+export const UpdateStoryCardResponse = zod.object({
+  id: zod.number().optional(),
+  journeyId: zod.number().optional(),
+  position: zod.number().optional(),
+  title: zod.string().optional(),
+  summary: zod.string().optional(),
+  promptId: zod.string().nullish(),
+  isDifficultExperience: zod.boolean().optional(),
+  actions: zod.array(zod.string()).optional(),
+  feelings: zod.array(zod.string()).optional(),
+  people: zod.array(zod.string()).optional(),
+  impact: zod.array(zod.string()).optional(),
+  userEdited: zod.boolean().optional(),
+  createdAt: zod.coerce.date().optional(),
+  updatedAt: zod.coerce.date().optional(),
+});
+
+/**
+ * @summary Delete an owned story card
+ */
+export const DeleteStoryCardParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+/**
+ * @summary Add a purpose theme to an owned journey
+ */
+export const CreatePurposeThemeParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const CreatePurposeThemeBody = zod.object({
+  position: zod.number().optional(),
+  name: zod.string(),
+  description: zod.string(),
+  evidence: zod
+    .array(
+      zod.object({
+        storyTitle: zod.string(),
+        detail: zod.string(),
+      }),
+    )
+    .optional(),
+});
+
+/**
+ * @summary Update an owned purpose theme
+ */
+export const UpdatePurposeThemeParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdatePurposeThemeBody = zod.object({
+  position: zod.number().optional(),
+  name: zod.string(),
+  description: zod.string(),
+  evidence: zod
+    .array(
+      zod.object({
+        storyTitle: zod.string(),
+        detail: zod.string(),
+      }),
+    )
+    .optional(),
+});
+
+export const UpdatePurposeThemeResponse = zod.object({
+  id: zod.number().optional(),
+  journeyId: zod.number().optional(),
+  position: zod.number().optional(),
+  name: zod.string().optional(),
+  description: zod.string().optional(),
+  evidence: zod
+    .array(
+      zod.object({
+        storyTitle: zod.string(),
+        detail: zod.string(),
+      }),
+    )
+    .optional(),
+  userEdited: zod.boolean().optional(),
+  createdAt: zod.coerce.date().optional(),
+  updatedAt: zod.coerce.date().optional(),
+});
+
+/**
+ * @summary Delete an owned purpose theme
+ */
+export const DeletePurposeThemeParams = zod.object({
+  id: zod.coerce.number(),
 });
 
 /**

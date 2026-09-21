@@ -1,0 +1,29 @@
+kind = "video"
+previewPath = "/ripple-labs-video/"
+title = "Ripple Labs Launch Film"
+description = "A vertical animated explainer showing how Ripple Labs guides people through the six-stage Purpose Lab journey with saved progress, protected AI reflection, and a personal purpose statement."
+version = "1.0.0"
+id = "artifacts/ripple-labs-video"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/ripple-labs-video/" ]
+localPort = 19720
+
+[services.development]
+run = "pnpm --filter @workspace/ripple-labs-video run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/ripple-labs-video", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/ripple-labs-video/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "19720"
+BASE_PATH = "/ripple-labs-video/"
+videoAspectRatio = "9:16"
