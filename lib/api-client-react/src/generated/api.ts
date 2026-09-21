@@ -17,13 +17,17 @@ import type {
 } from "@tanstack/react-query";
 
 import type {
+  Account,
   ExtractionResponse,
   HealthStatus,
   Journey,
   JourneyRecord,
   JourneyUpdate,
+  PasswordResetAvailability,
   PurposeTheme,
   PurposeThemeCreate,
+  RecordAiConsent200,
+  RecordWelcomeSeen200,
   StoryCard,
   StoryCardUpdate,
 } from "./api.schemas";
@@ -36,6 +40,321 @@ type AwaitedInput<T> = PromiseLike<T> | T;
 type Awaited<O> = O extends AwaitedInput<infer T> ? T : never;
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+
+/**
+ * @summary Check whether password reset email delivery is configured
+ */
+export const getGetPasswordResetAvailabilityUrl = () => {
+  return `/api/password-reset-availability`;
+};
+
+export const getPasswordResetAvailability = async (
+  options?: RequestInit,
+): Promise<PasswordResetAvailability> => {
+  return customFetch<PasswordResetAvailability>(
+    getGetPasswordResetAvailabilityUrl(),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getGetPasswordResetAvailabilityQueryKey = () => {
+  return [`/api/password-reset-availability`] as const;
+};
+
+export const getGetPasswordResetAvailabilityQueryOptions = <
+  TData = Awaited<ReturnType<typeof getPasswordResetAvailability>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getPasswordResetAvailability>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetPasswordResetAvailabilityQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getPasswordResetAvailability>>
+  > = ({ signal }) =>
+    getPasswordResetAvailability({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getPasswordResetAvailability>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetPasswordResetAvailabilityQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getPasswordResetAvailability>>
+>;
+export type GetPasswordResetAvailabilityQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Check whether password reset email delivery is configured
+ */
+
+export function useGetPasswordResetAvailability<
+  TData = Awaited<ReturnType<typeof getPasswordResetAvailability>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getPasswordResetAvailability>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetPasswordResetAvailabilityQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Get the signed-in user's account state
+ */
+export const getGetAccountUrl = () => {
+  return `/api/account`;
+};
+
+export const getAccount = async (options?: RequestInit): Promise<Account> => {
+  return customFetch<Account>(getGetAccountUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetAccountQueryKey = () => {
+  return [`/api/account`] as const;
+};
+
+export const getGetAccountQueryOptions = <
+  TData = Awaited<ReturnType<typeof getAccount>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getAccount>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetAccountQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getAccount>>> = ({
+    signal,
+  }) => getAccount({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getAccount>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetAccountQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getAccount>>
+>;
+export type GetAccountQueryError = ErrorType<void>;
+
+/**
+ * @summary Get the signed-in user's account state
+ */
+
+export function useGetAccount<
+  TData = Awaited<ReturnType<typeof getAccount>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getAccount>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetAccountQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Record AI processing consent for the signed-in user
+ */
+export const getRecordAiConsentUrl = () => {
+  return `/api/account/consent`;
+};
+
+export const recordAiConsent = async (
+  options?: RequestInit,
+): Promise<RecordAiConsent200> => {
+  return customFetch<RecordAiConsent200>(getRecordAiConsentUrl(), {
+    ...options,
+    method: "PATCH",
+  });
+};
+
+export const getRecordAiConsentMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof recordAiConsent>>,
+    TError,
+    void,
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof recordAiConsent>>,
+  TError,
+  void,
+  TContext
+> => {
+  const mutationKey = ["recordAiConsent"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof recordAiConsent>>,
+    void
+  > = () => {
+    return recordAiConsent(requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type RecordAiConsentMutationResult = NonNullable<
+  Awaited<ReturnType<typeof recordAiConsent>>
+>;
+
+export type RecordAiConsentMutationError = ErrorType<void>;
+
+/**
+ * @summary Record AI processing consent for the signed-in user
+ */
+export const useRecordAiConsent = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof recordAiConsent>>,
+    TError,
+    void,
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof recordAiConsent>>,
+  TError,
+  void,
+  TContext
+> => {
+  return useMutation(getRecordAiConsentMutationOptions(options));
+};
+
+/**
+ * @summary Record that the signed-in user saw the welcome screen
+ */
+export const getRecordWelcomeSeenUrl = () => {
+  return `/api/account/welcome`;
+};
+
+export const recordWelcomeSeen = async (
+  options?: RequestInit,
+): Promise<RecordWelcomeSeen200> => {
+  return customFetch<RecordWelcomeSeen200>(getRecordWelcomeSeenUrl(), {
+    ...options,
+    method: "PATCH",
+  });
+};
+
+export const getRecordWelcomeSeenMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof recordWelcomeSeen>>,
+    TError,
+    void,
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof recordWelcomeSeen>>,
+  TError,
+  void,
+  TContext
+> => {
+  const mutationKey = ["recordWelcomeSeen"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof recordWelcomeSeen>>,
+    void
+  > = () => {
+    return recordWelcomeSeen(requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type RecordWelcomeSeenMutationResult = NonNullable<
+  Awaited<ReturnType<typeof recordWelcomeSeen>>
+>;
+
+export type RecordWelcomeSeenMutationError = ErrorType<void>;
+
+/**
+ * @summary Record that the signed-in user saw the welcome screen
+ */
+export const useRecordWelcomeSeen = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof recordWelcomeSeen>>,
+    TError,
+    void,
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof recordWelcomeSeen>>,
+  TError,
+  void,
+  TContext
+> => {
+  return useMutation(getRecordWelcomeSeenMutationOptions(options));
+};
 
 /**
  * Returns server health status

@@ -13,6 +13,7 @@ import {
   View,
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
+import * as WebBrowser from 'expo-web-browser';
 import * as Haptics from 'expo-haptics';
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -26,6 +27,9 @@ import {
   useDeleteStoryCard,
   useUpdatePurposeTheme,
   useDeletePurposeTheme,
+  useGetAccount,
+  useRecordAiConsent,
+  useRecordWelcomeSeen,
   type ChatMessage as ApiChatMessage,
 } from '@workspace/api-client-react';
 import { useQueryClient } from '@tanstack/react-query';
@@ -33,6 +37,7 @@ import { STAGES, STORY_PROMPTS } from '@/constants/journey';
 import { streamJourneyChat, type ChatMessage } from '@/lib/mobile-api';
 import { useAuth } from '@/providers/AuthProvider';
 import { useColors } from '@/hooks/useColors';
+import { PUBLIC_APP_ORIGIN } from '@/lib/mobile-api';
 import { MyDiscoveries } from './MyDiscoveries';
 import { JourneySummary } from './JourneySummary';
 import { StoryCardView, ThemeCardView, SeasonFormView, ActionPlanFormView } from './Discoveries';
@@ -69,6 +74,9 @@ export function JourneyScreen() {
   const queryClient = useQueryClient();
   const { signOut, deleteAccount } = useAuth();
   const journeyQuery = useGetCurrentJourney();
+  const accountQuery = useGetAccount();
+  const recordConsent = useRecordAiConsent();
+  const recordWelcome = useRecordWelcomeSeen();
   const updateJourney = useUpdateJourney();
   const restartJourney = useRestartJourney();
   const extractDiscoveries = useExtractJourneyDiscoveries();
@@ -91,6 +99,7 @@ export function JourneyScreen() {
   const [deletePassword, setDeletePassword] = useState('');
   const [deleteError, setDeleteError] = useState('');
   const [streamError, setStreamError] = useState('');
+  const [consentChecked, setConsentChecked] = useState(false);
   const inputRef = useRef<TextInput>(null);
 
   const journey = journeyQuery.data;
@@ -359,12 +368,67 @@ export function JourneyScreen() {
     setReviewStageId(null);
   }
 
-  if (journeyQuery.isLoading) {
+  async function acceptConsent() {
+    await recordConsent.mutateAsync();
+    await accountQuery.refetch();
+  }
+
+  async function beginWelcome() {
+    await recordWelcome.mutateAsync();
+    await accountQuery.refetch();
+  }
+
+  function openPublicPage(path: string) {
+    if (PUBLIC_APP_ORIGIN) void WebBrowser.openBrowserAsync(`${PUBLIC_APP_ORIGIN}${path}`);
+  }
+
+  if (accountQuery.isLoading || journeyQuery.isLoading) {
     return (
       <View style={[styles.center, { backgroundColor: colors.background }]}>
         <ActivityIndicator size="large" color={colors.primary} />
         <Text style={[styles.loadingText, { color: colors.mutedForeground }]}>Opening your journey…</Text>
       </View>
+    );
+  }
+  if (accountQuery.isError || !accountQuery.data) {
+    return (
+      <View style={[styles.center, { backgroundColor: colors.background }]}>
+        <Feather name="shield" size={34} color={colors.primary} />
+        <Text style={[styles.errorTitle, { color: colors.foreground }]}>Your account couldn’t be verified</Text>
+        <Pressable onPress={() => accountQuery.refetch()} style={[styles.retry, { backgroundColor: colors.primary }]}>
+          <Text style={[styles.buttonLabel, { color: colors.primaryForeground }]}>Try again</Text>
+        </Pressable>
+      </View>
+    );
+  }
+  if (!accountQuery.data.aiConsentAt) {
+    return (
+      <JourneyGate
+        title="Before you begin"
+        body="I understand my answers are processed by a third-party AI service (Anthropic's Claude) to guide my Purpose Lab journey, as described in the Privacy Policy."
+        actionLabel="I understand — continue"
+        checked={consentChecked}
+        onToggle={() => setConsentChecked((current) => !current)}
+        onAction={acceptConsent}
+        isPending={recordConsent.isPending}
+        testID="journey-consent"
+        colors={colors}
+        onLink={() => openPublicPage('/privacy')}
+      />
+    );
+  }
+  if (!accountQuery.data.welcomeSeenAt) {
+    return (
+      <JourneyGate
+        title="Welcome to the Purpose Lab"
+        body="Over six short stages, you'll share a few stories from your life, notice the patterns in them, and put words to your purpose.\n\nGo at your own pace. Your progress saves automatically, so you can pause anytime and pick up on any device.\n\nYour journey is private to you. Take what you discover into prayer and share it with people you trust."
+        note="Most people finish in 45 to 90 minutes, across one or more sittings."
+        actionLabel="Begin"
+        onAction={beginWelcome}
+        isPending={recordWelcome.isPending}
+        testID="welcome-screen"
+        colors={colors}
+      />
     );
   }
   if (journeyQuery.isError || !journey) {
@@ -726,6 +790,18 @@ export function JourneyScreen() {
           <Text style={[styles.settingsCopy, { color: colors.mutedForeground }]}>
             Your progress is shared securely across Purpose Lab on web, iPhone, and Android.
           </Text>
+          <View style={styles.settingsLinks}>
+            {([
+              ['Privacy Policy', '/privacy', 'privacy-settings-link'],
+              ['Terms of Use', '/terms', 'terms-settings-link'],
+              ['Need help?', '/support', 'support-settings-link'],
+            ] as const).map(([label, path, testID]) => (
+              <Pressable key={path} testID={testID} onPress={() => openPublicPage(path)} style={[styles.settingsLink, { borderBottomColor: colors.border }]}>
+                <Text style={[styles.actionText, { color: colors.primary }]}>{label}</Text>
+                <Feather name="external-link" size={16} color={colors.primary} />
+              </Pressable>
+            ))}
+          </View>
           <Pressable testID="restart-journey-settings" onPress={restart} style={[styles.settingsAction, { backgroundColor: colors.card, borderColor: colors.border }]}>
             <Feather name="refresh-ccw" size={20} color={colors.primary} />
             <Text style={[styles.actionText, { color: colors.foreground }]}>Begin a new journey</Text>
@@ -783,10 +859,79 @@ function TypingIndicator({ color }: { color: string }) {
   );
 }
 
+function JourneyGate({
+  title,
+  body,
+  note,
+  actionLabel,
+  checked,
+  onToggle,
+  onAction,
+  isPending,
+  testID,
+  colors,
+  onLink,
+}: {
+  title: string;
+  body: string;
+  note?: string;
+  actionLabel: string;
+  checked?: boolean;
+  onToggle?: () => void;
+  onAction: () => Promise<void>;
+  isPending: boolean;
+  testID: string;
+  colors: ReturnType<typeof useColors>;
+  onLink?: () => void;
+}) {
+  const insets = useSafeAreaInsets();
+  const [error, setError] = useState('');
+  return (
+    <View style={[styles.gate, { backgroundColor: colors.background, paddingTop: insets.top + 28, paddingBottom: insets.bottom + 28 }]}>
+      <View style={[styles.gateCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+        <Feather name="compass" size={30} color={colors.primary} />
+        <Text style={[styles.gateTitle, { color: colors.foreground }]}>{title}</Text>
+        <Text style={[styles.gateBody, { color: colors.foreground }]}>{body}</Text>
+        {onLink ? (
+          <Pressable testID={`${testID}-privacy-link`} onPress={onLink}>
+            <Text style={[styles.gateLink, { color: colors.primary }]}>Privacy Policy</Text>
+          </Pressable>
+        ) : null}
+        {note ? <Text style={[styles.gateNote, { color: colors.mutedForeground }]}>{note}</Text> : null}
+        {onToggle ? (
+          <Pressable testID={`${testID}-checkbox`} accessibilityRole="checkbox" accessibilityState={{ checked: Boolean(checked) }} onPress={onToggle} style={styles.gateConsent}>
+            <Feather name={checked ? 'check-square' : 'square'} size={22} color={colors.primary} />
+            <Text style={[styles.gateConsentText, { color: colors.foreground }]}>I understand and agree.</Text>
+          </Pressable>
+        ) : null}
+        {error ? <Text style={[styles.deleteError, { color: colors.destructive }]}>{error}</Text> : null}
+        <Pressable
+          testID={testID}
+          disabled={isPending || (checked !== undefined && !checked)}
+          onPress={() => onAction().catch((reason) => setError(reason instanceof Error ? reason.message : 'Unable to continue.'))}
+          style={[styles.gateButton, { backgroundColor: colors.primary, opacity: isPending || (checked !== undefined && !checked) ? 0.5 : 1 }]}
+        >
+          {isPending ? <ActivityIndicator color={colors.primaryForeground} /> : <Text style={[styles.gateButtonText, { color: colors.primaryForeground }]}>{actionLabel}</Text>}
+        </Pressable>
+      </View>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   screen: { flex: 1 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 14, padding: 28 },
   loadingText: { fontFamily: 'Poppins_400Regular', fontSize: 13 },
+  gate: { flex: 1, justifyContent: 'center', paddingHorizontal: 22 },
+  gateCard: { borderWidth: 1, borderRadius: 24, padding: 24, gap: 16 },
+  gateTitle: { fontFamily: 'PlayfairDisplay_600SemiBold', fontSize: 30, lineHeight: 36 },
+  gateBody: { fontFamily: 'Poppins_400Regular', fontSize: 15, lineHeight: 24 },
+  gateNote: { fontFamily: 'Poppins_400Regular', fontSize: 12, lineHeight: 18 },
+  gateLink: { fontFamily: 'Poppins_500Medium', fontSize: 13 },
+  gateConsent: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  gateConsentText: { fontFamily: 'Poppins_500Medium', fontSize: 13 },
+  gateButton: { minHeight: 54, borderRadius: 27, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 22 },
+  gateButtonText: { fontFamily: 'Poppins_600SemiBold', fontSize: 15 },
   errorTitle: { fontFamily: 'PlayfairDisplay_600SemiBold', fontSize: 24 },
   retry: { borderRadius: 24, paddingHorizontal: 22, paddingVertical: 12 },
   buttonLabel: { fontFamily: 'Poppins_600SemiBold', fontSize: 14 },
@@ -832,6 +977,8 @@ const styles = StyleSheet.create({
   settingsHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   settingsTitle: { fontFamily: 'PlayfairDisplay_600SemiBold', fontSize: 30 },
   settingsCopy: { fontFamily: 'Poppins_400Regular', fontSize: 14, lineHeight: 22, marginBottom: 14 },
+  settingsLinks: { gap: 2, marginBottom: 8 },
+  settingsLink: { minHeight: 42, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderBottomWidth: 1 },
   passwordInput: { height: 50, borderWidth: 1, borderRadius: 12, paddingHorizontal: 16, fontFamily: 'Poppins_400Regular' },
   deleteError: { fontFamily: 'Poppins_400Regular', fontSize: 13, lineHeight: 19 },
   settingsAction: { minHeight: 58, borderWidth: 1, borderRadius: 16, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, gap: 12 },

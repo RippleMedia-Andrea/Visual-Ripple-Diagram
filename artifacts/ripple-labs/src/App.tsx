@@ -9,6 +9,10 @@ import RippleMethodPage from "@/pages/ripple-method";
 import RippleJourney from "@/pages/ripple-journey";
 import AuthPage from "@/pages/auth";
 import { ProtectedJourney } from "@/components/ProtectedJourney";
+import PrivacyPage from "@/pages/privacy";
+import TermsPage from "@/pages/terms";
+import SupportPage from "@/pages/support";
+import ResetPasswordPage from "@/pages/reset-password";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +31,10 @@ function Router() {
         )}
       </Route>
       <Route path="/purpose-lab" component={PurposeLab} />
+      <Route path="/privacy" component={PrivacyPage} />
+      <Route path="/terms" component={TermsPage} />
+      <Route path="/support" component={SupportPage} />
+      <Route path="/reset-password" component={ResetPasswordPage} />
       <Route component={NotFound} />
     </Switch>
   );

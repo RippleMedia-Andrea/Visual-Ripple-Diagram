@@ -3,13 +3,13 @@ import { STORY_PROMPT_LABELS } from "@workspace/story-prompts";
 import { anthropic } from "@workspace/integrations-anthropic-ai";
 import { and, count, eq, gte } from "drizzle-orm";
 import { db, journeyMessages, journeys, purposeThemes, storyCards } from "@workspace/db";
-import { requireAuth } from "../../middlewares/require-auth";
+import { requireAiConsent, requireAuth } from "../../middlewares/require-auth";
 import { BASE_PROMPT, STAGE_PROMPTS } from "./prompts";
 
 const router = Router();
 
 
-router.post("/chat", requireAuth, async (req, res) => {
+router.post("/chat", requireAuth, requireAiConsent, async (req, res) => {
   const { stage, messages, journeyId, saveUserMessage = true } = req.body as {
     stage: string;
     messages: Array<{ role: "user" | "assistant"; content: string }>;

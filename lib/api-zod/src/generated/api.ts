@@ -8,6 +8,39 @@
 import * as zod from "zod";
 
 /**
+ * @summary Check whether password reset email delivery is configured
+ */
+export const GetPasswordResetAvailabilityResponse = zod.object({
+  available: zod.boolean(),
+  supportEmail: zod.string(),
+});
+
+/**
+ * @summary Get the signed-in user's account state
+ */
+export const GetAccountResponse = zod.object({
+  id: zod.string(),
+  email: zod.string(),
+  name: zod.string(),
+  aiConsentAt: zod.coerce.date().nullable(),
+  welcomeSeenAt: zod.coerce.date().nullable(),
+});
+
+/**
+ * @summary Record AI processing consent for the signed-in user
+ */
+export const RecordAiConsentResponse = zod.object({
+  aiConsentAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Record that the signed-in user saw the welcome screen
+ */
+export const RecordWelcomeSeenResponse = zod.object({
+  welcomeSeenAt: zod.coerce.date(),
+});
+
+/**
  * Returns server health status
  * @summary Health check
  */

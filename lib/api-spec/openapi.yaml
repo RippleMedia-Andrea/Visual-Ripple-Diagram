@@ -12,7 +12,69 @@ tags:
     description: Health operations
   - name: journeys
     description: Signed-in Purpose Lab journey progress
+  - name: account
+    description: Signed-in account state
 paths:
+  /password-reset-availability:
+    get:
+      operationId: getPasswordResetAvailability
+      tags: [account]
+      summary: Check whether password reset email delivery is configured
+      responses:
+        "200":
+          description: Password reset capability
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PasswordResetAvailability"
+  /account:
+    get:
+      operationId: getAccount
+      tags: [account]
+      security: [{ cookieAuth: [] }]
+      summary: Get the signed-in user's account state
+      responses:
+        "200":
+          description: Account state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Account"
+        "401": { description: Sign in required }
+  /account/consent:
+    patch:
+      operationId: recordAiConsent
+      tags: [account]
+      security: [{ cookieAuth: [] }]
+      summary: Record AI processing consent for the signed-in user
+      responses:
+        "200":
+          description: Consent timestamp
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  aiConsentAt: { type: string, format: date-time }
+                required: [aiConsentAt]
+        "401": { description: Sign in required }
+  /account/welcome:
+    patch:
+      operationId: recordWelcomeSeen
+      tags: [account]
+      security: [{ cookieAuth: [] }]
+      summary: Record that the signed-in user saw the welcome screen
+      responses:
+        "200":
+          description: Welcome timestamp
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  welcomeSeenAt: { type: string, format: date-time }
+                required: [welcomeSeenAt]
+        "401": { description: Sign in required }
   /healthz:
     get:
       operationId: healthCheck
@@ -82,6 +144,7 @@ paths:
                 $ref: "#/components/schemas/ExtractionResponse"
         "400": { description: Invalid discovery stage }
         "401": { description: Sign in required }
+        "403": { description: AI processing consent required }
         "404": { description: Journey not found }
         "429": { description: Extraction limit reached }
   /story-cards/{id}:
@@ -171,6 +234,11 @@ paths:
         "404":
           description: Journey not found
 components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: better-auth.session_token
   parameters:
     JourneyId:
       name: id
@@ -196,6 +264,21 @@ components:
         type: string
         enum: [reveal, identify, personalize, live]
   schemas:
+    PasswordResetAvailability:
+      type: object
+      properties:
+        available: { type: boolean }
+        supportEmail: { type: string }
+      required: [available, supportEmail]
+    Account:
+      type: object
+      properties:
+        id: { type: string }
+        email: { type: string }
+        name: { type: string }
+        aiConsentAt: { type: [string, "null"], format: date-time }
+        welcomeSeenAt: { type: [string, "null"], format: date-time }
+      required: [id, email, name, aiConsentAt, welcomeSeenAt]
     HealthStatus:
       type: object
       properties:

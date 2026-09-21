@@ -424,6 +424,9 @@ export default function RippleMethod() {
         <div className="flex gap-5">
           <Link href="/" className="text-[#5FA8A5] text-xs font-sans hover:text-[#D7ECEB] transition-colors">Home</Link>
           <Link href="/purpose-lab" className="text-[#5FA8A5] text-xs font-sans hover:text-[#D7ECEB] transition-colors">Purpose Lab</Link>
+          <Link href="/privacy" className="text-[#5FA8A5] text-xs font-sans hover:text-[#D7ECEB] transition-colors">Privacy</Link>
+          <Link href="/terms" className="text-[#5FA8A5] text-xs font-sans hover:text-[#D7ECEB] transition-colors">Terms</Link>
+          <Link href="/support" className="text-[#5FA8A5] text-xs font-sans hover:text-[#D7ECEB] transition-colors">Support</Link>
         </div>
       </footer>
     </div>

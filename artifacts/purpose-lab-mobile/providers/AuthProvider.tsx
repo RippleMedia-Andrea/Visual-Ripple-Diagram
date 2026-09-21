@@ -15,13 +15,14 @@ import {
   signUp as signUpRequest,
 } from '@/lib/mobile-api';
 import { getStoredToken, storeToken } from '@/lib/auth-storage';
+import { recordAiConsent } from '@workspace/api-client-react';
 
 interface AuthContextValue {
   token: string | null;
   user: AuthUser | null;
   isReady: boolean;
   signIn: (email: string, password: string) => Promise<void>;
-  signUp: (name: string, email: string, password: string) => Promise<void>;
+  signUp: (name: string, email: string, password: string, aiConsent?: boolean) => Promise<void>;
   signOut: () => Promise<void>;
   deleteAccount: (password: string) => Promise<void>;
 }
@@ -51,9 +52,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await applyAuth(result.token, result.user);
   }, [applyAuth]);
 
-  const signUp = useCallback(async (name: string, email: string, password: string) => {
+  const signUp = useCallback(async (name: string, email: string, password: string, aiConsent = false) => {
     const result = await signUpRequest(name, email, password);
     await applyAuth(result.token, result.user);
+    if (aiConsent) await recordAiConsent();
   }, [applyAuth]);
 
   const clearAuth = useCallback(async () => {

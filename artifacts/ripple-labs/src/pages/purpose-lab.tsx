@@ -776,9 +776,9 @@ export default function PurposeLab() {
           <Link href="/" className="text-[#5FA8A5] text-xs font-sans hover:text-[#D7ECEB] transition-colors">
             Home
           </Link>
-          <a href="#" className="text-[#5FA8A5] text-xs font-sans hover:text-[#D7ECEB] transition-colors">
-            Contact
-          </a>
+          <Link href="/privacy" className="text-[#5FA8A5] text-xs font-sans hover:text-[#D7ECEB] transition-colors">Privacy</Link>
+          <Link href="/terms" className="text-[#5FA8A5] text-xs font-sans hover:text-[#D7ECEB] transition-colors">Terms</Link>
+          <Link href="/support" className="text-[#5FA8A5] text-xs font-sans hover:text-[#D7ECEB] transition-colors">Support</Link>
         </div>
       </footer>
     </div>

@@ -428,8 +428,9 @@ export default function Home() {
           © {new Date().getFullYear()} Ripple Labs. What's within you creates a ripple.
         </p>
         <div className="flex gap-5">
-          <a href="#" className="text-[#5FA8A5] text-xs font-sans hover:text-[#D7ECEB] transition-colors">Privacy</a>
-          <a href="#" className="text-[#5FA8A5] text-xs font-sans hover:text-[#D7ECEB] transition-colors">Contact</a>
+          <Link href="/privacy" className="text-[#5FA8A5] text-xs font-sans hover:text-[#D7ECEB] transition-colors">Privacy</Link>
+          <Link href="/terms" className="text-[#5FA8A5] text-xs font-sans hover:text-[#D7ECEB] transition-colors">Terms</Link>
+          <Link href="/support" className="text-[#5FA8A5] text-xs font-sans hover:text-[#D7ECEB] transition-colors">Support</Link>
         </div>
       </footer>
     </div>

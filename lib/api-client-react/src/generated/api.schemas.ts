@@ -5,6 +5,21 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+export interface PasswordResetAvailability {
+  available: boolean;
+  supportEmail: string;
+}
+
+export interface Account {
+  id: string;
+  email: string;
+  name: string;
+  /** @nullable */
+  aiConsentAt: string | null;
+  /** @nullable */
+  welcomeSeenAt: string | null;
+}
+
 export interface HealthStatus {
   status: string;
 }
@@ -174,3 +189,11 @@ export type ExtractionResponse =
   | {
       actionPlan?: ActionPlan;
     };
+
+export type RecordAiConsent200 = {
+  aiConsentAt: string;
+};
+
+export type RecordWelcomeSeen200 = {
+  welcomeSeenAt: string;
+};

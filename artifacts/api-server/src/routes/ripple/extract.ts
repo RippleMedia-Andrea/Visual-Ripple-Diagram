@@ -2,7 +2,7 @@ import { Router } from "express";
 import { and, asc, count, eq, gte } from "drizzle-orm";
 import { anthropic } from "@workspace/integrations-anthropic-ai";
 import { db, journeyMessages, journeys, purposeThemes, storyCards } from "@workspace/db";
-import { requireAuth } from "../../middlewares/require-auth";
+import { requireAiConsent, requireAuth } from "../../middlewares/require-auth";
 
 const router = Router();
 const calls = new Map<string, number[]>();
@@ -17,7 +17,7 @@ function containsUnknown(value: unknown): boolean {
   return false;
 }
 
-router.post("/journeys/:id/discoveries/:stage", requireAuth, async (req, res, next): Promise<void> => {
+router.post("/journeys/:id/discoveries/:stage", requireAuth, requireAiConsent, async (req, res, next): Promise<void> => {
   try {
     const stage = req.params.stage as string;
     const journeyId = Number(req.params.id);
@@ -25,14 +25,40 @@ router.post("/journeys/:id/discoveries/:stage", requireAuth, async (req, res, ne
     const userId = res.locals.user.id as string;
     const [journey] = await db.select().from(journeys).where(and(eq(journeys.id, Number(journeyId)), eq(journeys.userId, userId)));
     if (!journey) { res.status(404).json({ error: "Journey not found." }); return; }
-    const now = Date.now(), recent = (calls.get(userId) ?? []).filter((time) => now - time < 3600000);
-    if (recent.length >= 20) { res.status(429).json({ error: "Extraction limit reached. Try again later." }); return; }
-    recent.push(now); calls.set(userId, recent);
-    const messages = await db.select({ role: journeyMessages.role, content: journeyMessages.content }).from(journeyMessages).where(and(eq(journeyMessages.journeyId, journey.id), eq(journeyMessages.stage, stage as typeof journeyMessages.$inferSelect.stage))).orderBy(asc(journeyMessages.createdAt));
+    const messages = await db.select({ role: journeyMessages.role, content: journeyMessages.content, createdAt: journeyMessages.createdAt }).from(journeyMessages).where(and(eq(journeyMessages.journeyId, journey.id), eq(journeyMessages.stage, stage as typeof journeyMessages.$inferSelect.stage))).orderBy(asc(journeyMessages.createdAt));
     const [savedStories, savedThemes] = await Promise.all([
       db.select().from(storyCards).where(eq(storyCards.journeyId, journey.id)).orderBy(asc(storyCards.position)),
       db.select().from(purposeThemes).where(eq(purposeThemes.journeyId, journey.id)).orderBy(asc(purposeThemes.position)),
     ]);
+    const latestMessageAt = messages.at(-1)?.createdAt?.getTime() ?? 0;
+    const fallbackSavedAt = stage === "reveal"
+      ? Math.max(0, ...savedStories.map((story) => story.updatedAt.getTime()))
+      : stage === "identify"
+        ? Math.max(0, ...savedThemes.map((theme) => theme.updatedAt.getTime()))
+        : journey.updatedAt.getTime();
+    const extractedAt = stage === "reveal"
+      ? journey.revealExtractedAt
+      : stage === "identify"
+        ? journey.identifyExtractedAt
+        : stage === "personalize"
+          ? journey.personalizeExtractedAt
+          : journey.liveExtractedAt;
+    const hasSavedDiscovery = stage === "reveal"
+      ? savedStories.length > 0
+      : stage === "identify"
+        ? savedThemes.length > 0
+        : stage === "personalize"
+          ? Boolean(journey.season)
+          : Boolean(journey.actionPlan);
+    if (hasSavedDiscovery && latestMessageAt <= (extractedAt?.getTime() ?? fallbackSavedAt)) {
+      if (stage === "reveal") { res.json({ stories: savedStories }); return; }
+      if (stage === "identify") { res.json({ themes: savedThemes }); return; }
+      if (stage === "personalize") { res.json({ season: journey.season }); return; }
+      res.json({ actionPlan: journey.actionPlan }); return;
+    }
+    const now = Date.now(), recent = (calls.get(userId) ?? []).filter((time) => now - time < 3600000);
+    if (recent.length >= 20) { res.status(429).json({ error: "Extraction limit reached. Try again later." }); return; }
+    recent.push(now); calls.set(userId, recent);
     const discoveryContext = [
       stage !== "reveal" && savedStories.length ? `Saved story cards: ${JSON.stringify(savedStories)}` : "",
       ["personalize", "live"].includes(stage) && savedThemes.length ? `Saved purpose themes: ${JSON.stringify(savedThemes)}` : "",
@@ -51,16 +77,19 @@ router.post("/journeys/:id/discoveries/:stage", requireAuth, async (req, res, ne
     const data = block.input as any;
     if (containsUnknown(data)) throw new Error("Extraction returned incomplete data.");
     await db.transaction(async (tx) => {
+      const extractionTime = new Date();
       if (stage === "reveal") {
         await tx.delete(storyCards).where(eq(storyCards.journeyId, journey.id));
         if (data.stories.length) await tx.insert(storyCards).values(data.stories.map((s:any,i:number)=>({...s,journeyId:journey.id,position:i})));
+        await tx.update(journeys).set({ revealExtractedAt: extractionTime, updatedAt: extractionTime }).where(eq(journeys.id, journey.id));
       }
       if (stage === "identify") {
         await tx.delete(purposeThemes).where(eq(purposeThemes.journeyId, journey.id));
         if (data.themes.length) await tx.insert(purposeThemes).values(data.themes.map((t:any,i:number)=>({...t,journeyId:journey.id,position:i})));
+        await tx.update(journeys).set({ identifyExtractedAt: extractionTime, updatedAt: extractionTime }).where(eq(journeys.id, journey.id));
       }
-      if (stage === "personalize") await tx.update(journeys).set({season:data.season,updatedAt:new Date()}).where(eq(journeys.id,journey.id));
-      if (stage === "live") await tx.update(journeys).set({actionPlan:data.actionPlan,updatedAt:new Date()}).where(eq(journeys.id,journey.id));
+      if (stage === "personalize") await tx.update(journeys).set({ season: data.season, personalizeExtractedAt: extractionTime, updatedAt: extractionTime }).where(eq(journeys.id, journey.id));
+      if (stage === "live") await tx.update(journeys).set({ actionPlan: data.actionPlan, liveExtractedAt: extractionTime, updatedAt: extractionTime }).where(eq(journeys.id, journey.id));
     });
     res.json(data);
   } catch (e) { next(e); }

@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 
+export * from "./account";
 export * from "./actionPlan";
 export * from "./chatMessage";
 export * from "./chatMessageRole";
@@ -17,9 +18,12 @@ export * from "./journeyRecord";
 export * from "./journeyRecordStatus";
 export * from "./journeyUpdate";
 export * from "./journeyUpdateStatus";
+export * from "./passwordResetAvailability";
 export * from "./purposeTheme";
 export * from "./purposeThemeCreate";
 export * from "./purposeThemeUpdate";
+export * from "./recordAiConsent200";
+export * from "./recordWelcomeSeen200";
 export * from "./season";
 export * from "./stageMessages";
 export * from "./storyCard";

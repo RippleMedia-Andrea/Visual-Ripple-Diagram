@@ -2,6 +2,7 @@ import { useState, type FormEvent } from "react";
 import { Link, useLocation } from "wouter";
 import rippleLabsLogo from "@assets/2876A1D3-1596-40F7-9384-F5AAA5F311E8_1777042604510.png";
 import { authClient } from "@/lib/auth-client";
+import { getGetPasswordResetAvailabilityQueryKey, useGetPasswordResetAvailability, useRecordAiConsent } from "@workspace/api-client-react";
 
 function safeReturnTo() {
   const value = new URLSearchParams(window.location.search).get("returnTo");
@@ -15,11 +16,22 @@ export default function AuthPage({ mode }: { mode: "sign-in" | "sign-up" }) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [aiConsent, setAiConsent] = useState(false);
+  const [resetMessage, setResetMessage] = useState("");
   const isSignUp = mode === "sign-up";
+  const { data: resetAvailability } = useGetPasswordResetAvailability({
+    query: { enabled: !isSignUp, queryKey: getGetPasswordResetAvailabilityQueryKey() },
+  });
+  const recordConsent = useRecordAiConsent();
 
   async function submit(event: FormEvent) {
     event.preventDefault();
     setError("");
+    setResetMessage("");
+    if (isSignUp && !aiConsent) {
+      setError("Please confirm your AI processing consent to continue.");
+      return;
+    }
     setIsSubmitting(true);
 
     const result = isSignUp
@@ -38,7 +50,26 @@ export default function AuthPage({ mode }: { mode: "sign-in" | "sign-up" }) {
       setError(result.error.message || "We couldn't complete that request.");
       return;
     }
+    if (isSignUp) {
+      await recordConsent.mutateAsync();
+    }
     navigate(safeReturnTo(), { replace: true });
+  }
+
+  async function requestReset() {
+    setError("");
+    setResetMessage("");
+    if (!email.trim()) {
+      setError("Enter your email address first.");
+      return;
+    }
+    setIsSubmitting(true);
+    await authClient.requestPasswordReset({
+      email: email.trim(),
+      redirectTo: new URL("reset-password", `${window.location.origin}${import.meta.env.BASE_URL}`).toString(),
+    }).catch(() => undefined);
+    setIsSubmitting(false);
+    setResetMessage("If an account exists for that email, you'll receive a password reset link shortly.");
   }
 
   return (
@@ -103,6 +134,21 @@ export default function AuthPage({ mode }: { mode: "sign-in" | "sign-up" }) {
                 className="w-full rounded-xl border border-[#2F7F7B]/20 bg-[#F5F1E8]/70 px-4 py-3 outline-none focus:border-[#C8A96A]"
               />
             </label>
+            {isSignUp && (
+              <div className="space-y-3 text-sm leading-relaxed">
+                <label className="flex items-start gap-3">
+                  <input type="checkbox" required checked={aiConsent} onChange={(event) => setAiConsent(event.target.checked)} className="mt-1 h-4 w-4 accent-[#2F7F7B]" />
+                  <span>I understand my answers are processed by a third-party AI service (Anthropic's Claude) to guide my Purpose Lab journey, as described in the <Link href="/privacy" className="text-[#2F7F7B] underline">Privacy Policy</Link>.</span>
+                </label>
+                <p>By creating an account you agree to the <Link href="/terms" className="text-[#2F7F7B] underline">Terms of Use</Link>.</p>
+              </div>
+            )}
+            {!isSignUp && resetAvailability?.available && (
+              <button type="button" onClick={requestReset} className="text-left text-sm text-[#2F7F7B] underline underline-offset-4">
+                Forgot password?
+              </button>
+            )}
+            {resetMessage && <p role="status" className="font-sans text-sm text-[#2F7F7B]">{resetMessage}</p>}
             {error && (
               <p role="alert" className="font-sans text-sm text-red-700">
                 {error}

@@ -3,6 +3,7 @@ import { getStoredToken } from '@/lib/auth-storage';
 
 const domain = process.env.EXPO_PUBLIC_DOMAIN;
 export const API_ORIGIN = domain ? `https://${domain}` : '';
+export const PUBLIC_APP_ORIGIN = API_ORIGIN;
 
 export interface AuthUser {
   id: string;
@@ -50,6 +51,13 @@ export function signIn(email: string, password: string) {
 
 export function signUp(name: string, email: string, password: string) {
   return authRequest('sign-up/email', { name, email, password });
+}
+
+export function requestPasswordReset(email: string) {
+  return authRequest('request-password-reset', {
+    email,
+    redirectTo: `${PUBLIC_APP_ORIGIN}/reset-password`,
+  });
 }
 
 export function signOut(token: string) {
