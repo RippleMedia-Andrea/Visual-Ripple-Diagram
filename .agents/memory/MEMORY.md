@@ -1,0 +1,1 @@
+- [Production release verification](production-release-verification.md) — confirm the live asset hash and restart timestamp after publishing; a success report may still serve the old bundle.
