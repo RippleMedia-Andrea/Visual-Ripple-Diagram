@@ -22,3 +22,17 @@ mtime_ms = 1794622175250
 storage_uri = "gcs://replit-rams-assets-worf/rams/assets/repl:29ed3051-832a-447e-8eec-2ce610aee271/700a4253-cd83-45f1-bd6f-220da4420784/3e58a42c-d62d-4a8c-afec-69a777c4e197"
 storage_version_token = "1794622394582085"
 content_type = "text/markdown"
+
+[[outputs]]
+id = "LyGIniOy9BA-Y43-c-4LQ"
+uri = "file://docs/purpose-lab-ai-instructions.html"
+type = "html"
+title = "AI instructions and practice guide"
+description = "The full shared, stage, and summarization instructions, plus steps for trying Reveal, Identify, Pinpoint, and dictation safely in Practice."
+logical_id = "077968d8-b274-4152-8b36-474763ab8b4b"
+content_hash = "sha256:9934f0f18ff9c5c3a7a319337bf7ea1d8508b447006b937974b6ab1e5ee0d1e9"
+size = 16203
+mtime_ms = 1794659191330
+storage_uri = "gcs://replit-rams-assets-worf/rams/assets/repl:29ed3051-832a-447e-8eec-2ce610aee271/077968d8-b274-4152-8b36-474763ab8b4b/8f50e05f-03f0-4166-9ad8-6b6f78db1a97"
+storage_version_token = "1794659276999097"
+content_type = "text/html"
