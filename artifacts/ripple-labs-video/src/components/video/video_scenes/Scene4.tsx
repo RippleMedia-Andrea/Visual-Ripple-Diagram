@@ -78,7 +78,7 @@ export function Scene4() {
             <div className="flex gap-[3vmin]">
               <span className="mt-[1.5vmin] h-px w-[8vmin] shrink-0" style={{ background: '#c8a96a' }} />
               <p className="text-[4vmin] leading-[1.34]" style={{ color: '#d7e6e0' }}>
-                Your words stay yours. The AI guide reflects, asks, and helps you notice — never performs your life for you.
+                Your words stay yours. The AI guide reflects, asks, and helps you notice the purpose that's already yours.
               </p>
             </div>
           </motion.div>

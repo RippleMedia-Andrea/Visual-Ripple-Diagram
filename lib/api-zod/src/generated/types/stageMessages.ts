@@ -12,6 +12,7 @@ export interface StageMessages {
   identify: ChatMessage[];
   pinpoint: ChatMessage[];
   personalize: ChatMessage[];
+  picture: ChatMessage[];
   live: ChatMessage[];
   expand: ChatMessage[];
 }

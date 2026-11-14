@@ -7,6 +7,8 @@ import { AccountMenu } from "@/components/AccountMenu";
 import { StoryCard, PurposeTheme, Season, ActionPlan, JourneyResponse } from "@/lib/types";
 import { StoryCardView, ThemeCardView, SeasonFormView, ActionPlanFormView } from "@/components/Discoveries";
 import { MyDiscoveries } from "@/components/MyDiscoveries";
+import { VisionForm } from "@/components/VisionForm";
+import type { Vision } from "@/lib/types";
 
 const BASE_URL = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -18,13 +20,13 @@ const STAGES = [
     subtitle: "Your Story",
     belief: "Your story holds clues.",
     teaching:
-      "Every experience — the highs, the lows, the moments that made you come alive — contains a thread of your purpose. We begin here, with your story.",
+      "Begin with two stories where you felt most like yourself. Notice What I felt, What I did, and What changed.",
     guidance: "Share freely. Your guide will listen, ask questions, and help you notice what your stories reveal.",
     color: "#0F2A36",
     textColor: "#ffffff",
     cardBg: "rgba(255,255,255,0.06)",
     placeholder: "Start by sharing a moment when you felt most alive, most yourself...",
-    openingPrompt: "I'd love to begin by hearing a bit about you. Can you share a moment — any moment in your life — when you felt most alive, most fully yourself? It doesn't have to be dramatic. Even a quiet, ordinary moment counts.",
+    openingPrompt: "Let's begin with two stories where you felt most like yourself. For each, we'll notice what you felt, what you did, and what changed. A quiet, ordinary moment counts too.",
   },
   {
     id: "identify",
@@ -33,7 +35,7 @@ const STAGES = [
     subtitle: "Your Patterns",
     belief: "Patterns reveal purpose.",
     teaching:
-      "Across your stories there are recurring themes — emotions you keep feeling, actions you naturally take, ways you impact others. These patterns are fingerprints of your purpose.",
+      "Find your action word and the impact it has on others. Both carry equal weight and can show up in many roles.",
     guidance: "Your guide will reflect back what they heard and help you name the patterns. Confirm, add, or refine.",
     color: "#1a4a55",
     textColor: "#ffffff",
@@ -48,8 +50,8 @@ const STAGES = [
     subtitle: "Your Purpose",
     belief: "You are naming who you already are.",
     teaching:
-      "Your purpose statement begins with identity and ends with impact. It is not just what you do — it reflects who you are and how your life helps others.",
-    guidance: "Your guide will offer 3 purpose statement options. Choose one as a starting point, then make it fully yours.",
+      "Put who you are into words. Your purpose statement names your action and the impact it has on others.",
+    guidance: "Ask why the impact matters, then go deeper. Use an optional starting point or write your own words.",
     color: "#2F7F7B",
     textColor: "#ffffff",
     cardBg: "rgba(255,255,255,0.08)",
@@ -57,29 +59,29 @@ const STAGES = [
     openingPrompt: null,
   },
   {
-    id: "personalize",
+    id: "picture",
     number: "04",
-    title: "Personalize",
-    subtitle: "Your Season",
-    belief: "Purpose is expressed through your season, not limited by it.",
+    title: "Picture",
+    subtitle: "Your Vision",
+    belief: "See the life your purpose makes possible.",
     teaching:
-      "Roles and seasons change. Purpose does not. But how your purpose shows up changes with each chapter of your life.",
-    guidance: "Describe your life right now — your roles, responsibilities, and what your season looks like. Your guide will help you find purposeful expression in it.",
+      "See the life your purpose makes possible, and notice whose picture of success you've been borrowing.",
+    guidance: "What do you picture? Whose life did that picture come from? What have you been telling yourself you need before you can start?",
     color: "#5FA8A5",
     textColor: "#0F2A36",
     cardBg: "rgba(15,42,54,0.06)",
-    placeholder: "Tell me about your life right now — your roles, your season...",
+    placeholder: "When I imagine living my purpose, I picture...",
     openingPrompt: null,
   },
   {
     id: "live",
     number: "05",
     title: "Live",
-    subtitle: "Your Ripple",
+    subtitle: "Your Season",
     belief: "Small actions create a life of purpose.",
     teaching:
-      "Clarity becomes powerful when it turns into action. Some things need to begin. Some need to stop. Some are already working.",
-    guidance: "Work through Start / Stop / Continue with your guide. One clear action at a time.",
+      "Your season is not the waiting room to your life. Live your purpose right where you are.",
+    guidance: "Right now I'm in the season of... The roles I'm carrying... Where is my purpose already showing up?",
     color: "#9fd0cd",
     textColor: "#0F2A36",
     cardBg: "rgba(15,42,54,0.06)",
@@ -90,10 +92,10 @@ const STAGES = [
     id: "expand",
     number: "06",
     title: "Expand",
-    subtitle: "Your Growth",
+    subtitle: "Your Ripple",
     belief: "What's within you creates a ripple.",
     teaching:
-      "Purpose is not a one-time discovery. It grows with you as your seasons change. Your job now is to live it, return to it, and let it ripple outward.",
+      "Your ripple reaches the people around you and keeps growing.",
     guidance: "Reflect on what you're taking away. Your guide will help you close this season of the journey.",
     color: "#EEE9DB",
     textColor: "#0F2A36",
@@ -110,7 +112,7 @@ function extractPurposeOptions(messages: ChatMessage[]): string[] {
     .map((m) => m.content)
     .join("\n");
 
-  const regex = /Option\s*\d[:\.]?\s*[""]?(I am someone who[^"".\n]+(?:so others can[^"".\n]+)?)["".]?/gi;
+  const regex = /Option\s*\d[:.)]?\s*["“]?([^\n"”]+)["”]?/gi;
   let match;
   while ((match = regex.exec(allText)) !== null) {
     const stmt = match[1].trim().replace(/["""]/g, "");
@@ -118,7 +120,7 @@ function extractPurposeOptions(messages: ChatMessage[]): string[] {
   }
 
   if (options.length === 0) {
-    const lineRegex = /[""]?(I am someone who[^"""\n]{10,})[""".]?/gi;
+    const lineRegex = /["“]?((?:I wake up each day to|I am someone who)[^"”\n]{10,})["”]?/gi;
     while ((match = lineRegex.exec(allText)) !== null) {
       const stmt = match[1].trim().replace(/["""]/g, "");
       if (stmt && !options.includes(stmt) && options.length < 3) options.push(stmt);
@@ -143,10 +145,13 @@ export default function RippleJourney() {
   const [storyCards, setStoryCards] = useState<StoryCard[]>([]);
   const [themes, setThemes] = useState<PurposeTheme[]>([]);
   const [season, setSeason] = useState<Season | null>(null);
+  const [vision, setVision] = useState<Vision | null>(null);
+  const [legacySeasonMessages, setLegacySeasonMessages] = useState<ChatMessage[]>([]);
   const [actionPlan, setActionPlan] = useState<ActionPlan | null>(null);
   const [purposeStatement, setPurposeStatement] = useState("");
 
   const [isStreaming, setIsStreaming] = useState(false);
+  const [openingError, setOpeningError] = useState("");
   const [isComplete, setIsComplete] = useState(false);
   const [isDiscoveriesOpen, setIsDiscoveriesOpen] = useState(false);
 
@@ -159,6 +164,8 @@ export default function RippleJourney() {
   const [selectedOption, setSelectedOption] = useState<string>("");
   const [editedPurpose, setEditedPurpose] = useState("");
   const [purposeConfirmed, setPurposeConfirmed] = useState(false);
+  const [actionChecked, setActionChecked] = useState(false);
+  const [impactChecked, setImpactChecked] = useState(false);
 
   // Review State
   const [reviewState, setReviewState] = useState({
@@ -186,9 +193,8 @@ export default function RippleJourney() {
         setHighestStageIdx(journey.currentStageIdx);
         setAllMessages(messages);
         setSelectedPrompts(journey.selectedPrompts ?? []);
-        setPromptsConfirmed(
-          (journey.selectedPrompts?.length ?? 0) >= 2 && messages[0].length > 0,
-        );
+        setPromptsConfirmed(messages[0].length > 0);
+        setLegacySeasonMessages(journey.messages.personalize ?? []);
         setPurposeOptions(journey.purposeOptions ?? []);
         setEditedPurpose(pStmt);
         setPurposeConfirmed(Boolean(pStmt));
@@ -197,6 +203,7 @@ export default function RippleJourney() {
         setStoryCards(journey.storyCards ?? []);
         setThemes(journey.themes ?? []);
         setSeason(journey.season ?? null);
+        setVision(journey.vision ?? null);
         setActionPlan(journey.actionPlan ?? null);
 
         if (journey.status === "complete") {
@@ -248,12 +255,11 @@ export default function RippleJourney() {
     const promptLabels = prompts
       .map((id) => STORY_PROMPTS.find((p) => p.id === id)?.label ?? id)
       .join(", ");
-    const openingText = `The person has chosen to share stories around these themes: ${promptLabels}. Please warmly welcome them to Stage 1: Reveal — Your Story. Acknowledge the themes they chose, then gently invite them to begin with whichever one feels most natural right now. Ask one open, warm question to get them started. Keep your opening under 100 words.`;
+    const openingText = `Welcome me to Reveal, Your Story. Invite two stories where I felt most like myself, starting with one story. Reflect back What I felt / What I did / What changed after each. Optional extra prompts I chose: ${promptLabels || "none"}.`;
     await streamAIOpening("reveal", openingText, 0);
   }
 
   function confirmAndBegin() {
-    if (selectedPrompts.length < 2) return;
     setPromptsConfirmed(true);
     triggerRevealOpening(selectedPrompts);
   }
@@ -266,7 +272,7 @@ export default function RippleJourney() {
       triggerPinpointOpening();
     }
     if (stageIdx === 3 && allMessages[3].length === 0 && !isStreaming) {
-      triggerPersonalizeOpening();
+      triggerPictureOpening();
     }
     if (stageIdx === 4 && allMessages[4].length === 0 && !isStreaming) {
       triggerLiveOpening();
@@ -279,6 +285,7 @@ export default function RippleJourney() {
   async function streamAIOpening(stageId: string, prompt: string, idx: number) {
     if (allMessages[idx].length > 0) return;
     setIsStreaming(true);
+    setOpeningError("");
     try {
       const res = await fetch(`${BASE_URL}/api/ripple/chat`, {
         method: "POST",
@@ -295,13 +302,20 @@ export default function RippleJourney() {
       const reader = res.body.getReader();
       const dec = new TextDecoder();
       let text = "";
+      let pending = "";
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
-        for (const line of dec.decode(value, { stream: true }).split("\n")) {
+        pending += dec.decode(value, { stream: true });
+        const lines = pending.split("\n");
+        pending = lines.pop() ?? "";
+        for (const line of lines) {
           if (!line.startsWith("data: ")) continue;
+          let d;
           try {
-            const d = JSON.parse(line.slice(6));
+            d = JSON.parse(line.slice(6));
+          } catch { continue; }
+            if (d.error) throw new Error("Your guide is unavailable right now.");
             if (d.content) text += d.content;
             if (d.done) {
               setAllMessages((prev) => {
@@ -311,10 +325,17 @@ export default function RippleJourney() {
               });
               setIsStreaming(false);
             }
-          } catch {}
         }
       }
+      if (!text) throw new Error("Your guide is unavailable right now.");
+      setAllMessages((prev) => {
+        const next = [...prev];
+        next[idx] = [{ role: "assistant", content: text }];
+        return next;
+      });
     } catch {
+      setOpeningError("Your guide couldn't start. Please try sharing your reflection below.");
+    } finally {
       setIsStreaming(false);
     }
   }
@@ -324,15 +345,15 @@ export default function RippleJourney() {
   }
 
   function triggerPinpointOpening() {
-    streamAIOpening("pinpoint", "I'm ready for Stage 3. Based on my confirmed themes and stories, please generate exactly 3 purpose statement options.", 2);
+    streamAIOpening("pinpoint", "I'm ready for Pinpoint. Help me explore my action and outward impact equally. Ask why the impact matters, then help me go deeper before offering optional statement starting points.", 2);
   }
 
-  function triggerPersonalizeOpening() {
-    streamAIOpening("personalize", "I'm ready for Stage 4. Please begin by asking about my current season of life and roles.", 3);
+  function triggerPictureOpening() {
+    streamAIOpening("picture", "I'm ready for Picture. When I imagine living my purpose, what do I picture? Please help me explore this, one question at a time.", 3);
   }
 
   function triggerLiveOpening() {
-    streamAIOpening("live", "I'm ready for Stage 5. Please introduce the Start / Stop / Continue framework and ask the first question.", 4);
+    streamAIOpening("live", "I'm ready for Live, Your Season. Begin with Right now I'm in the season of... Then explore my roles and where purpose is already showing up before practical next steps.", 4);
   }
 
   function triggerExpandOpening() {
@@ -377,7 +398,7 @@ export default function RippleJourney() {
 
   function handleContinue() {
     const stageId = stage.id;
-    if (["reveal", "identify", "personalize", "live"].includes(stageId)) {
+    if (["reveal", "identify", "picture", "live"].includes(stageId)) {
       setReviewState({ isReviewing: true, stageId, isExtracting: true, extractionFailed: false });
       runExtraction(stageId);
     } else {
@@ -399,6 +420,7 @@ export default function RippleJourney() {
       setStoryCards(journey.storyCards ?? []);
       setThemes(journey.themes ?? []);
       setSeason(journey.season ?? null);
+      setVision(journey.vision ?? null);
       setActionPlan(journey.actionPlan ?? null);
 
       setReviewState(prev => ({ ...prev, isExtracting: false }));
@@ -417,9 +439,18 @@ export default function RippleJourney() {
 
   function confirmPurpose() {
     const stmt = editedPurpose.trim() || selectedOption;
-    if (!stmt) return;
+    if (!stmt || !actionChecked || !impactChecked) return;
     setPurposeStatement(stmt);
     setPurposeConfirmed(true);
+  }
+
+  async function saveVision(next: Vision) {
+    const response = await fetch(`${BASE_URL}/api/journeys/${journeyId}`, {
+      method: "PATCH", credentials: "include", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ vision: next }),
+    });
+    if (!response.ok) throw new Error("Unable to save vision.");
+    setVision(next);
   }
 
   async function resetJourney() {
@@ -445,6 +476,10 @@ export default function RippleJourney() {
     setStoryCards([]);
     setThemes([]);
     setSeason(null);
+    setVision(null);
+    setLegacySeasonMessages([]);
+    setActionChecked(false);
+    setImpactChecked(false);
     setActionPlan(null);
     hasOpened.current = {};
     setReviewState({ isReviewing: false, stageId: "", isExtracting: false, extractionFailed: false });
@@ -528,6 +563,8 @@ export default function RippleJourney() {
           storyCards={storyCards}
           themes={themes}
           season={season}
+          vision={vision}
+          onUpdateVision={saveVision}
           actionPlan={actionPlan}
           purposeStatement={purposeStatement}
           onUpdateStoryCard={updateStoryCard}
@@ -564,6 +601,8 @@ export default function RippleJourney() {
         storyCards={storyCards}
         themes={themes}
         season={season}
+        vision={vision}
+        onUpdateVision={saveVision}
         actionPlan={actionPlan}
         purposeStatement={purposeStatement}
         onUpdateStoryCard={updateStoryCard}
@@ -728,6 +767,7 @@ export default function RippleJourney() {
                 </p>
               </div>
             )}
+            {stageIdx === 5 && <p className="text-xs" style={{ color: stage.textColor }}>Expand exercise retained for your review.</p>}
 
             <div className="flex items-center gap-3 pt-2">
               <button
@@ -755,6 +795,13 @@ export default function RippleJourney() {
 
           {/* Right: Chat + stage-specific UI */}
           <div className="space-y-5">
+            {openingError && <p role="alert" className="text-sm font-sans px-4 py-3">{openingError}</p>}
+            {stageIdx === 3 && vision && !reviewState.isReviewing && <VisionForm vision={vision} onSave={saveVision} />}
+            {stageIdx === 4 && legacySeasonMessages.length > 0 && <details className="rounded-xl bg-white/70 p-4 text-[#0F2A36]">
+              <summary>Earlier season reflection</summary>
+              <p className="text-sm my-2">Saved from the earlier version of the journey. Your original words are preserved.</p>
+              {legacySeasonMessages.map((message, i) => <p key={i} className="text-sm my-2"><strong>{message.role === "user" ? "You" : "Guide"}:</strong> {message.content}</p>)}
+            </details>}
             {reviewState.isReviewing ? (
               <div className="rounded-2xl p-6 md:p-8" style={{ backgroundColor: "rgba(255,255,255,0.05)", border: "1px solid rgba(200,169,106,0.18)" }}>
                 {reviewState.isExtracting ? (
@@ -780,7 +827,8 @@ export default function RippleJourney() {
                     <div className="space-y-4 mb-8">
                       {stage.id === "reveal" && storyCards.map(c => <StoryCardView key={c.id} card={c} onUpdate={updateStoryCard} onDelete={() => deleteStoryCard(c.id)} />)}
                       {stage.id === "identify" && themes.map(t => <ThemeCardView key={t.id} theme={t} onUpdate={updateTheme} onDelete={() => deleteTheme(t.id)} />)}
-                      {stage.id === "personalize" && season && <SeasonFormView season={season} onUpdate={updateSeasonApi} />}
+                      {stage.id === "picture" && vision && <VisionForm vision={vision} onSave={saveVision} />}
+                      {stage.id === "live" && season && <SeasonFormView season={season} onUpdate={updateSeasonApi} />}
                       {stage.id === "live" && actionPlan && <ActionPlanFormView actionPlan={actionPlan} onUpdate={updateActionPlanApi} />}
                     </div>
 
@@ -789,7 +837,7 @@ export default function RippleJourney() {
                       className="w-full py-3.5 rounded-full text-sm font-sans font-medium transition-all hover:opacity-90"
                       style={{ backgroundColor: "#C8A96A", color: "#0F2A36" }}
                     >
-                      This feels right — continue →
+                      This feels right. Continue →
                     </button>
                   </div>
                 )}
@@ -811,7 +859,7 @@ export default function RippleJourney() {
                     className="text-sm font-sans leading-relaxed"
                     style={{ color: stage.textColor, opacity: 0.75 }}
                   >
-                    Pick <strong>2 or 3</strong> of the prompts below. Your guide will walk through each one with you.
+                    Begin with <strong>two stories</strong> where you felt most like yourself. The prompts below are optional extras.
                   </p>
                 </div>
 
@@ -880,15 +928,11 @@ export default function RippleJourney() {
                     className="text-xs font-sans"
                     style={{ color: stage.textColor, opacity: selectedPrompts.length >= 2 ? 0.6 : 0.35 }}
                   >
-                    {selectedPrompts.length === 0
-                      ? "Choose at least 2"
-                      : selectedPrompts.length === 1
-                      ? "Choose 1 more"
-                      : `${selectedPrompts.length} selected — ready to begin`}
+                    {selectedPrompts.length === 0 ? "You can begin without choosing a prompt" : `${selectedPrompts.length} optional prompts selected`}
                   </p>
                   <button
                     onClick={confirmAndBegin}
-                    disabled={selectedPrompts.length < 2 || isStreaming}
+                    disabled={isStreaming}
                     className="px-6 py-2.5 rounded-full text-sm font-sans font-medium transition-all disabled:opacity-30 hover:opacity-90"
                     style={{ backgroundColor: "#C8A96A", color: "#0F2A36" }}
                     data-testid="begin-stories-btn"
@@ -914,7 +958,7 @@ export default function RippleJourney() {
             )}
 
             {/* Stage 2 (Pinpoint): Purpose statement picker */}
-            {!reviewState.isReviewing && stageIdx === 2 && purposeOptions.length > 0 && (
+            {!reviewState.isReviewing && stageIdx === 2 && (
               <div
                 className="rounded-2xl p-5 space-y-4"
                 style={{ backgroundColor: "rgba(255,255,255,0.05)", border: "1px solid rgba(200,169,106,0.2)" }}
@@ -943,6 +987,8 @@ export default function RippleJourney() {
                         setSelectedOption(opt);
                         setEditedPurpose(opt);
                         setPurposeConfirmed(false);
+                        setActionChecked(false);
+                        setImpactChecked(false);
                       }}
                       className="w-full text-left px-4 py-3 rounded-xl border transition-all text-sm font-sans leading-relaxed"
                       style={{
@@ -981,19 +1027,24 @@ export default function RippleJourney() {
                       color: stage.textColor,
                       border: "1px solid rgba(200,169,106,0.25)",
                     }}
-                    placeholder="I am someone who _________, so others can _________."
+                    placeholder="I wake up each day to [action] so that [impact]. Or use your own words."
                     value={editedPurpose}
                     onChange={(e) => {
                       setEditedPurpose(e.target.value);
+                      setActionChecked(false);
+                      setImpactChecked(false);
                       setPurposeConfirmed(false);
                     }}
                     data-testid="purpose-editor"
                   />
                 </div>
+                <p className="text-sm" style={{ color: stage.textColor }}>The form is optional. Include both your action and an outward impact.</p>
+                <label className="block text-sm" style={{ color: stage.textColor }}><input type="checkbox" checked={actionChecked} onChange={(e) => setActionChecked(e.target.checked)} /> My statement names my action.</label>
+                <label className="block text-sm" style={{ color: stage.textColor }}><input type="checkbox" checked={impactChecked} onChange={(e) => setImpactChecked(e.target.checked)} /> My statement names the impact on others.</label>
 
                 <button
                   onClick={confirmPurpose}
-                  disabled={!editedPurpose.trim()}
+                  disabled={!editedPurpose.trim() || !actionChecked || !impactChecked}
                   className="w-full py-3 rounded-full text-sm font-sans font-medium transition-all disabled:opacity-40"
                   style={{ backgroundColor: "#C8A96A", color: "#0F2A36" }}
                   data-testid="confirm-purpose-btn"

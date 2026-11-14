@@ -19,7 +19,9 @@ import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   getGetCurrentJourneyQueryKey,
+  getGetCourseAccessQueryKey,
   useGetCurrentJourney,
+  useGetCourseAccess,
   useRestartJourney,
   useUpdateJourney,
   useExtractJourneyDiscoveries,
@@ -31,6 +33,7 @@ import {
   useRecordAiConsent,
   useRecordWelcomeSeen,
   type ChatMessage as ApiChatMessage,
+  type Vision,
 } from '@workspace/api-client-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { STAGES, STORY_PROMPTS } from '@/constants/journey';
@@ -41,6 +44,7 @@ import { PUBLIC_APP_ORIGIN } from '@/lib/mobile-api';
 import { MyDiscoveries } from './MyDiscoveries';
 import { JourneySummary } from './JourneySummary';
 import { StoryCardView, ThemeCardView, SeasonFormView, ActionPlanFormView } from './Discoveries';
+import { VisionForm } from './VisionForm';
 
 function messageKey(message: ChatMessage, index: number) {
   return `${message.role}-${index}-${message.content.slice(0, 16)}`;
@@ -52,14 +56,14 @@ function extractPurposeOptions(messages: ChatMessage[]): string[] {
     .map((message) => message.content)
     .join('\n');
   const options: string[] = [];
-  const regex = /Option\s*\d[:\.]?\s*[""]?(I am someone who[^"".\n]+(?:so others can[^"".\n]+)?)["".]?/gi;
+  const regex = /Option\s*\d[:.)]?\s*["“]?([^\n"”]+)["”]?/gi;
   let match;
   while ((match = regex.exec(allText)) !== null) {
     const stmt = match[1].trim().replace(/["""]/g, "");
     if (stmt && !options.includes(stmt)) options.push(stmt);
   }
   if (options.length === 0) {
-    const lineRegex = /[""]?(I am someone who[^"""\n]{10,})[""".]?/gi;
+    const lineRegex = /["“]?((?:I wake up each day to|I am someone who)[^"”\n]{10,})["”]?/gi;
     while ((match = lineRegex.exec(allText)) !== null) {
       const stmt = match[1].trim().replace(/["""]/g, "");
       if (stmt && !options.includes(stmt) && options.length < 3) options.push(stmt);
@@ -72,9 +76,10 @@ export function JourneyScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
-  const { signOut, deleteAccount } = useAuth();
+  const { user, signOut, deleteAccount } = useAuth();
   const journeyQuery = useGetCurrentJourney();
   const accountQuery = useGetAccount();
+  const courseAccess = useGetCourseAccess({ query: { enabled: Boolean(user), queryKey: [...getGetCourseAccessQueryKey(), user?.id] } });
   const recordConsent = useRecordAiConsent();
   const recordWelcome = useRecordWelcomeSeen();
   const updateJourney = useUpdateJourney();
@@ -100,6 +105,8 @@ export function JourneyScreen() {
   const [deleteError, setDeleteError] = useState('');
   const [streamError, setStreamError] = useState('');
   const [consentChecked, setConsentChecked] = useState(false);
+  const [actionChecked, setActionChecked] = useState(false);
+  const [impactChecked, setImpactChecked] = useState(false);
   const inputRef = useRef<TextInput>(null);
 
   const journey = journeyQuery.data;
@@ -125,6 +132,8 @@ export function JourneyScreen() {
     setStreamError('');
     setConfirmDeleteMode(false);
     setDeletePassword('');
+    setActionChecked(false);
+    setImpactChecked(false);
   }, [journey?.id]);
 
   function togglePrompt(id: string) {
@@ -183,11 +192,11 @@ export function JourneyScreen() {
       stageIdx === 1
         ? "I'm ready for Stage 2. Please reflect back the patterns and themes you noticed in my stories, and ask me to confirm or refine them."
         : stageIdx === 2
-        ? "I'm ready for Stage 3. Based on my confirmed themes and stories, please generate exactly 3 purpose statement options."
+        ? "I'm ready for Pinpoint. Explore my action and outward impact equally. Ask why that impact matters, then help me go deeper before offering optional purpose statements."
         : stageIdx === 3
-        ? "I'm ready for Stage 4. Please begin by asking about my current season of life and roles."
+        ? "I'm ready for Picture. Ask what I picture when I imagine living my purpose, then explore where that picture came from, one question at a time."
         : stageIdx === 4
-        ? "I'm ready for Stage 5. Please introduce the Start / Stop / Continue framework and ask the first question."
+        ? "I'm ready for Live, Your Season. Begin with Right now I'm in the season of... Then explore my roles and where purpose is already showing up before practical next steps."
         : "I've completed all stages. Please begin Stage 6 and guide me into reflection.";
 
     setIsStreaming(true);
@@ -221,14 +230,10 @@ export function JourneyScreen() {
 
   async function beginStage0() {
     if (!journey || stageIdx !== 0 || messages.length > 0 || isHistorical || isComplete) return;
-    if (promptSelection.length < 2) {
-      setStreamError('Choose at least two story prompts to begin.');
-      return;
-    }
     const promptLabels = promptSelection
       .map((id) => STORY_PROMPTS.find((p) => p.id === id)?.label ?? id)
       .join(', ');
-    const openingPrompt = `The person has chosen to share stories around these themes: ${promptLabels}. Please warmly welcome them to Stage 1: Reveal — Your Story. Acknowledge the themes they chose, then gently invite them to begin with whichever one feels most natural right now. Ask one open, warm question to get them started. Keep your opening under 100 words.`;
+    const openingPrompt = `Welcome me to Reveal, Your Story. Invite two stories where I felt most like myself, starting with one. Reflect back What I felt / What I did / What changed after each. Optional extra prompts I chose: ${promptLabels || 'none'}.`;
 
     setIsStreaming(true);
     setStreamError('');
@@ -264,7 +269,7 @@ export function JourneyScreen() {
     setIsExtracting(true);
     setExtractionFailed(false);
     try {
-      await extractDiscoveries.mutateAsync({ id: journey.id, stage: stageId as "reveal" | "identify" | "personalize" | "live" });
+      await extractDiscoveries.mutateAsync({ id: journey.id, stage: stageId as "reveal" | "identify" | "picture" | "live" });
       await queryClient.invalidateQueries({ queryKey: getGetCurrentJourneyQueryKey() });
     } catch (error) {
       setExtractionFailed(true);
@@ -324,8 +329,12 @@ export function JourneyScreen() {
       setStreamError('Choose or write the purpose statement that feels most true.');
       return;
     }
+    if (stageIdx === 2 && purposeValue !== journey.purposeStatement && (!actionChecked || !impactChecked)) {
+      setStreamError('Confirm that your statement names an action and an impact on others.');
+      return;
+    }
 
-    if (['reveal', 'identify', 'personalize', 'live'].includes(stage.id)) {
+    if (['reveal', 'identify', 'picture', 'live'].includes(stage.id)) {
       setReviewStageId(stage.id);
       runExtraction(stage.id);
       return;
@@ -353,6 +362,12 @@ export function JourneyScreen() {
     } catch (error) {
       setDeleteError(error instanceof Error ? error.message : 'Unable to delete your account. Please try again.');
     }
+  }
+
+  async function saveVision(vision: Vision) {
+    if (!journey) throw new Error('Your journey is not available.');
+    await updateJourney.mutateAsync({ id: journey.id, data: { vision } });
+    await queryClient.invalidateQueries({ queryKey: getGetCurrentJourneyQueryKey() });
   }
 
   async function restart() {
@@ -406,7 +421,7 @@ export function JourneyScreen() {
       <JourneyGate
         title="Before you begin"
         body="I understand my answers are processed by a third-party AI service (Anthropic's Claude) to guide my Purpose Lab journey, as described in the Privacy Policy."
-        actionLabel="I understand — continue"
+        actionLabel="I understand. Continue"
         checked={consentChecked}
         onToggle={() => setConsentChecked((current) => !current)}
         onAction={acceptConsent}
@@ -422,7 +437,7 @@ export function JourneyScreen() {
       <JourneyGate
         title="Welcome to the Purpose Lab"
         body="Over six short stages, you'll share a few stories from your life, notice the patterns in them, and put words to your purpose.\n\nGo at your own pace. Your progress saves automatically, so you can pause anytime and pick up on any device.\n\nYour journey is private to you. Take what you discover into prayer and share it with people you trust."
-        note="Most people finish in 45 to 90 minutes, across one or more sittings."
+        note={courseAccess.data?.courseBuyer ? "Your course includes full Purpose Lab access. Most people finish in 45 to 90 minutes, across one or more sittings." : "Most people finish in 45 to 90 minutes, across one or more sittings."}
         actionLabel="Begin"
         onAction={beginWelcome}
         isPending={recordWelcome.isPending}
@@ -462,6 +477,8 @@ export function JourneyScreen() {
           storyCards={journey?.storyCards ?? []}
           themes={journey?.themes ?? []}
           season={journey?.season ?? null}
+          vision={journey?.vision ?? null}
+          onUpdateVision={saveVision}
           actionPlan={journey?.actionPlan ?? null}
           purposeStatement={journey?.purposeStatement ?? null}
           onUpdateStoryCard={(card) => updateStoryCard.mutateAsync(card)}
@@ -525,9 +542,20 @@ export function JourneyScreen() {
         <Text style={[styles.belief, { color: colors.primary }]}>{stage.belief}</Text>
         <Text style={[styles.teaching, { color: colors.foreground }]}>{stage.teaching}</Text>
       </View>
+      {stageIdx === 3 && journey?.vision ? <VisionForm vision={journey.vision} onSave={async (vision) => {
+        await updateJourney.mutateAsync({ id: journey.id, data: { vision } });
+        await queryClient.invalidateQueries({ queryKey: getGetCurrentJourneyQueryKey() });
+      }} /> : null}
+      {stageIdx === 4 && (journey?.messages.personalize.length ?? 0) > 0 ? <View style={{ padding: 16, gap: 8 }}>
+        <Text style={{ color: colors.foreground, fontWeight: '600' }}>Earlier season reflection</Text>
+        <Text style={{ color: colors.mutedForeground }}>Your original words from the earlier journey are preserved here.</Text>
+        {journey?.messages.personalize.map((message, index) => <Text key={index} style={{ color: colors.foreground }}>{message.role === 'user' ? 'You' : 'Guide'}: {message.content}</Text>)}
+      </View> : null}
+      {stageIdx === 5 ? <Text style={{ color: colors.mutedForeground, padding: 16 }}>Expand exercise retained for your review.</Text> : null}
       {stageIdx === 0 && messages.length === 0 ? (
         <View style={styles.promptSection}>
-          <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>CHOOSE AT LEAST 2 THREADS</Text>
+          <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>TWO STORIES WHERE YOU FELT MOST LIKE YOURSELF</Text>
+          <Text style={{ color: colors.foreground }}>Choose any optional extra prompts below, or begin with your own stories.</Text>
           {STORY_PROMPTS.map((prompt) => {
             const selected = promptSelection.includes(prompt.id);
             return (
@@ -576,9 +604,9 @@ export function JourneyScreen() {
           {stageIdx === 0 && !isHistorical && !isComplete ? (
             <Pressable
               testID="begin-stage-0"
-              disabled={isStreaming || promptSelection.length < 2}
+              disabled={isStreaming}
               onPress={beginStage0}
-              style={[styles.beginButton, { backgroundColor: colors.secondary, opacity: promptSelection.length < 2 ? 0.5 : 1 }]}
+              style={[styles.beginButton, { backgroundColor: colors.secondary }]}
             >
               <Text style={[styles.beginLabel, { color: colors.secondaryForeground }]}>Confirm and begin</Text>
               <Feather name="arrow-right" size={17} color={colors.primary} />
@@ -592,7 +620,7 @@ export function JourneyScreen() {
           {purposeOptions.map((option) => (
             <Pressable
               key={option}
-              onPress={() => setPurposeDraft(option)}
+              onPress={() => { setPurposeDraft(option); setActionChecked(false); setImpactChecked(false); }}
               style={[
                 styles.purposeOption,
                 {
@@ -609,12 +637,19 @@ export function JourneyScreen() {
           <TextInput
             testID="purpose-statement"
             value={purposeValue}
-            onChangeText={setPurposeDraft}
-            placeholder="I am someone who…, so others can…"
+            onChangeText={(value) => { setPurposeDraft(value); setActionChecked(false); setImpactChecked(false); }}
+            placeholder="I wake up each day to [action] so that [impact]. Or use your own words."
             placeholderTextColor={colors.mutedForeground}
             multiline
             style={[styles.purposeInput, { color: colors.foreground, backgroundColor: colors.card, borderColor: colors.input }]}
           />
+          <Text style={{ color: colors.foreground }}>The form is optional. Include both an action and an outward impact.</Text>
+          <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: actionChecked }} onPress={() => setActionChecked(!actionChecked)}>
+            <Text style={{ color: colors.primary }}>{actionChecked ? '✓ ' : '○ '}My statement names my action.</Text>
+          </Pressable>
+          <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: impactChecked }} onPress={() => setImpactChecked(!impactChecked)}>
+            <Text style={{ color: colors.primary }}>{impactChecked ? '✓ ' : '○ '}My statement names the impact on others.</Text>
+          </Pressable>
         </View>
       ) : null}
     </View>
@@ -677,7 +712,11 @@ export function JourneyScreen() {
                   </View>
                 ) : null}
 
-                {reviewStageId === 'personalize' && journey?.season ? (
+                {reviewStageId === 'picture' && journey?.vision ? <VisionForm vision={journey.vision} onSave={async (vision) => {
+                  await updateJourney.mutateAsync({ id: journey.id, data: { vision } });
+                  await queryClient.invalidateQueries({ queryKey: getGetCurrentJourneyQueryKey() });
+                }} /> : null}
+                {reviewStageId === 'live' && journey?.season ? (
                   <View style={{ marginBottom: 32 }}>
                     <SeasonFormView season={journey.season} onUpdate={(s) => { if (journey) updateJourney.mutateAsync({ id: journey.id, data: { season: s } }); }} />
                   </View>
@@ -692,7 +731,7 @@ export function JourneyScreen() {
 
               <View style={[styles.reviewFooter, { backgroundColor: colors.background, borderTopColor: colors.border, paddingBottom: Math.max(insets.bottom, 24) }]}>
                 <Pressable testID="complete-review" onPress={completeReviewAndContinue} style={[styles.reviewPrimaryBtn, { backgroundColor: colors.primary }]}>
-                  <Text style={[styles.reviewPrimaryBtnText, { color: colors.primaryForeground }]}>This feels right — continue</Text>
+                  <Text style={[styles.reviewPrimaryBtnText, { color: colors.primaryForeground }]}>This feels right. Continue</Text>
                   <Feather name="arrow-right" size={18} color={colors.primaryForeground} />
                 </Pressable>
               </View>
@@ -769,6 +808,8 @@ export function JourneyScreen() {
         storyCards={journey?.storyCards ?? []}
         themes={journey?.themes ?? []}
         season={journey?.season ?? null}
+        vision={journey?.vision ?? null}
+        onUpdateVision={saveVision}
         actionPlan={journey?.actionPlan ?? null}
         purposeStatement={journey?.purposeStatement ?? null}
         onUpdateStoryCard={(card) => updateStoryCard.mutateAsync(card)}
@@ -790,6 +831,7 @@ export function JourneyScreen() {
           <Text style={[styles.settingsCopy, { color: colors.mutedForeground }]}>
             Your progress is shared securely across Purpose Lab on web, iPhone, and Android.
           </Text>
+          {courseAccess.data?.courseBuyer && <Text style={[styles.settingsCopy, { color: colors.foreground }]}>Your course includes full Purpose Lab access.</Text>}
           <View style={styles.settingsLinks}>
             {([
               ['Privacy Policy', '/privacy', 'privacy-settings-link'],

@@ -31,7 +31,7 @@ const stages = [
     title: "Pinpoint",
     subtitle: "Your Purpose",
     teaching:
-      "Purpose becomes clearer when you put language to it. This stage helps you move from patterns to a purpose statement rooted in action and impact.",
+      "Put who you are into words. Your purpose statement names your action and the impact it has on others.",
     color: "#2F7F7B",
     textColor: "#ffffff",
     borderColor: "rgba(245,241,232,0.15)",
@@ -39,10 +39,10 @@ const stages = [
   {
     number: "04",
     id: "personalize",
-    title: "Personalize",
-    subtitle: "Your Season",
+    title: "Picture",
+    subtitle: "Your Vision",
     teaching:
-      "Your purpose is not limited by your season. It is expressed through it. This stage helps you understand what living your purpose can look like in your current roles, responsibilities, and life stage.",
+      "See the life your purpose makes possible, and notice whose picture of success you've been borrowing.",
     color: "#5FA8A5",
     textColor: "#0F2A36",
     borderColor: "rgba(15,42,54,0.08)",
@@ -51,9 +51,9 @@ const stages = [
     number: "05",
     id: "live",
     title: "Live",
-    subtitle: "Your Ripple",
+    subtitle: "Your Season",
     teaching:
-      "Clarity becomes powerful when it turns into action. This stage helps you identify what to start, stop, and continue so you can live with greater alignment.",
+      "Your season is not the waiting room to your life. Live your purpose right where you are. This stage helps you see where your purpose is already showing up in your current roles.",
     color: "#9fd0cd",
     textColor: "#0F2A36",
     borderColor: "rgba(15,42,54,0.08)",
@@ -62,9 +62,9 @@ const stages = [
     number: "06",
     id: "expand",
     title: "Expand",
-    subtitle: "Your Growth",
+    subtitle: "Your Ripple",
     teaching:
-      "Purpose is not a one-time discovery. It is something you continue to live, revisit, and grow into over time as your life changes.",
+      "Your ripple reaches the people around you and keeps growing. Purpose is something you keep living, revisiting, and growing into as your life changes.",
     color: "#EEE9DB",
     textColor: "#0F2A36",
     borderColor: "rgba(15,42,54,0.08)",
@@ -139,7 +139,7 @@ export default function RippleMethod() {
           </h1>
           <div className="gold-divider w-24 mx-auto my-6" />
           <p className="text-[#9fd0cd] font-sans text-base leading-relaxed mb-6 max-w-xl mx-auto" data-testid="hero-intro">
-            The Ripple Method™ is a guided framework designed to help you uncover what is already within you and learn how to live it with clarity and intention. It is built on the belief that purpose is not something you create from scratch. It is something you recognize, name, and live.
+            The Ripple Method™ is a guided framework designed to help you uncover what is already within you and learn how to live it with clarity and intention. Purpose is something you recognize, name, and live.
           </p>
           <p className="font-script text-xl text-[#D7ECEB]" data-testid="hero-anchor">
             What's within you creates a ripple.
@@ -353,7 +353,7 @@ export default function RippleMethod() {
               </h3>
               <div className="w-6 h-px mb-3" style={{ backgroundColor: "#C8A96A" }} />
               <p className="text-[#9fd0cd] text-sm font-sans leading-relaxed mb-5">
-                Purpose Lab walks you through the full guided experience with storytelling, reflection, pattern recognition, purpose statement creation, season alignment, and practical action steps.
+                Purpose Lab walks you through the full guided experience with your stories, your patterns, your purpose statement, your vision, and living your purpose in the season you are in.
               </p>
               <Link
                 href="/purpose-lab"
@@ -361,8 +361,11 @@ export default function RippleMethod() {
                 style={{ backgroundColor: "#2F7F7B" }}
                 data-testid="cta-purchase-purpose-lab"
               >
-                Purchase Purpose Lab — $47
+                Purchase Purpose Lab · $47
               </Link>
+              <p className="text-[#D7ECEB] text-xs font-sans leading-relaxed mt-3 text-center opacity-80" data-testid="text-course-buyer">
+                Bought the course? Sign up with the same email you used and your access is already waiting.
+              </p>
             </div>
 
             {/* Consultation */}

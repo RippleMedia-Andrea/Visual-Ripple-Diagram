@@ -13,6 +13,7 @@ import PrivacyPage from "@/pages/privacy";
 import TermsPage from "@/pages/terms";
 import SupportPage from "@/pages/support";
 import ResetPasswordPage from "@/pages/reset-password";
+import CourseBuyersPage from "@/pages/course-buyers";
 
 const queryClient = new QueryClient();
 
@@ -35,6 +36,7 @@ function Router() {
       <Route path="/terms" component={TermsPage} />
       <Route path="/support" component={SupportPage} />
       <Route path="/reset-password" component={ResetPasswordPage} />
+      <Route path="/admin/course-buyers" component={CourseBuyersPage} />
       <Route component={NotFound} />
     </Switch>
   );

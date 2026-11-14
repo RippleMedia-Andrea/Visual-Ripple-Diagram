@@ -8,6 +8,7 @@
 import type { ActionPlan } from "./actionPlan";
 import type { JourneyRecordStatus } from "./journeyRecordStatus";
 import type { Season } from "./season";
+import type { Vision } from "./vision";
 
 export interface JourneyRecord {
   id: number;
@@ -23,6 +24,7 @@ export interface JourneyRecord {
   /** @nullable */
   purposeStatement?: string | null;
   season?: Season;
+  vision?: Vision;
   actionPlan?: ActionPlan;
   createdAt: Date;
   updatedAt: Date;

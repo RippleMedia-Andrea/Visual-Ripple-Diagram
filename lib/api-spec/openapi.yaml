@@ -15,6 +15,100 @@ tags:
   - name: account
     description: Signed-in account state
 paths:
+  /course-access:
+    get:
+      operationId: getCourseAccess
+      tags: [account]
+      security: [{ cookieAuth: [] }]
+      responses:
+        "200":
+          description: Current access and owner status
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CourseAccess" }
+        "401": { description: Sign in required }
+  /admin/course-buyers:
+    get:
+      operationId: listCourseBuyers
+      tags: [account]
+      security: [{ cookieAuth: [] }]
+      responses:
+        "200":
+          description: Course buyers and webhook settings
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CourseAdmin" }
+        "401": { description: Sign in required }
+        "403": { description: Owner only }
+    post:
+      operationId: grantCourseAccess
+      tags: [account]
+      security: [{ cookieAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CourseGrantInput" }
+      responses:
+        "200":
+          description: Access granted
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CourseBuyer" }
+        "400": { description: Invalid email }
+        "401": { description: Sign in required }
+        "403": { description: Owner only }
+  /admin/course-webhook:
+    patch:
+      operationId: updateCourseWebhook
+      tags: [account]
+      security: [{ cookieAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CourseWebhookInput" }
+      responses:
+        "200":
+          description: Settings saved
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CourseWebhookStatus" }
+        "400": { description: Invalid configuration }
+        "401": { description: Sign in required }
+        "403": { description: Owner only }
+    post:
+      operationId: createCourseWebhookToken
+      tags: [account]
+      security: [{ cookieAuth: [] }]
+      responses:
+        "200":
+          description: One-time webhook URL. Replaces any prior token.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CourseWebhookUrl" }
+        "401": { description: Sign in required }
+        "403": { description: Owner only }
+        "503": { description: Public application URL not configured }
+  /systeme-sale:
+    post:
+      operationId: receiveSystemeSale
+      tags: [account]
+      parameters:
+        - name: token
+          in: query
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/SystemeSaleInput" }
+      responses:
+        "200": { description: Recorded or ignored }
+        "400": { description: Invalid sale payload }
+        "401": { description: Invalid token }
+        "503": { description: Course or token not configured }
   /password-reset-availability:
     get:
       operationId: getPasswordResetAvailability
@@ -262,8 +356,80 @@ components:
       required: true
       schema:
         type: string
-        enum: [reveal, identify, personalize, live]
+        enum: [reveal, identify, picture, personalize, live]
   schemas:
+    CourseAccess:
+      type: object
+      required: [fullAccess, courseBuyer, isOwner]
+      properties:
+        fullAccess: { type: boolean }
+        courseBuyer: { type: boolean }
+        isOwner: { type: boolean }
+    CourseGrantInput:
+      type: object
+      required: [email]
+      properties:
+        email: { type: string, pattern: '^[^\s@]+@[^\s@]+\.[^\s@]+$', maxLength: 254 }
+    CourseBuyer:
+      type: object
+      required: [email, source, grantedAt]
+      properties:
+        email: { type: string }
+        source: { type: string }
+        grantedAt: { type: string, format: date-time }
+    CourseWebhookInput:
+      type: object
+      required: [courseId, offerPricePlanId]
+      properties:
+        courseId: { type: string, maxLength: 100 }
+        offerPricePlanId: { type: string, maxLength: 100 }
+    CourseWebhookStatus:
+      allOf:
+        - $ref: "#/components/schemas/CourseWebhookInput"
+        - type: object
+          required: [configured]
+          properties:
+            configured: { type: boolean }
+    CourseWebhookUrl:
+      type: object
+      required: [url]
+      properties:
+        url: { type: string }
+    CourseWebhookEvent:
+      type: object
+      required: [id, receivedAt, outcome]
+      properties:
+        id: { type: integer }
+        receivedAt: { type: string, format: date-time }
+        eventKey: { type: [string, "null"] }
+        outcome: { type: string }
+    CourseAdmin:
+      type: object
+      required: [buyers, events, webhook]
+      properties:
+        buyers:
+          type: array
+          items: { $ref: "#/components/schemas/CourseBuyer" }
+        events:
+          type: array
+          items: { $ref: "#/components/schemas/CourseWebhookEvent" }
+        webhook: { $ref: "#/components/schemas/CourseWebhookStatus" }
+    SystemeSaleInput:
+      type: object
+      required: [type, data, created_at]
+      properties:
+        type: { type: string }
+        created_at: { type: string, format: date-time }
+        data:
+          type: object
+          additionalProperties: true
+    Vision:
+      type: object
+      required: [picture, influences, beforeStarting]
+      properties:
+        picture: { type: string }
+        influences: { type: string }
+        beforeStarting: { type: string }
     PasswordResetAvailability:
       type: object
       properties:
@@ -315,6 +481,10 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/ChatMessage"
+        picture:
+          type: array
+          items:
+            $ref: "#/components/schemas/ChatMessage"
         live:
           type: array
           items:
@@ -323,7 +493,7 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/ChatMessage"
-      required: [reveal, identify, pinpoint, personalize, live, expand]
+      required: [reveal, identify, pinpoint, personalize, picture, live, expand]
     JourneyRecord:
       type: object
       properties:
@@ -350,6 +520,8 @@ components:
           type: [string, "null"]
         season:
           $ref: "#/components/schemas/Season"
+        vision:
+          $ref: "#/components/schemas/Vision"
         actionPlan:
           $ref: "#/components/schemas/ActionPlan"
         createdAt:
@@ -405,6 +577,7 @@ components:
           type: string
           enum: [in_progress, complete]
         season: { $ref: "#/components/schemas/Season" }
+        vision: { $ref: "#/components/schemas/Vision" }
         actionPlan: { $ref: "#/components/schemas/ActionPlan" }
     Evidence:
       type: object
@@ -492,4 +665,8 @@ components:
         - type: object
           properties:
             actionPlan: { $ref: "#/components/schemas/ActionPlan" }
+            season: { $ref: "#/components/schemas/Season" }
+        - type: object
+          properties:
+            vision: { $ref: "#/components/schemas/Vision" }
 

@@ -90,9 +90,10 @@ router.post("/chat", requireAuth, requireAiConsent, async (req, res) => {
   ]);
   const databaseContext = [
     journey.selectedPrompts.length ? `Selected story prompts: ${journey.selectedPrompts.map((id) => STORY_PROMPT_LABELS[id] ?? id).join(", ")}` : "",
-    ["identify","pinpoint","personalize","live","expand"].includes(stage) ? `Story cards: ${JSON.stringify(cards)}` : "",
-    ["pinpoint","personalize","live","expand"].includes(stage) ? `Purpose themes: ${JSON.stringify(themes)}` : "",
-    ["personalize","live","expand"].includes(stage) && journey.purposeStatement ? `Purpose statement: ${journey.purposeStatement}` : "",
+    ["identify","pinpoint","picture","live","expand"].includes(stage) ? `Story cards: ${JSON.stringify(cards)}` : "",
+    ["pinpoint","picture","live","expand"].includes(stage) ? `Purpose themes: ${JSON.stringify(themes)}` : "",
+    ["picture","live","expand"].includes(stage) && journey.purposeStatement ? `Purpose statement: ${journey.purposeStatement}` : "",
+    ["live","expand"].includes(stage) && journey.vision ? `Vision: ${JSON.stringify(journey.vision)}` : "",
     ["live","expand"].includes(stage) && journey.season ? `Season: ${JSON.stringify(journey.season)}` : "",
     stage === "expand" && journey.actionPlan ? `Action plan: ${JSON.stringify(journey.actionPlan)}` : "",
   ].filter(Boolean).join("\n");

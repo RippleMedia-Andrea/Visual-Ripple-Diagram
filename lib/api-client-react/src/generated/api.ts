@@ -18,6 +18,13 @@ import type {
 
 import type {
   Account,
+  CourseAccess,
+  CourseAdmin,
+  CourseBuyer,
+  CourseGrantInput,
+  CourseWebhookInput,
+  CourseWebhookStatus,
+  CourseWebhookUrl,
   ExtractionResponse,
   HealthStatus,
   Journey,
@@ -26,10 +33,12 @@ import type {
   PasswordResetAvailability,
   PurposeTheme,
   PurposeThemeCreate,
+  ReceiveSystemeSaleParams,
   RecordAiConsent200,
   RecordWelcomeSeen200,
   StoryCard,
   StoryCardUpdate,
+  SystemeSaleInput,
 } from "./api.schemas";
 
 import { customFetch } from "../custom-fetch";
@@ -57,6 +66,470 @@ const withQueryKey = <T extends object, K>(
     });
   }
   return result;
+};
+
+export const getGetCourseAccessUrl = () => {
+  return `/api/course-access`;
+};
+
+export const getCourseAccess = async (
+  options?: RequestInit,
+): Promise<CourseAccess> => {
+  return customFetch<CourseAccess>(getGetCourseAccessUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetCourseAccessQueryKey = () => {
+  return [`/api/course-access`] as const;
+};
+
+export const getGetCourseAccessQueryOptions = <
+  TData = Awaited<ReturnType<typeof getCourseAccess>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getCourseAccess>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetCourseAccessQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getCourseAccess>>> = ({
+    signal,
+  }) => getCourseAccess({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getCourseAccess>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetCourseAccessQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getCourseAccess>>
+>;
+export type GetCourseAccessQueryError = ErrorType<void>;
+
+export function useGetCourseAccess<
+  TData = Awaited<ReturnType<typeof getCourseAccess>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getCourseAccess>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetCourseAccessQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+export const getListCourseBuyersUrl = () => {
+  return `/api/admin/course-buyers`;
+};
+
+export const listCourseBuyers = async (
+  options?: RequestInit,
+): Promise<CourseAdmin> => {
+  return customFetch<CourseAdmin>(getListCourseBuyersUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListCourseBuyersQueryKey = () => {
+  return [`/api/admin/course-buyers`] as const;
+};
+
+export const getListCourseBuyersQueryOptions = <
+  TData = Awaited<ReturnType<typeof listCourseBuyers>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listCourseBuyers>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListCourseBuyersQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof listCourseBuyers>>
+  > = ({ signal }) => listCourseBuyers({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listCourseBuyers>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListCourseBuyersQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listCourseBuyers>>
+>;
+export type ListCourseBuyersQueryError = ErrorType<void>;
+
+export function useListCourseBuyers<
+  TData = Awaited<ReturnType<typeof listCourseBuyers>>,
+  TError = ErrorType<void>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listCourseBuyers>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListCourseBuyersQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+export const getGrantCourseAccessUrl = () => {
+  return `/api/admin/course-buyers`;
+};
+
+export const grantCourseAccess = async (
+  courseGrantInput: CourseGrantInput,
+  options?: RequestInit,
+): Promise<CourseBuyer> => {
+  return customFetch<CourseBuyer>(getGrantCourseAccessUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(courseGrantInput),
+  });
+};
+
+export const getGrantCourseAccessMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof grantCourseAccess>>,
+    TError,
+    { data: BodyType<CourseGrantInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof grantCourseAccess>>,
+  TError,
+  { data: BodyType<CourseGrantInput> },
+  TContext
+> => {
+  const mutationKey = ["grantCourseAccess"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof grantCourseAccess>>,
+    { data: BodyType<CourseGrantInput> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return grantCourseAccess(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type GrantCourseAccessMutationResult = NonNullable<
+  Awaited<ReturnType<typeof grantCourseAccess>>
+>;
+export type GrantCourseAccessMutationBody = BodyType<CourseGrantInput>;
+export type GrantCourseAccessMutationError = ErrorType<void>;
+
+export const useGrantCourseAccess = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof grantCourseAccess>>,
+    TError,
+    { data: BodyType<CourseGrantInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof grantCourseAccess>>,
+  TError,
+  { data: BodyType<CourseGrantInput> },
+  TContext
+> => {
+  return useMutation(getGrantCourseAccessMutationOptions(options));
+};
+
+export const getUpdateCourseWebhookUrl = () => {
+  return `/api/admin/course-webhook`;
+};
+
+export const updateCourseWebhook = async (
+  courseWebhookInput: CourseWebhookInput,
+  options?: RequestInit,
+): Promise<CourseWebhookStatus> => {
+  return customFetch<CourseWebhookStatus>(getUpdateCourseWebhookUrl(), {
+    ...options,
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(courseWebhookInput),
+  });
+};
+
+export const getUpdateCourseWebhookMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateCourseWebhook>>,
+    TError,
+    { data: BodyType<CourseWebhookInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateCourseWebhook>>,
+  TError,
+  { data: BodyType<CourseWebhookInput> },
+  TContext
+> => {
+  const mutationKey = ["updateCourseWebhook"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateCourseWebhook>>,
+    { data: BodyType<CourseWebhookInput> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return updateCourseWebhook(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateCourseWebhookMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateCourseWebhook>>
+>;
+export type UpdateCourseWebhookMutationBody = BodyType<CourseWebhookInput>;
+export type UpdateCourseWebhookMutationError = ErrorType<void>;
+
+export const useUpdateCourseWebhook = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateCourseWebhook>>,
+    TError,
+    { data: BodyType<CourseWebhookInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateCourseWebhook>>,
+  TError,
+  { data: BodyType<CourseWebhookInput> },
+  TContext
+> => {
+  return useMutation(getUpdateCourseWebhookMutationOptions(options));
+};
+
+export const getCreateCourseWebhookTokenUrl = () => {
+  return `/api/admin/course-webhook`;
+};
+
+export const createCourseWebhookToken = async (
+  options?: RequestInit,
+): Promise<CourseWebhookUrl> => {
+  return customFetch<CourseWebhookUrl>(getCreateCourseWebhookTokenUrl(), {
+    ...options,
+    method: "POST",
+  });
+};
+
+export const getCreateCourseWebhookTokenMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createCourseWebhookToken>>,
+    TError,
+    void,
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createCourseWebhookToken>>,
+  TError,
+  void,
+  TContext
+> => {
+  const mutationKey = ["createCourseWebhookToken"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createCourseWebhookToken>>,
+    void
+  > = () => {
+    return createCourseWebhookToken(requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateCourseWebhookTokenMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createCourseWebhookToken>>
+>;
+
+export type CreateCourseWebhookTokenMutationError = ErrorType<void>;
+
+export const useCreateCourseWebhookToken = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createCourseWebhookToken>>,
+    TError,
+    void,
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createCourseWebhookToken>>,
+  TError,
+  void,
+  TContext
+> => {
+  return useMutation(getCreateCourseWebhookTokenMutationOptions(options));
+};
+
+export const getReceiveSystemeSaleUrl = (params: ReceiveSystemeSaleParams) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : String(value));
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/systeme-sale?${stringifiedParams}`
+    : `/api/systeme-sale`;
+};
+
+export const receiveSystemeSale = async (
+  systemeSaleInput: SystemeSaleInput,
+  params: ReceiveSystemeSaleParams,
+  options?: RequestInit,
+): Promise<void> => {
+  return customFetch<void>(getReceiveSystemeSaleUrl(params), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(systemeSaleInput),
+  });
+};
+
+export const getReceiveSystemeSaleMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof receiveSystemeSale>>,
+    TError,
+    { data: BodyType<SystemeSaleInput>; params: ReceiveSystemeSaleParams },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof receiveSystemeSale>>,
+  TError,
+  { data: BodyType<SystemeSaleInput>; params: ReceiveSystemeSaleParams },
+  TContext
+> => {
+  const mutationKey = ["receiveSystemeSale"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof receiveSystemeSale>>,
+    { data: BodyType<SystemeSaleInput>; params: ReceiveSystemeSaleParams }
+  > = (props) => {
+    const { data, params } = props ?? {};
+
+    return receiveSystemeSale(data, params, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type ReceiveSystemeSaleMutationResult = NonNullable<
+  Awaited<ReturnType<typeof receiveSystemeSale>>
+>;
+export type ReceiveSystemeSaleMutationBody = BodyType<SystemeSaleInput>;
+export type ReceiveSystemeSaleMutationError = ErrorType<void>;
+
+export const useReceiveSystemeSale = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof receiveSystemeSale>>,
+    TError,
+    { data: BodyType<SystemeSaleInput>; params: ReceiveSystemeSaleParams },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof receiveSystemeSale>>,
+  TError,
+  { data: BodyType<SystemeSaleInput>; params: ReceiveSystemeSaleParams },
+  TContext
+> => {
+  return useMutation(getReceiveSystemeSaleMutationOptions(options));
 };
 
 export const getGetPasswordResetAvailabilityUrl = () => {
@@ -614,7 +1087,7 @@ export const useUpdateJourney = <
 
 export const getExtractJourneyDiscoveriesUrl = (
   id: number,
-  stage: "reveal" | "identify" | "personalize" | "live",
+  stage: "reveal" | "identify" | "picture" | "personalize" | "live",
 ) => {
   return `/api/journeys/${id}/discoveries/${stage}`;
 };
@@ -624,7 +1097,7 @@ export const getExtractJourneyDiscoveriesUrl = (
  */
 export const extractJourneyDiscoveries = async (
   id: number,
-  stage: "reveal" | "identify" | "personalize" | "live",
+  stage: "reveal" | "identify" | "picture" | "personalize" | "live",
   options?: RequestInit,
 ): Promise<ExtractionResponse> => {
   return customFetch<ExtractionResponse>(
@@ -643,14 +1116,20 @@ export const getExtractJourneyDiscoveriesMutationOptions = <
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof extractJourneyDiscoveries>>,
     TError,
-    { id: number; stage: "reveal" | "identify" | "personalize" | "live" },
+    {
+      id: number;
+      stage: "reveal" | "identify" | "picture" | "personalize" | "live";
+    },
     TContext
   >;
   request?: SecondParameter<typeof customFetch>;
 }): UseMutationOptions<
   Awaited<ReturnType<typeof extractJourneyDiscoveries>>,
   TError,
-  { id: number; stage: "reveal" | "identify" | "personalize" | "live" },
+  {
+    id: number;
+    stage: "reveal" | "identify" | "picture" | "personalize" | "live";
+  },
   TContext
 > => {
   const mutationKey = ["extractJourneyDiscoveries"];
@@ -664,7 +1143,10 @@ export const getExtractJourneyDiscoveriesMutationOptions = <
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof extractJourneyDiscoveries>>,
-    { id: number; stage: "reveal" | "identify" | "personalize" | "live" }
+    {
+      id: number;
+      stage: "reveal" | "identify" | "picture" | "personalize" | "live";
+    }
   > = (props) => {
     const { id, stage } = props ?? {};
 
@@ -690,14 +1172,20 @@ export const useExtractJourneyDiscoveries = <
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof extractJourneyDiscoveries>>,
     TError,
-    { id: number; stage: "reveal" | "identify" | "personalize" | "live" },
+    {
+      id: number;
+      stage: "reveal" | "identify" | "picture" | "personalize" | "live";
+    },
     TContext
   >;
   request?: SecondParameter<typeof customFetch>;
 }): UseMutationResult<
   Awaited<ReturnType<typeof extractJourneyDiscoveries>>,
   TError,
-  { id: number; stage: "reveal" | "identify" | "personalize" | "live" },
+  {
+    id: number;
+    stage: "reveal" | "identify" | "picture" | "personalize" | "live";
+  },
   TContext
 > => {
   return useMutation(getExtractJourneyDiscoveriesMutationOptions(options));

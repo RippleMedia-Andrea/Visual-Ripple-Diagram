@@ -1,10 +1,12 @@
 import { useState } from "react";
-import { useLocation } from "wouter";
+import { Link, useLocation } from "wouter";
+import { getGetCourseAccessQueryKey, useGetCourseAccess } from "@workspace/api-client-react";
 import { authClient } from "@/lib/auth-client";
 
 export function AccountMenu({ color }: { color: string }) {
   const { data: session } = authClient.useSession();
   const [, navigate] = useLocation();
+  const { data: courseAccess } = useGetCourseAccess({ query: { enabled: Boolean(session), queryKey: [...getGetCourseAccessQueryKey(), session?.user.id] } });
   const [open, setOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
@@ -62,6 +64,14 @@ export function AccountMenu({ color }: { color: string }) {
             <p className="px-3 py-2 text-xs border-b border-[#0F2A36]/10 mb-1">
               Signed in as <strong>{firstName}</strong>
             </p>
+            {session && courseAccess?.isOwner && (
+              <Link href="/admin/course-buyers" onClick={() => setOpen(false)} className="block w-full text-left px-3 py-2 text-xs rounded-lg hover:bg-[#D7ECEB] transition-colors" data-testid="link-course-buyers">
+                Course buyers
+              </Link>
+            )}
+            {session && courseAccess?.courseBuyer && (
+              <p className="px-3 py-2 text-xs">Your course includes full Purpose Lab access.</p>
+            )}
             <button onClick={signOut} className="w-full text-left px-3 py-2 text-xs rounded-lg hover:bg-[#D7ECEB] transition-colors">
               Sign Out
             </button>

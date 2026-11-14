@@ -5,11 +5,13 @@ import journeysRouter from "./journeys";
 import discoveriesRouter from "./discoveries";
 import extractRouter from "./ripple/extract";
 import accountRouter from "./account";
+import courseAccessRouter from "./course-access";
 
 const router: IRouter = Router();
 
 router.use(healthRouter);
 router.use(accountRouter);
+router.use(courseAccessRouter);
 router.use("/ripple", rippleChatRouter);
 router.use("/journeys", journeysRouter);
 router.use(discoveriesRouter);

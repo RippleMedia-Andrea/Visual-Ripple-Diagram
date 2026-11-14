@@ -2,12 +2,12 @@ import { motion } from 'framer-motion';
 import { SafeFrame } from '@/lib/video';
 
 const stages = [
-  ['01', 'Reveal', 'your story'],
-  ['02', 'Identify', 'your patterns'],
-  ['03', 'Pinpoint', 'your purpose'],
-  ['04', 'Personalize', 'your season'],
-  ['05', 'Live', 'your ripple'],
-  ['06', 'Expand', 'your growth'],
+  ['01', 'Reveal', 'Your Story'],
+  ['02', 'Identify', 'Your Patterns'],
+  ['03', 'Pinpoint', 'Your Purpose'],
+  ['04', 'Picture', 'Your Vision'],
+  ['05', 'Live', 'Your Season'],
+  ['06', 'Expand', 'Your Ripple'],
 ];
 
 export function Scene2() {

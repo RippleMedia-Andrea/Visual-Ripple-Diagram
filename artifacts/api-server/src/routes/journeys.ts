@@ -4,7 +4,8 @@ import { db, journeyMessages, journeys, purposeThemes, storyCards } from "@works
 import { requireAuth } from "../middlewares/require-auth";
 
 const router = Router();
-const STAGES = ["reveal", "identify", "pinpoint", "personalize", "live", "expand"] as const;
+// Keep the legacy season transcript separate from the new Picture exercise.
+const STAGES = ["reveal", "identify", "pinpoint", "personalize", "picture", "live", "expand"] as const;
 
 async function getJourneyPayload(journeyId: number) {
   const [journey] = await db.select().from(journeys).where(eq(journeys.id, journeyId)).limit(1);
@@ -81,6 +82,7 @@ router.patch("/:id", async (req, res, next) => {
       update.purposeStatement = req.body.purposeStatement;
     }
     if (req.body.season === null || (req.body.season && typeof req.body.season === "object")) update.season = req.body.season;
+    if (req.body.vision === null || (req.body.vision && typeof req.body.vision === "object")) update.vision = req.body.vision;
     if (req.body.actionPlan === null || (req.body.actionPlan && typeof req.body.actionPlan === "object")) update.actionPlan = req.body.actionPlan;
     if (req.body.status === "in_progress" || req.body.status === "complete") {
       update.status = req.body.status;

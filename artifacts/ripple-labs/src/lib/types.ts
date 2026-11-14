@@ -51,4 +51,11 @@ export interface JourneyResponse {
   themes?: PurposeTheme[];
   season?: Season | null;
   actionPlan?: ActionPlan | null;
+  vision?: Vision | null;
+}
+
+export interface Vision {
+  picture: string;
+  influences: string;
+  beforeStarting: string;
 }

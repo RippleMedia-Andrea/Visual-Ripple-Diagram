@@ -5,6 +5,69 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+export interface CourseAccess {
+  fullAccess: boolean;
+  courseBuyer: boolean;
+  isOwner: boolean;
+}
+
+export interface CourseGrantInput {
+  /**
+   * @maxLength 254
+   * @pattern ^[^\s@]+@[^\s@]+\.[^\s@]+$
+   */
+  email: string;
+}
+
+export interface CourseBuyer {
+  email: string;
+  source: string;
+  grantedAt: string;
+}
+
+export interface CourseWebhookInput {
+  /** @maxLength 100 */
+  courseId: string;
+  /** @maxLength 100 */
+  offerPricePlanId: string;
+}
+
+export type CourseWebhookStatus = CourseWebhookInput & {
+  configured: boolean;
+};
+
+export interface CourseWebhookUrl {
+  url: string;
+}
+
+export interface CourseWebhookEvent {
+  id: number;
+  receivedAt: string;
+  /** @nullable */
+  eventKey?: string | null;
+  outcome: string;
+}
+
+export interface CourseAdmin {
+  buyers: CourseBuyer[];
+  events: CourseWebhookEvent[];
+  webhook: CourseWebhookStatus;
+}
+
+export type SystemeSaleInputData = { [key: string]: unknown };
+
+export interface SystemeSaleInput {
+  type: string;
+  created_at: string;
+  data: SystemeSaleInputData;
+}
+
+export interface Vision {
+  picture: string;
+  influences: string;
+  beforeStarting: string;
+}
+
 export interface PasswordResetAvailability {
   available: boolean;
   supportEmail: string;
@@ -43,6 +106,7 @@ export interface StageMessages {
   identify: ChatMessage[];
   pinpoint: ChatMessage[];
   personalize: ChatMessage[];
+  picture: ChatMessage[];
   live: ChatMessage[];
   expand: ChatMessage[];
 }
@@ -85,6 +149,7 @@ export interface JourneyRecord {
   /** @nullable */
   purposeStatement?: string | null;
   season?: Season;
+  vision?: Vision;
   actionPlan?: ActionPlan;
   createdAt: string;
   updatedAt: string;
@@ -153,6 +218,7 @@ export interface JourneyUpdate {
   purposeStatement?: string | null;
   status?: JourneyUpdateStatus;
   season?: Season;
+  vision?: Vision;
   actionPlan?: ActionPlan;
 }
 
@@ -189,7 +255,15 @@ export type ExtractionResponse =
     }
   | {
       actionPlan?: ActionPlan;
+      season?: Season;
+    }
+  | {
+      vision?: Vision;
     };
+
+export type ReceiveSystemeSaleParams = {
+  token: string;
+};
 
 export type RecordAiConsent200 = {
   aiConsentAt: string;

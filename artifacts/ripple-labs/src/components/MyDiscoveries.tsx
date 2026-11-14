@@ -1,5 +1,7 @@
 import { StoryCard, PurposeTheme, Season, ActionPlan } from "../lib/types";
 import { StoryCardView, ThemeCardView, SeasonFormView, ActionPlanFormView } from "./Discoveries";
+import { VisionForm } from "./VisionForm";
+import type { Vision } from "@/lib/types";
 
 interface MyDiscoveriesProps {
   isOpen: boolean;
@@ -7,6 +9,8 @@ interface MyDiscoveriesProps {
   storyCards: StoryCard[];
   themes: PurposeTheme[];
   season: Season | null;
+  vision: Vision | null;
+  onUpdateVision: (vision: Vision) => Promise<void>;
   actionPlan: ActionPlan | null;
   purposeStatement: string | null;
   onUpdateStoryCard: (card: StoryCard) => void;
@@ -23,6 +27,8 @@ export function MyDiscoveries({
   storyCards,
   themes,
   season,
+  vision,
+  onUpdateVision,
   actionPlan,
   purposeStatement,
   onUpdateStoryCard,
@@ -82,6 +88,7 @@ export function MyDiscoveries({
             </section>
           )}
 
+          {vision && <VisionForm vision={vision} onSave={onUpdateVision} />}
           {/* Season */}
           {season && (
             <section>

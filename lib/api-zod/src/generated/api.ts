@@ -7,6 +7,109 @@
  */
 import * as zod from "zod";
 
+export const GetCourseAccessResponse = zod.object({
+  fullAccess: zod.boolean(),
+  courseBuyer: zod.boolean(),
+  isOwner: zod.boolean(),
+});
+
+export const listCourseBuyersResponseWebhookOneCourseIdMax = 100;
+
+export const listCourseBuyersResponseWebhookOneOfferPricePlanIdMax = 100;
+
+export const ListCourseBuyersResponse = zod.object({
+  buyers: zod.array(
+    zod.object({
+      email: zod.string(),
+      source: zod.string(),
+      grantedAt: zod.coerce.date(),
+    }),
+  ),
+  events: zod.array(
+    zod.object({
+      id: zod.number(),
+      receivedAt: zod.coerce.date(),
+      eventKey: zod.string().nullish(),
+      outcome: zod.string(),
+    }),
+  ),
+  webhook: zod
+    .object({
+      courseId: zod.string().max(listCourseBuyersResponseWebhookOneCourseIdMax),
+      offerPricePlanId: zod
+        .string()
+        .max(listCourseBuyersResponseWebhookOneOfferPricePlanIdMax),
+    })
+    .and(
+      zod.object({
+        configured: zod.boolean(),
+      }),
+    ),
+});
+
+export const grantCourseAccessBodyEmailMax = 254;
+
+export const grantCourseAccessBodyEmailRegExp = new RegExp(
+  "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$",
+);
+
+export const GrantCourseAccessBody = zod.object({
+  email: zod
+    .string()
+    .max(grantCourseAccessBodyEmailMax)
+    .regex(grantCourseAccessBodyEmailRegExp),
+});
+
+export const GrantCourseAccessResponse = zod.object({
+  email: zod.string(),
+  source: zod.string(),
+  grantedAt: zod.coerce.date(),
+});
+
+export const updateCourseWebhookBodyCourseIdMax = 100;
+
+export const updateCourseWebhookBodyOfferPricePlanIdMax = 100;
+
+export const UpdateCourseWebhookBody = zod.object({
+  courseId: zod.string().max(updateCourseWebhookBodyCourseIdMax),
+  offerPricePlanId: zod
+    .string()
+    .max(updateCourseWebhookBodyOfferPricePlanIdMax),
+});
+
+export const updateCourseWebhookResponseOneCourseIdMax = 100;
+
+export const updateCourseWebhookResponseOneOfferPricePlanIdMax = 100;
+
+export const UpdateCourseWebhookResponse = zod
+  .object({
+    courseId: zod.string().max(updateCourseWebhookResponseOneCourseIdMax),
+    offerPricePlanId: zod
+      .string()
+      .max(updateCourseWebhookResponseOneOfferPricePlanIdMax),
+  })
+  .and(
+    zod.object({
+      configured: zod.boolean(),
+    }),
+  );
+
+export const CreateCourseWebhookTokenResponse = zod.object({
+  url: zod.string(),
+});
+
+export const ReceiveSystemeSaleQueryParams = zod.object({
+  token: zod.coerce.string(),
+});
+
+export const ReceiveSystemeSaleBody = zod.object({
+  type: zod.string(),
+  created_at: zod.coerce.date(),
+  data: zod.record(zod.string(), zod.unknown()),
+});
+
+export const ReceiveSystemeSaleResponse = zod.unknown();
+
 /**
  * @summary Check whether password reset is enabled and configured
  */
@@ -77,6 +180,13 @@ export const GetCurrentJourneyResponse = zod
         expressions: zod.array(zod.string()).optional(),
       })
       .optional(),
+    vision: zod
+      .object({
+        picture: zod.string(),
+        influences: zod.string(),
+        beforeStarting: zod.string(),
+      })
+      .optional(),
     actionPlan: zod
       .object({
         start: zod.array(zod.string()).optional(),
@@ -111,6 +221,12 @@ export const GetCurrentJourneyResponse = zod
           }),
         ),
         personalize: zod.array(
+          zod.object({
+            role: zod.enum(["user", "assistant"]),
+            content: zod.string(),
+          }),
+        ),
+        picture: zod.array(
           zod.object({
             role: zod.enum(["user", "assistant"]),
             content: zod.string(),
@@ -200,6 +316,13 @@ export const UpdateJourneyBody = zod.object({
       expressions: zod.array(zod.string()).optional(),
     })
     .optional(),
+  vision: zod
+    .object({
+      picture: zod.string(),
+      influences: zod.string(),
+      beforeStarting: zod.string(),
+    })
+    .optional(),
   actionPlan: zod
     .object({
       start: zod.array(zod.string()).optional(),
@@ -234,6 +357,13 @@ export const UpdateJourneyResponse = zod.object({
       expressions: zod.array(zod.string()).optional(),
     })
     .optional(),
+  vision: zod
+    .object({
+      picture: zod.string(),
+      influences: zod.string(),
+      beforeStarting: zod.string(),
+    })
+    .optional(),
   actionPlan: zod
     .object({
       start: zod.array(zod.string()).optional(),
@@ -252,7 +382,7 @@ export const UpdateJourneyResponse = zod.object({
  */
 export const ExtractJourneyDiscoveriesParams = zod.object({
   id: zod.coerce.number(),
-  stage: zod.enum(["reveal", "identify", "personalize", "live"]),
+  stage: zod.enum(["reveal", "identify", "picture", "personalize", "live"]),
 });
 
 export const ExtractJourneyDiscoveriesResponse = zod.union([
@@ -321,6 +451,25 @@ export const ExtractJourneyDiscoveriesResponse = zod.union([
         stop: zod.array(zod.string()).optional(),
         continue: zod.array(zod.string()).optional(),
         oneStepThisWeek: zod.string().optional(),
+      })
+      .optional(),
+    season: zod
+      .object({
+        summary: zod.string().optional(),
+        roles: zod.array(zod.string()).optional(),
+        capacity: zod.string().optional(),
+        constraints: zod.array(zod.string()).optional(),
+        opportunities: zod.array(zod.string()).optional(),
+        expressions: zod.array(zod.string()).optional(),
+      })
+      .optional(),
+  }),
+  zod.object({
+    vision: zod
+      .object({
+        picture: zod.string(),
+        influences: zod.string(),
+        beforeStarting: zod.string(),
       })
       .optional(),
   }),
@@ -491,6 +640,13 @@ export const RestartJourneyResponse = zod
         expressions: zod.array(zod.string()).optional(),
       })
       .optional(),
+    vision: zod
+      .object({
+        picture: zod.string(),
+        influences: zod.string(),
+        beforeStarting: zod.string(),
+      })
+      .optional(),
     actionPlan: zod
       .object({
         start: zod.array(zod.string()).optional(),
@@ -525,6 +681,12 @@ export const RestartJourneyResponse = zod
           }),
         ),
         personalize: zod.array(
+          zod.object({
+            role: zod.enum(["user", "assistant"]),
+            content: zod.string(),
+          }),
+        ),
+        picture: zod.array(
           zod.object({
             role: zod.enum(["user", "assistant"]),
             content: zod.string(),

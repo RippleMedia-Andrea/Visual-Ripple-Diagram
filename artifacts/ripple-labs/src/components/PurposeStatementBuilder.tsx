@@ -3,26 +3,26 @@ import { useState } from "react";
 const SUGGESTED_STATEMENTS = [
   {
     id: "a",
-    action: "helps people feel seen",
+    action: "help people feel seen",
     impact: "know they matter",
-    full: "I am someone who helps people feel seen, so others can know they matter.",
+    full: "I wake up each day to help people feel seen so that they know they matter.",
   },
   {
     id: "b",
-    action: "brings clarity to confusing situations",
+    action: "bring clarity to confusing situations",
     impact: "move forward with confidence",
-    full: "I am someone who brings clarity to confusing situations, so others can move forward with confidence.",
+    full: "I wake up each day to bring clarity to confusing situations so that others can move forward with confidence.",
   },
   {
     id: "c",
-    action: "encourages growth",
+    action: "encourage growth",
     impact: "become who they were created to be",
-    full: "I am someone who encourages growth, so others can become who they were created to be.",
+    full: "I wake up each day to encourage growth so that others can become who they were created to be.",
   },
 ];
 
 const GUIDANCE_QUESTIONS = [
-  "Does this sound like you?",
+  "Does this name an action you bring to different roles?",
   "Does this reflect how you naturally show up?",
   "Does the impact focus on others?",
   "Is this simple enough to remember and repeat?",
@@ -58,12 +58,14 @@ export function PurposeStatementBuilder({ textColor, cardBg }: PurposeStatementB
   };
 
   const handleSelect = (id: string) => {
+    setCheckedGuides(new Array(GUIDANCE_QUESTIONS.length).fill(false));
     setSelectedId(id);
     setMode("choose");
     setConfirmed(false);
   };
 
   const handleCustomMode = () => {
+    if (mode === "choose") setCustomStatement(activeStatement);
     setMode("custom");
     setSelectedId(null);
     setConfirmed(false);
@@ -81,22 +83,22 @@ export function PurposeStatementBuilder({ textColor, cardBg }: PurposeStatementB
           className="text-[10px] font-sans uppercase tracking-widest mb-2"
           style={{ color: textColor, opacity: 0.5 }}
         >
-          Your Purpose Statement Format
+          An Optional Starting Point
         </p>
         <p
           className="text-lg md:text-xl font-serif font-semibold leading-snug"
           style={{ color: textColor, fontFamily: "'Playfair Display', serif" }}
           data-testid="format-template"
         >
-          "I am someone who{" "}
-          <span style={{ color: "#C8A96A" }}>[action]</span>, so others can{" "}
+          "I wake up each day to{" "}
+          <span style={{ color: "#C8A96A" }}>[action]</span> so that{" "}
           <span style={{ color: "#C8A96A" }}>[impact]</span>."
         </p>
         <p
           className="text-xs font-sans mt-3 max-w-md mx-auto leading-relaxed"
           style={{ color: textColor, opacity: 0.6 }}
         >
-          Your purpose statement begins with identity and ends with impact. It is not just what you do. It reflects who you are and how your life helps others.
+          Put who you are into words. Name your action and its impact on others in everyday language. Use this form or your own words. Ask why the impact matters, then ask why again.
         </p>
       </div>
 
@@ -181,17 +183,18 @@ export function PurposeStatementBuilder({ textColor, cardBg }: PurposeStatementB
             className="px-4 py-2.5 text-[10px] font-sans opacity-50 border-b"
             style={{ color: textColor, borderColor: "rgba(200,169,106,0.1)" }}
           >
-            "I am someone who [action], so others can [impact]."
+            Optional: "I wake up each day to [action] so that [impact]."
           </div>
           <textarea
             className="w-full px-4 py-3 text-sm font-sans leading-relaxed resize-none bg-transparent outline-none placeholder:opacity-30"
             rows={3}
             style={{ color: textColor }}
-            placeholder="I am someone who _________, so others can _________."
+            placeholder="I wake up each day to _________ so that _________."
             value={mode === "custom" ? customStatement : activeStatement}
             onFocus={handleCustomMode}
             onChange={(e) => {
               setCustomStatement(e.target.value);
+              setCheckedGuides(new Array(GUIDANCE_QUESTIONS.length).fill(false));
               setConfirmed(false);
             }}
             data-testid="statement-textarea"
@@ -252,7 +255,8 @@ export function PurposeStatementBuilder({ textColor, cardBg }: PurposeStatementB
         <div className="flex flex-col sm:flex-row items-center gap-3" data-testid="confirm-area">
           <button
             onClick={() => setConfirmed(true)}
-            className="flex-1 py-3 px-6 rounded-full text-sm font-sans font-medium transition-all text-center hover:opacity-90"
+            disabled={!checkedGuides[0] || !checkedGuides[2]}
+            className="flex-1 py-3 px-6 rounded-full text-sm font-sans font-medium transition-all text-center hover:opacity-90 disabled:opacity-40"
             style={{ backgroundColor: "#2F7F7B", color: "#ffffff" }}
             data-testid="confirm-statement-btn"
           >

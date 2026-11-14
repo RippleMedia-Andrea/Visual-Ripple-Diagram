@@ -14,26 +14,26 @@ const stages = [
     eyebrow: "Stage One",
     belief: "Your story holds clues.",
     teaching:
-      "You are not becoming someone else. You are uncovering who you already are. Every meaningful experience — the highs, the lows, the moments that made you come alive — contains a thread of your purpose. We begin here, with your story.",
-    what: "In this stage you'll uncover meaningful stories, early experiences, moments of aliveness, challenges, and defining memories that have quietly shaped who you are.",
+      "You are not becoming someone else. You are uncovering who you already are. Your stories hold threads of your purpose, so we begin here, with your story.",
+    what: "In this stage you'll share two stories when you felt most like yourself. For each one, you'll reflect on three things: What I felt, What I did, and What changed. The other prompts are optional extras.",
     prompts: [
       {
-        label: "Moments of Aliveness",
+        label: "Story One",
         question:
-          "When in your life have you felt most alive, most yourself? What were you doing? Who were you with?",
+          "Tell a story when you felt most like yourself. What I felt? What I did? What changed?",
       },
       {
-        label: "Early Experiences",
+        label: "Story Two",
+        question:
+          "Tell a second story when you felt most like yourself. What I felt? What I did? What changed?",
+      },
+      {
+        label: "Optional: Early Experiences",
         question:
           "What experiences from childhood or early life shaped how you see yourself and others?",
       },
       {
-        label: "Defining Challenges",
-        question:
-          "What is a difficulty you've walked through that changed you? What did it reveal about your strength or values?",
-      },
-      {
-        label: "Turning Points",
+        label: "Optional: Turning Points",
         question:
           "Describe a moment when everything shifted. What was before, and what became possible after?",
       },
@@ -51,28 +51,28 @@ const stages = [
     eyebrow: "Stage Two",
     belief: "Patterns reveal purpose.",
     teaching:
-      "Across your stories, there are recurring themes — emotions you keep feeling, actions you naturally take, values that keep surfacing. These patterns are not coincidences. They are fingerprints of your purpose.",
-    what: "Here we extract the patterns from your stories: the emotions, actions, values, strengths, audience, motivations, and recurring themes that appear again and again.",
+      "Across your stories, the same things keep showing up: the action you naturally take and the impact it has on others. These patterns are fingerprints of your purpose.",
+    what: "Here you'll find your action word and your impact from your stories. Both carry equal weight, and your action is bigger than any single job or role.",
     prompts: [
       {
-        label: "Recurring Emotions",
+        label: "Your Action Word",
         question:
-          "What emotions show up most in your best stories? (e.g., joy, purpose, freedom, connection, courage)",
+          "Looking at your two stories, what were you doing each time? Choose one word for the action you keep taking.",
       },
       {
-        label: "Natural Strengths",
+        label: "Your Impact",
         question:
-          "What do people consistently come to you for? What feels effortless to you but hard for others?",
+          "In those same stories, what changed for the people around you because of what you did?",
       },
       {
-        label: "Who You Impact",
+        label: "Equal Weight",
         question:
-          "Who do you most naturally want to help, support, or champion? Describe them.",
+          "Read your action and your impact side by side. Do they feel equally true to who you are?",
       },
       {
-        label: "What Drives You",
+        label: "Beyond One Role",
         question:
-          "What injustice bothers you most? What gap in the world do you wish you could fill?",
+          "Where else does your action show up, outside of work or any single role you hold?",
       },
     ],
     color: "#1a4a55",
@@ -88,8 +88,8 @@ const stages = [
     eyebrow: "Stage Three",
     belief: "You are not becoming someone else. You are naming who you already are.",
     teaching:
-      "Your purpose statement begins with identity and ends with impact. It is not just what you do. It reflects who you are and how your life helps others. Your patterns point to a purpose that is uniquely yours — a clear, simple statement rooted in the action you naturally take and the difference it creates in others.",
-    what: "Using the patterns you've identified, you'll build your personal purpose statement using the format: \"I am someone who [action], so others can [impact].\" You can choose a suggested starting point or write your own from scratch.",
+      "Put who you are into words. Your purpose statement names your action and the impact it has on others. Plain, everyday words work best.",
+    what: "Using your action and impact, you'll write your purpose statement. A suggested form is: \"I wake up each day to [action] so that [impact].\" The form is optional. An action and an outward impact are what matter.",
     prompts: [
       {
         label: "The Action",
@@ -102,14 +102,14 @@ const stages = [
           "How are others affected by you? What changes because of you? What difference do you naturally create in people's lives?",
       },
       {
-        label: "Does It Sound Like You?",
+        label: "Ask Why",
         question:
-          "When you read your purpose statement, does it feel like a relief — like something you've always known but never said out loud?",
+          "Look at your impact and ask, why does that matter? Then ask why again. Keep going until it feels true.",
       },
       {
         label: "Is It Other-Centered?",
         question:
-          "Does the impact portion of your statement focus outward — on what others gain or experience because of who you are?",
+          "Does your impact focus outward, on what others gain or experience because of who you are?",
       },
     ],
     color: "#2F7F7B",
@@ -120,33 +120,28 @@ const stages = [
   {
     number: "04",
     id: "personalize",
-    title: "Personalize",
-    subtitle: "Your Season",
+    title: "Picture",
+    subtitle: "Your Vision",
     eyebrow: "Stage Four",
-    belief: "Your purpose is not limited by your season. It is expressed through it.",
+    belief: "See the life your purpose makes possible.",
     teaching:
-      "Purpose remains constant, but how it shows up changes with each chapter of your life. Your current roles, responsibilities, capacity, and constraints don't box in your purpose — they give it shape right now.",
-    what: "In this stage, you'll apply your purpose to the specific season you are in — mapping how it shows up through the roles you carry today.",
+      "See the life your purpose makes possible, and notice whose picture of success you've been borrowing.",
+    what: "In this stage, you'll picture what living your purpose looks like and make sure that picture is truly yours.",
     prompts: [
       {
-        label: "Your Current Season",
+        label: "Your Picture",
         question:
-          "What season of life are you in right now? (e.g., young family, career transition, empty nest, recovery, new beginning)",
+          "When I imagine living my purpose, what do I picture?",
       },
       {
-        label: "Your Current Roles",
+        label: "Where It Came From",
         question:
-          "What are the main roles you carry in this season? (e.g., parent, partner, professional, caregiver, leader)",
+          "Whose life did I get that picture from?",
       },
       {
-        label: "Purpose in Each Role",
+        label: "Ready Now",
         question:
-          "How does your purpose statement express itself within each of your current roles? What does it look like in practice?",
-      },
-      {
-        label: "Your Capacity",
-        question:
-          "Given your bandwidth right now, what is the simplest, most faithful expression of your purpose today?",
+          "What have I been telling myself I need before I can start living my season?",
       },
     ],
     color: "#5FA8A5",
@@ -158,32 +153,27 @@ const stages = [
     number: "05",
     id: "live",
     title: "Live",
-    subtitle: "Your Ripple",
+    subtitle: "Your Season",
     eyebrow: "Stage Five",
-    belief: "Small actions create a life of purpose.",
+    belief: "Live your purpose right where you are.",
     teaching:
-      "Purpose lived out is not grand gestures or waiting for the perfect moment. It is the accumulation of small, intentional choices. Some things need to begin. Some things need to stop. Some things are already working — and deserve to continue.",
-    what: "Using Start / Stop / Continue, you'll create aligned action steps that make your purpose visible in everyday life.",
+      "Your season is not the waiting room to your life. Live your purpose right where you are. Your purpose stays the same, and this season gives it a shape all its own.",
+    what: "In this stage, you'll name the season you are in, the roles you carry, and where your purpose is already showing up.",
     prompts: [
       {
-        label: "Start",
+        label: "Your Season",
         question:
-          "What is one thing you need to begin — an action, habit, or relationship — that aligns with your purpose?",
+          "Right now I'm in the season of...",
       },
       {
-        label: "Stop",
+        label: "Your Roles",
         question:
-          "What is currently draining you, misaligned with your purpose, or getting in the way of who you're meant to be?",
+          "The roles I'm carrying...",
       },
       {
-        label: "Continue",
+        label: "Already Showing Up",
         question:
-          "What is already working? What practices, relationships, or actions are already expressing your purpose?",
-      },
-      {
-        label: "This Week",
-        question:
-          "What is the one, small, specific thing you will do this week to live more intentionally from your purpose?",
+          "Where is my purpose already showing up in this season?",
       },
     ],
     color: "#9fd0cd",
@@ -195,12 +185,12 @@ const stages = [
     number: "06",
     id: "expand",
     title: "Expand",
-    subtitle: "Your Growth",
+    subtitle: "Your Ripple",
     eyebrow: "Stage Six",
     belief: "What's within you creates a ripple.",
     teaching:
-      "As you live from purpose, your life creates a ripple — one that touches your family, your community, your work. Growth is not a destination. It is the natural result of living from the inside out, day after day, season after season.",
-    what: "This final stage is about integration — building daily rhythms that keep you connected to your purpose, and setting the intention to return in future seasons as life changes.",
+      "Your ripple reaches the people around you and keeps growing. Your family, your community, and your work all feel it, day after day, season after season.",
+    what: "This final stage is about integration: building daily rhythms that keep you connected to your purpose, and setting the intention to return in future seasons as life changes.",
     prompts: [
       {
         label: "Morning Intention",
@@ -215,7 +205,7 @@ const stages = [
       {
         label: "Your Ripple",
         question:
-          "Who in your life is most impacted by you living from your purpose? What changes for them when you are at your best?",
+          "Who in your life is most impacted by you living from your purpose? What changes for them as you live your purpose fully?",
       },
       {
         label: "The Next Season",
@@ -361,7 +351,7 @@ export default function PurposeLab() {
             Uncover who you are. Live your purpose. Love your life.
           </p>
           <p className="text-[#9fd0cd] font-sans text-sm leading-relaxed max-w-lg mx-auto">
-            Purpose Lab is a guided journey through The Ripple Method — a six-stage process
+            Purpose Lab is a guided journey through The Ripple Method, a six-stage process
             that helps you move from your story to your purpose, and from your purpose to
             a life you love living.
           </p>
@@ -389,7 +379,7 @@ export default function PurposeLab() {
             <p className="text-[#5FA8A5] font-sans text-sm leading-relaxed max-w-xl mx-auto">
               Purpose is not something you create. It is something already within you
               that you uncover, name, and live. The Ripple Method is the framework
-              that guides that journey — six stages, moving from your innermost story
+              that guides that journey: six stages, moving from your innermost story
               to your outermost impact.
             </p>
           </div>
@@ -461,7 +451,7 @@ export default function PurposeLab() {
                       fontFamily: "'Playfair Display', serif",
                     }}
                   >
-                    {activeStage.title} — {activeStage.subtitle}
+                    {activeStage.title} · {activeStage.subtitle}
                   </h3>
                   <div className="w-8 h-px mb-4" style={{ backgroundColor: "#C8A96A" }} />
                   <p
@@ -701,7 +691,7 @@ export default function PurposeLab() {
               "Your story holds clues.",
               "Patterns reveal purpose.",
               "Purpose is not something you create. It is something you recognize, name, and live.",
-              "Your purpose is not limited by your season. It is expressed through it.",
+              "Your season is not the waiting room to your life.",
               "What's within you creates a ripple.",
             ].map((teaching, i) => (
               <div
@@ -754,6 +744,9 @@ export default function PurposeLab() {
           >
             Begin Your Journey →
           </Link>
+          <p className="text-[#2F7F7B] font-sans text-xs leading-relaxed mt-4 max-w-sm mx-auto" data-testid="text-course-buyer">
+            Bought the course? Sign up with the same email you used and your access is already waiting.
+          </p>
         </div>
       </section>
 

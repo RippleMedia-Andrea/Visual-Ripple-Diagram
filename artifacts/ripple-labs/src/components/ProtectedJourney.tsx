@@ -49,7 +49,7 @@ export function ProtectedJourney({ children }: { children: ReactNode }) {
             })}
             className="w-full rounded-full bg-[#0F2A36] text-[#F5F1E8] py-3 font-sans text-sm font-medium disabled:opacity-50"
           >
-            {recordConsent.isPending ? "Please wait…" : "I understand — continue"}
+            {recordConsent.isPending ? "Please wait…" : "I understand. Continue"}
           </button>
         </div>
       </main>

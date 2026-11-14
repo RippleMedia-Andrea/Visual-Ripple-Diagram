@@ -25,6 +25,11 @@ export type ActionPlan = {
   continue: string[];
   oneStepThisWeek: string;
 };
+export type Vision = {
+  picture: string;
+  influences: string;
+  beforeStarting: string;
+};
 export type Evidence = { storyTitle: string; detail: string };
 
 export const journeyStatus = pgEnum("journey_status", ["in_progress", "complete"]);
@@ -33,6 +38,7 @@ export const journeyStage = pgEnum("journey_stage", [
   "identify",
   "pinpoint",
   "personalize",
+  "picture",
   "live",
   "expand",
 ]);
@@ -51,10 +57,12 @@ export const journeys = pgTable(
     purposeOptions: jsonb("purpose_options").$type<string[]>().default([]).notNull(),
     purposeStatement: text("purpose_statement"),
     season: jsonb("season").$type<Season | null>(),
+    vision: jsonb("vision").$type<Vision | null>(),
     actionPlan: jsonb("action_plan").$type<ActionPlan | null>(),
     revealExtractedAt: timestamp("reveal_extracted_at", { withTimezone: true }),
     identifyExtractedAt: timestamp("identify_extracted_at", { withTimezone: true }),
     personalizeExtractedAt: timestamp("personalize_extracted_at", { withTimezone: true }),
+    pictureExtractedAt: timestamp("picture_extracted_at", { withTimezone: true }),
     liveExtractedAt: timestamp("live_extracted_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),

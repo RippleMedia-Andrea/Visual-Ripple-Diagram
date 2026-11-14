@@ -71,7 +71,7 @@ export default function Home() {
             className="text-[#2F7F7B] text-lg font-sans font-light leading-relaxed"
             data-testid="hero-subheadline"
           >
-            A platform for purposeful growth — where self-discovery becomes
+            A place for purposeful growth, where self-discovery becomes
             outward impact.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center mt-10">
@@ -178,7 +178,7 @@ export default function Home() {
                 </h3>
                 <div className="w-6 h-px mb-3" style={{ backgroundColor: "#C8A96A" }} />
                 <p className="text-[#9fd0cd] font-sans text-sm leading-relaxed">
-                  The full hands-on experience — storytelling, pattern recognition, purpose statement, season alignment, and action steps.
+                  The full hands-on experience: your stories, your patterns, your purpose statement, your vision, and living your purpose in this season.
                 </p>
               </div>
             </Link>
@@ -206,7 +206,7 @@ export default function Home() {
               The Ripple Method
             </h2>
             <p className="text-[#5FA8A5] font-sans text-base leading-relaxed max-w-xl mx-auto">
-              Six stages of transformation — from your innermost story to your
+              Six stages of transformation, from your innermost story to your
               outermost impact. Tap any ring to explore each stage.
             </p>
           </div>
@@ -250,7 +250,7 @@ export default function Home() {
                 Uncover who you are. Live your purpose. Love your life.
               </p>
               <p className="text-[#0F2A36] font-sans text-sm leading-relaxed opacity-75 mb-6">
-                Purpose Lab is the first experience within Ripple Labs — a guided
+                Purpose Lab is the first experience within Ripple Labs, a guided
                 journey through the Ripple Method designed to help you discover
                 your unique purpose and live it with intention.
               </p>
@@ -311,31 +311,31 @@ export default function Home() {
                 subtitle: "Your Purpose",
                 color: "#2F7F7B",
                 text: "#ffffff",
-                desc: "Find the intersection of gifts, passion, and impact.",
+                desc: "Put who you are into words. Your purpose statement names your action and the impact it has on others.",
               },
               {
                 number: "04",
-                title: "Personalize",
-                subtitle: "Your Season",
+                title: "Picture",
+                subtitle: "Your Vision",
                 color: "#5FA8A5",
                 text: "#0F2A36",
-                desc: "Align your purpose with where you are right now.",
+                desc: "See the life your purpose makes possible, and notice whose picture of success you've been borrowing.",
               },
               {
                 number: "05",
                 title: "Live",
-                subtitle: "Your Ripple",
+                subtitle: "Your Season",
                 color: "#9fd0cd",
                 text: "#0F2A36",
-                desc: "Let your daily life become an expression of truth.",
+                desc: "Your season is not the waiting room to your life. Live your purpose right where you are.",
               },
               {
                 number: "06",
                 title: "Expand",
-                subtitle: "Your Growth",
+                subtitle: "Your Ripple",
                 color: "#EEE9DB",
                 text: "#0F2A36",
-                desc: "Your ripple touches others and grows outward.",
+                desc: "Your ripple reaches the people around you and keeps growing.",
               },
             ].map((stage) => (
               <div

@@ -8,6 +8,7 @@
 import type { ActionPlan } from "./actionPlan";
 import type { JourneyUpdateStatus } from "./journeyUpdateStatus";
 import type { Season } from "./season";
+import type { Vision } from "./vision";
 
 export interface JourneyUpdate {
   /**
@@ -21,5 +22,6 @@ export interface JourneyUpdate {
   purposeStatement?: string | null;
   status?: JourneyUpdateStatus;
   season?: Season;
+  vision?: Vision;
   actionPlan?: ActionPlan;
 }

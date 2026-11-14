@@ -4,7 +4,8 @@ import { Feather } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useColors } from '@/hooks/useColors';
 import { StoryCardView, ThemeCardView, SeasonFormView, ActionPlanFormView } from './Discoveries';
-import type { StoryCard, PurposeTheme, Season, ActionPlan } from '@workspace/api-client-react';
+import type { StoryCard, PurposeTheme, Season, ActionPlan, Vision } from '@workspace/api-client-react';
+import { VisionForm } from './VisionForm';
 
 interface MyDiscoveriesProps {
   isOpen: boolean;
@@ -12,6 +13,8 @@ interface MyDiscoveriesProps {
   storyCards: StoryCard[];
   themes: PurposeTheme[];
   season: Season | null;
+  vision: Vision | null;
+  onUpdateVision: (vision: Vision) => Promise<void>;
   actionPlan: ActionPlan | null;
   purposeStatement: string | null;
   onUpdateStoryCard: (card: { id: number; data: any }) => void;
@@ -28,6 +31,8 @@ export function MyDiscoveries({
   storyCards,
   themes,
   season,
+  vision,
+  onUpdateVision,
   actionPlan,
   purposeStatement,
   onUpdateStoryCard,
@@ -73,6 +78,7 @@ export function MyDiscoveries({
             </View>
           ) : null}
 
+          {vision ? <VisionForm vision={vision} onSave={onUpdateVision} /> : null}
           {season ? (
             <View style={styles.section}>
               <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>CURRENT SEASON</Text>

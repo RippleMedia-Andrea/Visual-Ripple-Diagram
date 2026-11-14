@@ -19,3 +19,4 @@
 
 export * from "./auth";
 export * from "./journeys";
+export * from "./course-buyers";

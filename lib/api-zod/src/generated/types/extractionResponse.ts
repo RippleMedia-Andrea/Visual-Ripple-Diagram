@@ -9,6 +9,7 @@ import type { ActionPlan } from "./actionPlan";
 import type { PurposeTheme } from "./purposeTheme";
 import type { Season } from "./season";
 import type { StoryCard } from "./storyCard";
+import type { Vision } from "./vision";
 
 export type ExtractionResponse =
   | {
@@ -22,4 +23,8 @@ export type ExtractionResponse =
     }
   | {
       actionPlan?: ActionPlan;
+      season?: Season;
+    }
+  | {
+      vision?: Vision;
     };
