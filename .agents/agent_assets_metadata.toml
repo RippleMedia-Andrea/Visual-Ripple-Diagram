@@ -7,3 +7,18 @@ uri = "file://artifacts/ripple-labs-video/public/audio/bg_music_2.mp3"
 type = "audio"
 title = "Ripple Labs Purpose Lab ambient score"
 description = "Generated music: Warm reflective ambient editorial instrumental for a faith-informed purpose discovery launch film. Gentle felt piano and soft plucked organic tones, subtle sea-glass atmosphere, low …"
+logical_id = "996cb66b-378d-4703-b8a0-3a1faed8aa98"
+
+[[outputs]]
+id = "C7Rfyih7ESwM7FMFv6Ofe"
+uri = "file://docs/systeme-course-access.md"
+type = "text"
+title = "Course setup and trademark inventory"
+description = "Webhook setup, expected sale payload, release requirements, and all eight preserved trademark locations."
+logical_id = "700a4253-cd83-45f1-bd6f-220da4420784"
+content_hash = "sha256:afe0c70052b5413784c5948e97b106896ed09dd06fe543e7d7f167f320d2a250"
+size = 5870
+mtime_ms = 1794622175250
+storage_uri = "gcs://replit-rams-assets-worf/rams/assets/repl:29ed3051-832a-447e-8eec-2ce610aee271/700a4253-cd83-45f1-bd6f-220da4420784/3e58a42c-d62d-4a8c-afec-69a777c4e197"
+storage_version_token = "1794622394582085"
+content_type = "text/markdown"
