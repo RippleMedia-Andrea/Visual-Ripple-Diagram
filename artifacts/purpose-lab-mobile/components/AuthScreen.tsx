@@ -146,7 +146,7 @@ export function AuthScreen() {
             >
               <Feather name={aiConsent ? 'check-square' : 'square'} size={22} color={colors.primary} />
               <Text style={[styles.consentText, { color: colors.foreground }]}>
-                I understand my answers are processed by a third-party AI service (Anthropic's Claude) to guide my Purpose Lab journey, as described in the{' '}
+                I understand my answers are processed by a third-party AI service (Anthropic's Claude) to guide my Purpose Lab journey. If I use the microphone, my recording is sent to OpenAI for transcription when I stop recording. I can edit or discard the transcript, and it is only sent to my guide when I press send. The app does not keep raw recordings. See the{' '}
                 <Text testID="privacy-link" onPress={() => openPublicPage('/privacy')} style={{ color: colors.primary }}>Privacy Policy</Text>.
               </Text>
             </Pressable>

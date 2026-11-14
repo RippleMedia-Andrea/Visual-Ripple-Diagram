@@ -6,6 +6,7 @@ import discoveriesRouter from "./discoveries";
 import extractRouter from "./ripple/extract";
 import accountRouter from "./account";
 import courseAccessRouter from "./course-access";
+import transcriptionsRouter from "./transcriptions";
 
 const router: IRouter = Router();
 
@@ -16,5 +17,6 @@ router.use("/ripple", rippleChatRouter);
 router.use("/journeys", journeysRouter);
 router.use(discoveriesRouter);
 router.use(extractRouter);
+router.use(transcriptionsRouter);
 
 export default router;

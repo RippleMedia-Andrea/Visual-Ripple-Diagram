@@ -31,6 +31,7 @@ export type Vision = {
   beforeStarting: string;
 };
 export type Evidence = { storyTitle: string; detail: string };
+export type PatternDiscovery = { actionWords: string[]; adjectives: string[]; impact: string; confirmed: boolean };
 
 export const journeyStatus = pgEnum("journey_status", ["in_progress", "complete"]);
 export const journeyStage = pgEnum("journey_stage", [
@@ -52,6 +53,9 @@ export const journeys = pgTable(
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
     status: journeyStatus("status").default("in_progress").notNull(),
+    isPractice: boolean("is_practice").default(false).notNull(),
+    patternDiscovery: jsonb("pattern_discovery").$type<PatternDiscovery | null>(),
+    drafts: jsonb("drafts").$type<Record<string, string>>().default({}).notNull(),
     currentStageIdx: integer("current_stage_idx").default(0).notNull(),
     selectedPrompts: jsonb("selected_prompts").$type<string[]>().default([]).notNull(),
     purposeOptions: jsonb("purpose_options").$type<string[]>().default([]).notNull(),
@@ -105,6 +109,7 @@ export const storyCards = pgTable("story_cards", {
   people: jsonb("people").$type<string[]>().default([]).notNull(),
   impact: jsonb("impact").$type<string[]>().default([]).notNull(),
   userEdited: boolean("user_edited").default(false).notNull(),
+  confirmed: boolean("confirmed").default(false).notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });

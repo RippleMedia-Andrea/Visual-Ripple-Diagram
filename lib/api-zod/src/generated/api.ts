@@ -155,11 +155,55 @@ export const HealthCheckResponse = zod.object({
 /**
  * @summary Load or create the signed-in user's current journey
  */
+export const getCurrentJourneyQueryPracticeDefault = false;
+
+export const GetCurrentJourneyQueryParams = zod.object({
+  practice: zod.coerce.boolean().default(getCurrentJourneyQueryPracticeDefault),
+});
+
+export const getCurrentJourneyResponseOnePatternDiscoveryActionWordsItemMax = 100;
+
+export const getCurrentJourneyResponseOnePatternDiscoveryActionWordsMax = 10;
+
+export const getCurrentJourneyResponseOnePatternDiscoveryAdjectivesItemMax = 100;
+
+export const getCurrentJourneyResponseOnePatternDiscoveryAdjectivesMax = 10;
+
+export const getCurrentJourneyResponseOnePatternDiscoveryImpactMax = 2000;
+
 export const getCurrentJourneyResponseOneCurrentStageIdxMin = 0;
 export const getCurrentJourneyResponseOneCurrentStageIdxMax = 5;
 
 export const GetCurrentJourneyResponse = zod
   .object({
+    isPractice: zod.boolean().optional(),
+    patternDiscovery: zod
+      .object({
+        actionWords: zod
+          .array(
+            zod
+              .string()
+              .max(
+                getCurrentJourneyResponseOnePatternDiscoveryActionWordsItemMax,
+              ),
+          )
+          .max(getCurrentJourneyResponseOnePatternDiscoveryActionWordsMax),
+        adjectives: zod
+          .array(
+            zod
+              .string()
+              .max(
+                getCurrentJourneyResponseOnePatternDiscoveryAdjectivesItemMax,
+              ),
+          )
+          .max(getCurrentJourneyResponseOnePatternDiscoveryAdjectivesMax),
+        impact: zod
+          .string()
+          .max(getCurrentJourneyResponseOnePatternDiscoveryImpactMax),
+        confirmed: zod.boolean(),
+      })
+      .optional(),
+    drafts: zod.record(zod.string(), zod.string()).optional(),
     id: zod.number(),
     userId: zod.string(),
     status: zod.enum(["in_progress", "complete"]),
@@ -247,6 +291,7 @@ export const GetCurrentJourneyResponse = zod
       }),
       storyCards: zod.array(
         zod.object({
+          confirmed: zod.boolean().optional(),
           id: zod.number().optional(),
           journeyId: zod.number().optional(),
           position: zod.number().optional(),
@@ -293,10 +338,41 @@ export const UpdateJourneyParams = zod.object({
   id: zod.coerce.number(),
 });
 
+export const updateJourneyBodyPatternDiscoveryActionWordsItemMax = 100;
+
+export const updateJourneyBodyPatternDiscoveryActionWordsMax = 10;
+
+export const updateJourneyBodyPatternDiscoveryAdjectivesItemMax = 100;
+
+export const updateJourneyBodyPatternDiscoveryAdjectivesMax = 10;
+
+export const updateJourneyBodyPatternDiscoveryImpactMax = 2000;
+
+export const updateJourneyBodyDraftsMaxOne = 20000;
+
 export const updateJourneyBodyCurrentStageIdxMin = 0;
 export const updateJourneyBodyCurrentStageIdxMax = 5;
 
 export const UpdateJourneyBody = zod.object({
+  patternDiscovery: zod
+    .object({
+      actionWords: zod
+        .array(
+          zod.string().max(updateJourneyBodyPatternDiscoveryActionWordsItemMax),
+        )
+        .max(updateJourneyBodyPatternDiscoveryActionWordsMax),
+      adjectives: zod
+        .array(
+          zod.string().max(updateJourneyBodyPatternDiscoveryAdjectivesItemMax),
+        )
+        .max(updateJourneyBodyPatternDiscoveryAdjectivesMax),
+      impact: zod.string().max(updateJourneyBodyPatternDiscoveryImpactMax),
+      confirmed: zod.boolean(),
+    })
+    .optional(),
+  drafts: zod
+    .record(zod.string(), zod.string().max(updateJourneyBodyDraftsMaxOne))
+    .optional(),
   currentStageIdx: zod
     .number()
     .min(updateJourneyBodyCurrentStageIdxMin)
@@ -333,10 +409,42 @@ export const UpdateJourneyBody = zod.object({
     .optional(),
 });
 
+export const updateJourneyResponsePatternDiscoveryActionWordsItemMax = 100;
+
+export const updateJourneyResponsePatternDiscoveryActionWordsMax = 10;
+
+export const updateJourneyResponsePatternDiscoveryAdjectivesItemMax = 100;
+
+export const updateJourneyResponsePatternDiscoveryAdjectivesMax = 10;
+
+export const updateJourneyResponsePatternDiscoveryImpactMax = 2000;
+
 export const updateJourneyResponseCurrentStageIdxMin = 0;
 export const updateJourneyResponseCurrentStageIdxMax = 5;
 
 export const UpdateJourneyResponse = zod.object({
+  isPractice: zod.boolean().optional(),
+  patternDiscovery: zod
+    .object({
+      actionWords: zod
+        .array(
+          zod
+            .string()
+            .max(updateJourneyResponsePatternDiscoveryActionWordsItemMax),
+        )
+        .max(updateJourneyResponsePatternDiscoveryActionWordsMax),
+      adjectives: zod
+        .array(
+          zod
+            .string()
+            .max(updateJourneyResponsePatternDiscoveryAdjectivesItemMax),
+        )
+        .max(updateJourneyResponsePatternDiscoveryAdjectivesMax),
+      impact: zod.string().max(updateJourneyResponsePatternDiscoveryImpactMax),
+      confirmed: zod.boolean(),
+    })
+    .optional(),
+  drafts: zod.record(zod.string(), zod.string()).optional(),
   id: zod.number(),
   userId: zod.string(),
   status: zod.enum(["in_progress", "complete"]),
@@ -390,6 +498,7 @@ export const ExtractJourneyDiscoveriesResponse = zod.union([
     stories: zod
       .array(
         zod.object({
+          confirmed: zod.boolean().optional(),
           id: zod.number().optional(),
           journeyId: zod.number().optional(),
           position: zod.number().optional(),
@@ -483,6 +592,7 @@ export const UpdateStoryCardParams = zod.object({
 });
 
 export const UpdateStoryCardBody = zod.object({
+  confirmed: zod.boolean().optional(),
   title: zod.string().optional(),
   summary: zod.string().optional(),
   promptId: zod.string().nullish(),
@@ -494,6 +604,7 @@ export const UpdateStoryCardBody = zod.object({
 });
 
 export const UpdateStoryCardResponse = zod.object({
+  confirmed: zod.boolean().optional(),
   id: zod.number().optional(),
   journeyId: zod.number().optional(),
   position: zod.number().optional(),
@@ -615,11 +726,45 @@ export const RestartJourneyParams = zod.object({
   id: zod.coerce.number(),
 });
 
+export const restartJourneyResponseOnePatternDiscoveryActionWordsItemMax = 100;
+
+export const restartJourneyResponseOnePatternDiscoveryActionWordsMax = 10;
+
+export const restartJourneyResponseOnePatternDiscoveryAdjectivesItemMax = 100;
+
+export const restartJourneyResponseOnePatternDiscoveryAdjectivesMax = 10;
+
+export const restartJourneyResponseOnePatternDiscoveryImpactMax = 2000;
+
 export const restartJourneyResponseOneCurrentStageIdxMin = 0;
 export const restartJourneyResponseOneCurrentStageIdxMax = 5;
 
 export const RestartJourneyResponse = zod
   .object({
+    isPractice: zod.boolean().optional(),
+    patternDiscovery: zod
+      .object({
+        actionWords: zod
+          .array(
+            zod
+              .string()
+              .max(restartJourneyResponseOnePatternDiscoveryActionWordsItemMax),
+          )
+          .max(restartJourneyResponseOnePatternDiscoveryActionWordsMax),
+        adjectives: zod
+          .array(
+            zod
+              .string()
+              .max(restartJourneyResponseOnePatternDiscoveryAdjectivesItemMax),
+          )
+          .max(restartJourneyResponseOnePatternDiscoveryAdjectivesMax),
+        impact: zod
+          .string()
+          .max(restartJourneyResponseOnePatternDiscoveryImpactMax),
+        confirmed: zod.boolean(),
+      })
+      .optional(),
+    drafts: zod.record(zod.string(), zod.string()).optional(),
     id: zod.number(),
     userId: zod.string(),
     status: zod.enum(["in_progress", "complete"]),
@@ -707,6 +852,7 @@ export const RestartJourneyResponse = zod
       }),
       storyCards: zod.array(
         zod.object({
+          confirmed: zod.boolean().optional(),
           id: zod.number().optional(),
           journeyId: zod.number().optional(),
           position: zod.number().optional(),
@@ -745,3 +891,16 @@ export const RestartJourneyResponse = zod
       ),
     }),
   );
+
+export const transcribeRecordingBodyAudioMax = 16777216;
+
+export const TranscribeRecordingBody = zod.object({
+  audio: zod
+    .string()
+    .max(transcribeRecordingBodyAudioMax)
+    .describe("Base64 audio"),
+});
+
+export const TranscribeRecordingResponse = zod.object({
+  text: zod.string(),
+});

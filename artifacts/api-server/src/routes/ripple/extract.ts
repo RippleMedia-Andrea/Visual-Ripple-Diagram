@@ -1,21 +1,21 @@
 import { Router } from "express";
 import { and, asc, count, eq, gte } from "drizzle-orm";
 import { anthropic } from "@workspace/integrations-anthropic-ai";
-import { db, journeyMessages, journeys, purposeThemes, storyCards } from "@workspace/db";
+import { db, discoveryRevisions, journeyMessages, journeys, purposeThemes, storyCards } from "@workspace/db";
+import { z } from "zod";
 import { requireAiConsent, requireAuth } from "../../middlewares/require-auth";
+import { containsUnknown } from "../../lib/discovery-validation";
 
 const router = Router();
 const calls = new Map<string, number[]>();
 const stages = ["reveal", "identify", "picture", "personalize", "live"] as const;
-
-function containsUnknown(value: unknown): boolean {
-  if (typeof value === "string") {
-    return /<?unknown>?/i.test(value);
-  }
-  if (Array.isArray(value)) return value.some(containsUnknown);
-  if (value && typeof value === "object") return Object.values(value).some(containsUnknown);
-  return false;
-}
+export const EXTRACTION_PROMPT = "You organize a person's purpose conversation, never interpret it. Include only what they said or clearly confirmed, in their own words. Never invent details, diagnose, counsel, explain trauma, teach, preach, or give advice. For Reveal return each distinct story once, with the same stable title as any supplied saved story. Put What you felt in feelings, What you did in actions, and What changed in impact. Return a short summary using those three headings. A change for the person themselves is valid in Reveal; do not invent outward impact. Include summaries awaiting confirmation so the person can correct them in the review. Never mark a story confirmed yourself. For Identify preserve evidence from their stories and only include observations they accepted. Keep list items short. If something was not covered, leave it empty. No placeholder values, hyphens, or em dashes. Say fulfilled life, never best life.";
+const extractedStories = z.object({ stories: z.array(z.object({
+  title: z.string().min(1).max(300), summary: z.string().max(12000),
+  promptId: z.string().nullable(), isDifficultExperience: z.boolean(),
+  actions: z.array(z.string()), feelings: z.array(z.string()),
+  people: z.array(z.string()), impact: z.array(z.string()),
+})).max(50) });
 
 router.post("/journeys/:id/discoveries/:stage", requireAuth, requireAiConsent, async (req, res, next): Promise<void> => {
   try {
@@ -65,7 +65,7 @@ router.post("/journeys/:id/discoveries/:stage", requireAuth, requireAiConsent, a
     if (recent.length >= 20) { res.status(429).json({ error: "Extraction limit reached. Try again later." }); return; }
     recent.push(now); calls.set(userId, recent);
     const discoveryContext = [
-      stage !== "reveal" && savedStories.length ? `Saved story cards: ${JSON.stringify(savedStories)}` : "",
+      savedStories.length ? `Saved story cards, retain their titles for the same story: ${JSON.stringify(savedStories)}` : "",
       ["picture", "personalize", "live"].includes(stage) && savedThemes.length ? `Saved purpose themes: ${JSON.stringify(savedThemes)}` : "",
       ["picture", "personalize", "live"].includes(stage) && journey.purposeStatement ? `Purpose statement: ${journey.purposeStatement}` : "",
       stage === "live" && journey.season ? `Current season: ${JSON.stringify(journey.season)}` : "",
@@ -80,21 +80,30 @@ router.post("/journeys/:id/discoveries/:stage", requireAuth, requireAiConsent, a
     const seasonSchema = (schemas.personalize as any).properties.season;
     (schemas.live as any).properties.season = seasonSchema;
     (schemas.live as any).required.push("season");
-    const response = await anthropic.messages.create({ model:"claude-sonnet-4-6", max_tokens:2000, system:"You are organizing what a person shared during a purpose-discovery conversation. Only include things the person actually said or clearly confirmed. Use their own words whenever possible. Do not invent, embellish, or add interpretation that wasn't discussed. Keep each list item short (2–8 words). If something wasn't covered, leave it empty.", messages:[{role:"user",content:`${discoveryContext ? `${discoveryContext}\n\n` : ""}Transcript:\n${messages.map((m)=>`${m.role}: ${m.content}`).join("\n")}\n\nNever return placeholder text such as <UNKNOWN>. Omit unsupported items instead. If no evidence can be tied to a saved story, return an empty evidence array.`}], tools:[{name:"extract_discoveries",description:"Return structured discoveries without placeholder values.",input_schema:schemas[stage] as never}], tool_choice:{type:"tool",name:"extract_discoveries"} });
+    const response = await anthropic.messages.create({ model:"claude-sonnet-4-6", max_tokens:4000, system:EXTRACTION_PROMPT, messages:[{role:"user",content:`${discoveryContext ? `${discoveryContext}\n\n` : ""}Transcript:\n${messages.map((m)=>`${m.role}: ${m.content}`).join("\n")}\n\nNever return placeholder text such as <UNKNOWN>. Omit unsupported items instead. If no evidence can be tied to a saved story, return an empty evidence array.`}], tools:[{name:"extract_discoveries",description:"Return structured discoveries without placeholder values.",input_schema:schemas[stage] as never}], tool_choice:{type:"tool",name:"extract_discoveries"} });
     const block = response.content.find((item) => item.type === "tool_use");
     if (!block || block.type !== "tool_use") throw new Error("Extraction returned no structured data.");
     const data = block.input as any;
     if (containsUnknown(data)) throw new Error("Extraction returned incomplete data.");
+    if (stage === "reveal") extractedStories.parse(data);
     await db.transaction(async (tx) => {
       const extractionTime = new Date();
+      await tx.insert(discoveryRevisions).values({ journeyId: journey.id, kind: `${stage}_extraction`, snapshot: { before: { stories: savedStories, themes: savedThemes, patternDiscovery: journey.patternDiscovery, vision: journey.vision, season: journey.season, actionPlan: journey.actionPlan }, proposed: data } });
       if (stage === "reveal") {
-        await tx.delete(storyCards).where(eq(storyCards.journeyId, journey.id));
-        if (data.stories.length) await tx.insert(storyCards).values(data.stories.map((s:any,i:number)=>({...s,journeyId:journey.id,position:i})));
+        const parsed = extractedStories.parse(data);
+        let position = Math.max(-1, ...savedStories.map(s => s.position)) + 1;
+        for (const story of parsed.stories) {
+          const existing = savedStories.find(s => s.title.trim().toLowerCase() === story.title.trim().toLowerCase());
+          // Confirmed or manually edited discoveries are never silently replaced.
+          if (existing?.confirmed || existing?.userEdited) continue;
+          if (existing) await tx.update(storyCards).set({ ...story, confirmed: false, updatedAt: extractionTime }).where(eq(storyCards.id, existing.id));
+          else await tx.insert(storyCards).values({ ...story, journeyId: journey.id, position: position++ });
+        }
         await tx.update(journeys).set({ revealExtractedAt: extractionTime, updatedAt: extractionTime }).where(eq(journeys.id, journey.id));
       }
       if (stage === "identify") {
-        await tx.delete(purposeThemes).where(eq(purposeThemes.journeyId, journey.id));
-        if (data.themes.length) await tx.insert(purposeThemes).values(data.themes.map((t:any,i:number)=>({...t,journeyId:journey.id,position:i})));
+        const newThemes = data.themes.filter((theme: { name: string }) => !savedThemes.some(saved => saved.name.trim().toLowerCase() === theme.name.trim().toLowerCase()));
+        if (newThemes.length) await tx.insert(purposeThemes).values(newThemes.map((t:any,i:number)=>({...t,journeyId:journey.id,position:savedThemes.length+i})));
         await tx.update(journeys).set({ identifyExtractedAt: extractionTime, updatedAt: extractionTime }).where(eq(journeys.id, journey.id));
       }
       if (stage === "personalize") await tx.update(journeys).set({ season: data.season, personalizeExtractedAt: extractionTime, updatedAt: extractionTime }).where(eq(journeys.id, journey.id));

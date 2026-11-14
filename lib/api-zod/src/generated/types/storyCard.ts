@@ -7,6 +7,7 @@
  */
 
 export interface StoryCard {
+  confirmed?: boolean;
   id?: number;
   journeyId?: number;
   position?: number;

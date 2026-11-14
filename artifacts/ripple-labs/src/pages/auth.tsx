@@ -138,7 +138,7 @@ export default function AuthPage({ mode }: { mode: "sign-in" | "sign-up" }) {
               <div className="space-y-3 text-sm leading-relaxed">
                 <label className="flex items-start gap-3">
                   <input type="checkbox" required checked={aiConsent} onChange={(event) => setAiConsent(event.target.checked)} className="mt-1 h-4 w-4 accent-[#2F7F7B]" />
-                  <span>I understand my answers are processed by a third-party AI service (Anthropic's Claude) to guide my Purpose Lab journey, as described in the <Link href="/privacy" className="text-[#2F7F7B] underline">Privacy Policy</Link>.</span>
+                  <span>I understand my answers are processed by a third-party AI service (Anthropic's Claude) to guide my Purpose Lab journey. If I use the microphone, my recording is sent to OpenAI for transcription when I stop recording. I can edit or discard the transcript, and it is only sent to my guide when I press send. The app does not keep raw recordings. See the <Link href="/privacy" className="text-[#2F7F7B] underline">Privacy Policy</Link>.</span>
                 </label>
                 <p>By creating an account you agree to the <Link href="/terms" className="text-[#2F7F7B] underline">Terms of Use</Link>.</p>
               </div>

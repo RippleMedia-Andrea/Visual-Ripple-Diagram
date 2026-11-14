@@ -18,7 +18,7 @@ router.post("/chat", requireAuth, requireAiConsent, async (req, res) => {
   };
 
   if (!stage || !Array.isArray(messages) || !STAGE_PROMPTS[stage] || messages.length > 80 ||
-      messages.some((message) => typeof message.content !== "string") ||
+      messages.some((message) => typeof message.content !== "string" || !["user", "assistant"].includes(message.role)) ||
       messages.reduce((sum, message) => sum + message.content.length, 0) > 60_000) {
     res.status(400).json({ error: "Invalid stage or missing messages" });
     return;
@@ -92,6 +92,8 @@ router.post("/chat", requireAuth, requireAiConsent, async (req, res) => {
     journey.selectedPrompts.length ? `Selected story prompts: ${journey.selectedPrompts.map((id) => STORY_PROMPT_LABELS[id] ?? id).join(", ")}` : "",
     ["identify","pinpoint","picture","live","expand"].includes(stage) ? `Story cards: ${JSON.stringify(cards)}` : "",
     ["pinpoint","picture","live","expand"].includes(stage) ? `Purpose themes: ${JSON.stringify(themes)}` : "",
+    ["identify","pinpoint","picture","live","expand"].includes(stage) && journey.patternDiscovery ? `Person's separately saved action words, adjectives, and outward impact: ${JSON.stringify(journey.patternDiscovery)}` : "",
+    journey.isPractice ? "This is a separate practice journey. Treat supplied practice stories as practice, not facts about the person's personal discoveries." : "",
     ["picture","live","expand"].includes(stage) && journey.purposeStatement ? `Purpose statement: ${journey.purposeStatement}` : "",
     ["live","expand"].includes(stage) && journey.vision ? `Vision: ${JSON.stringify(journey.vision)}` : "",
     ["live","expand"].includes(stage) && journey.season ? `Season: ${JSON.stringify(journey.season)}` : "",
@@ -101,6 +103,11 @@ router.post("/chat", requireAuth, requireAiConsent, async (req, res) => {
   const systemPromptWithContext = systemPrompt + (databaseContext ? `\n\nDATABASE CONTEXT:\n${databaseContext}` : "");
 
   try {
+    // Save the person's words even if the model or connection fails afterward.
+    if (saveUserMessage) await db.insert(journeyMessages).values({
+      journeyId: journey.id, stage: stage as typeof journeyMessages.$inferInsert.stage,
+      role: "user", content: userMessage.content,
+    });
     res.setHeader("Content-Type", "text/event-stream");
     res.setHeader("Cache-Control", "no-cache");
     res.setHeader("Connection", "keep-alive");
@@ -114,25 +121,19 @@ router.post("/chat", requireAuth, requireAiConsent, async (req, res) => {
     });
 
     let assistantReply = "";
+    const cleanReply = (text: string) => text.replace(/[-\u2010-\u2015]/g, " ").replace(/\bbest life\b/gi, "fulfilled life");
     for await (const event of stream) {
       if (
         event.type === "content_block_delta" &&
         event.delta.type === "text_delta"
       ) {
-        assistantReply += event.delta.text;
-        res.write(`data: ${JSON.stringify({ content: event.delta.text })}\n\n`);
+        const content = cleanReply(event.delta.text);
+        assistantReply += content;
+        res.write(`data: ${JSON.stringify({ content })}\n\n`);
       }
     }
 
     const storedMessages: Array<typeof journeyMessages.$inferInsert> = [];
-    if (saveUserMessage) {
-      storedMessages.push({
-        journeyId: journey.id,
-        stage: stage as typeof journeyMessages.$inferInsert.stage,
-        role: "user",
-        content: userMessage.content,
-      });
-    }
     storedMessages.push({
       journeyId: journey.id,
       stage: stage as typeof journeyMessages.$inferInsert.stage,

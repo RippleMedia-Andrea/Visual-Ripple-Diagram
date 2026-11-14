@@ -53,7 +53,11 @@ app.post("/api/auth/request-password-reset", (_req, res, next) => {
   res.status(503).json({ message: passwordResetUnavailableMessage });
 });
 app.all("/api/auth/*splat", toNodeHandler(auth));
-app.use(express.json());
+// Larger audio requests are parsed only on their authenticated route.
+app.use((req, res, next) => {
+  if (req.path === "/api/openai/transcriptions") next();
+  else express.json()(req, res, next);
+});
 app.use(express.urlencoded({ extended: true }));
 
 app.use("/api", router);

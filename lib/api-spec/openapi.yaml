@@ -187,6 +187,10 @@ paths:
       operationId: getCurrentJourney
       tags: [journeys]
       summary: Load or create the signed-in user's current journey
+      parameters:
+        - name: practice
+          in: query
+          schema: { type: boolean, default: false }
       responses:
         "200":
           description: Current journey
@@ -327,6 +331,25 @@ paths:
           description: Sign in required
         "404":
           description: Journey not found
+  /openai/transcriptions:
+    post:
+      operationId: transcribeRecording
+      tags: [journeys]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/RecordingInput" }
+      responses:
+        "200":
+          description: Transcript for review, never automatically sent
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/RecordingTranscript" }
+        "400": { description: Invalid recording }
+        "401": { description: Sign in required }
+        "403": { description: AI consent required }
+        "429": { description: Please try again later }
 components:
   securitySchemes:
     cookieAuth:
@@ -358,6 +381,16 @@ components:
         type: string
         enum: [reveal, identify, picture, personalize, live]
   schemas:
+    RecordingInput:
+      type: object
+      required: [audio]
+      properties:
+        audio: { type: string, maxLength: 16777216, description: Base64 audio, at most 12 MB and five minutes }
+    RecordingTranscript:
+      type: object
+      required: [text]
+      properties:
+        text: { type: string }
     CourseAccess:
       type: object
       required: [fullAccess, courseBuyer, isOwner]
@@ -497,6 +530,11 @@ components:
     JourneyRecord:
       type: object
       properties:
+        isPractice: { type: boolean }
+        patternDiscovery: { $ref: "#/components/schemas/PatternDiscovery" }
+        drafts:
+          type: object
+          additionalProperties: { type: string }
         id:
           type: integer
         userId:
@@ -559,6 +597,10 @@ components:
     JourneyUpdate:
       type: object
       properties:
+        patternDiscovery: { $ref: "#/components/schemas/PatternDiscovery" }
+        drafts:
+          type: object
+          additionalProperties: { type: string, maxLength: 20000 }
         currentStageIdx:
           type: integer
           minimum: 0
@@ -585,9 +627,18 @@ components:
       properties:
         storyTitle: { type: string }
         detail: { type: string }
+    PatternDiscovery:
+      type: object
+      required: [actionWords, adjectives, impact, confirmed]
+      properties:
+        actionWords: { type: array, maxItems: 10, items: { type: string, maxLength: 100 } }
+        adjectives: { type: array, maxItems: 10, items: { type: string, maxLength: 100 } }
+        impact: { type: string, maxLength: 2000 }
+        confirmed: { type: boolean }
     StoryCard:
       type: object
       properties:
+        confirmed: { type: boolean }
         id: { type: integer }
         journeyId: { type: integer }
         position: { type: integer }
@@ -633,6 +684,7 @@ components:
     StoryCardUpdate:
       type: object
       properties:
+        confirmed: { type: boolean }
         title: { type: string }
         summary: { type: string }
         promptId: { type: [string, "null"] }

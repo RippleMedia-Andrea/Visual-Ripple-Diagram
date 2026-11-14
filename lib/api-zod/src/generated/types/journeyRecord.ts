@@ -6,11 +6,16 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { ActionPlan } from "./actionPlan";
+import type { JourneyRecordDrafts } from "./journeyRecordDrafts";
 import type { JourneyRecordStatus } from "./journeyRecordStatus";
+import type { PatternDiscovery } from "./patternDiscovery";
 import type { Season } from "./season";
 import type { Vision } from "./vision";
 
 export interface JourneyRecord {
+  isPractice?: boolean;
+  patternDiscovery?: PatternDiscovery;
+  drafts?: JourneyRecordDrafts;
   id: number;
   userId: string;
   status: JourneyRecordStatus;

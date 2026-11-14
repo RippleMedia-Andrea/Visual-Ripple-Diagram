@@ -6,11 +6,15 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { ActionPlan } from "./actionPlan";
+import type { JourneyUpdateDrafts } from "./journeyUpdateDrafts";
 import type { JourneyUpdateStatus } from "./journeyUpdateStatus";
+import type { PatternDiscovery } from "./patternDiscovery";
 import type { Season } from "./season";
 import type { Vision } from "./vision";
 
 export interface JourneyUpdate {
+  patternDiscovery?: PatternDiscovery;
+  drafts?: JourneyUpdateDrafts;
   /**
    * @minimum 0
    * @maximum 5

@@ -26,6 +26,7 @@ import type {
   CourseWebhookStatus,
   CourseWebhookUrl,
   ExtractionResponse,
+  GetCurrentJourneyParams,
   HealthStatus,
   Journey,
   JourneyRecord,
@@ -36,6 +37,8 @@ import type {
   ReceiveSystemeSaleParams,
   RecordAiConsent200,
   RecordWelcomeSeen200,
+  RecordingInput,
+  RecordingTranscript,
   StoryCard,
   StoryCardUpdate,
   SystemeSaleInput,
@@ -923,44 +926,63 @@ export function useHealthCheck<
   return withQueryKey(query, queryOptions.queryKey);
 }
 
-export const getGetCurrentJourneyUrl = () => {
-  return `/api/journeys/current`;
+export const getGetCurrentJourneyUrl = (params?: GetCurrentJourneyParams) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : String(value));
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/journeys/current?${stringifiedParams}`
+    : `/api/journeys/current`;
 };
 
 /**
  * @summary Load or create the signed-in user's current journey
  */
 export const getCurrentJourney = async (
+  params?: GetCurrentJourneyParams,
   options?: RequestInit,
 ): Promise<Journey> => {
-  return customFetch<Journey>(getGetCurrentJourneyUrl(), {
+  return customFetch<Journey>(getGetCurrentJourneyUrl(params), {
     ...options,
     method: "GET",
   });
 };
 
-export const getGetCurrentJourneyQueryKey = () => {
-  return [`/api/journeys/current`] as const;
+export const getGetCurrentJourneyQueryKey = (
+  params?: GetCurrentJourneyParams,
+) => {
+  return [`/api/journeys/current`, ...(params ? [params] : [])] as const;
 };
 
 export const getGetCurrentJourneyQueryOptions = <
   TData = Awaited<ReturnType<typeof getCurrentJourney>>,
   TError = ErrorType<void>,
->(options?: {
-  query?: UseQueryOptions<
-    Awaited<ReturnType<typeof getCurrentJourney>>,
-    TError,
-    TData
-  >;
-  request?: SecondParameter<typeof customFetch>;
-}) => {
+>(
+  params?: GetCurrentJourneyParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getCurrentJourney>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
   const { query: queryOptions, request: requestOptions } = options ?? {};
 
-  const queryKey = queryOptions?.queryKey ?? getGetCurrentJourneyQueryKey();
+  const queryKey =
+    queryOptions?.queryKey ?? getGetCurrentJourneyQueryKey(params);
 
   const queryFn: QueryFunction<
     Awaited<ReturnType<typeof getCurrentJourney>>
-  > = ({ signal }) => getCurrentJourney({ signal, ...requestOptions });
+  > = ({ signal }) => getCurrentJourney(params, { signal, ...requestOptions });
 
   return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
     Awaited<ReturnType<typeof getCurrentJourney>>,
@@ -981,15 +1003,18 @@ export type GetCurrentJourneyQueryError = ErrorType<void>;
 export function useGetCurrentJourney<
   TData = Awaited<ReturnType<typeof getCurrentJourney>>,
   TError = ErrorType<void>,
->(options?: {
-  query?: UseQueryOptions<
-    Awaited<ReturnType<typeof getCurrentJourney>>,
-    TError,
-    TData
-  >;
-  request?: SecondParameter<typeof customFetch>;
-}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
-  const queryOptions = getGetCurrentJourneyQueryOptions(options);
+>(
+  params?: GetCurrentJourneyParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getCurrentJourney>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetCurrentJourneyQueryOptions(params, options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;
@@ -1702,4 +1727,84 @@ export const useRestartJourney = <
   TContext
 > => {
   return useMutation(getRestartJourneyMutationOptions(options));
+};
+
+export const getTranscribeRecordingUrl = () => {
+  return `/api/openai/transcriptions`;
+};
+
+export const transcribeRecording = async (
+  recordingInput: RecordingInput,
+  options?: RequestInit,
+): Promise<RecordingTranscript> => {
+  return customFetch<RecordingTranscript>(getTranscribeRecordingUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(recordingInput),
+  });
+};
+
+export const getTranscribeRecordingMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof transcribeRecording>>,
+    TError,
+    { data: BodyType<RecordingInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof transcribeRecording>>,
+  TError,
+  { data: BodyType<RecordingInput> },
+  TContext
+> => {
+  const mutationKey = ["transcribeRecording"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof transcribeRecording>>,
+    { data: BodyType<RecordingInput> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return transcribeRecording(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type TranscribeRecordingMutationResult = NonNullable<
+  Awaited<ReturnType<typeof transcribeRecording>>
+>;
+export type TranscribeRecordingMutationBody = BodyType<RecordingInput>;
+export type TranscribeRecordingMutationError = ErrorType<void>;
+
+export const useTranscribeRecording = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof transcribeRecording>>,
+    TError,
+    { data: BodyType<RecordingInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof transcribeRecording>>,
+  TError,
+  { data: BodyType<RecordingInput> },
+  TContext
+> => {
+  return useMutation(getTranscribeRecordingMutationOptions(options));
 };

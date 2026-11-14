@@ -29,7 +29,15 @@
     "web": {
       "favicon": "./assets/images/purpose-lab-icon.png"
     },
-    "plugins": ["expo-router"],
+    "plugins": [
+      "expo-router",
+      [
+        "expo-audio",
+        {
+          "microphonePermission": "Purpose Lab uses the microphone only when you tap record, so you can speak a reflection and review the transcript before sending."
+        }
+      ]
+    ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true

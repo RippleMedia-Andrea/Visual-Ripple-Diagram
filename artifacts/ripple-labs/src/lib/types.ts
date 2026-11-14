@@ -11,6 +11,8 @@ export interface StoryCard {
   people: string[];
   impact: string[];
   user_edited: boolean;
+  confirmed?: boolean;
+  promptId?: string | null;
 }
 
 export interface PurposeTheme {
@@ -52,6 +54,16 @@ export interface JourneyResponse {
   season?: Season | null;
   actionPlan?: ActionPlan | null;
   vision?: Vision | null;
+  patternDiscovery?: PatternDiscovery | null;
+  drafts?: Record<string, string>;
+  isPractice?: boolean;
+}
+
+export interface PatternDiscovery {
+  actionWords: string[];
+  adjectives: string[];
+  impact: string;
+  confirmed: boolean;
 }
 
 export interface Vision {

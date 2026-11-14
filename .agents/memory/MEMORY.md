@@ -1,2 +1,3 @@
 - [Production release verification](production-release-verification.md) — confirm the live asset hash and restart timestamp after publishing; a success report may still serve the old bundle.
 - [Book and course access](book-and-access-decisions.md) — approved Made for More stages, preserve legacy season work and current access, and require approval before pricing or publishing.
+- [Guided listening approach](guided-listening.md) — approved listening-partner rules, two confirmed stories, distinct action and impact, and editable dictation.

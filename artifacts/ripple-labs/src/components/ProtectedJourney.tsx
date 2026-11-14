@@ -38,7 +38,7 @@ export function ProtectedJourney({ children }: { children: ReactNode }) {
           <h1 className="font-serif text-3xl mb-4">A note about your journey</h1>
           <label className="mb-4 flex items-start gap-3 font-sans text-sm leading-relaxed">
             <input type="checkbox" checked={consentChecked} onChange={(event) => setConsentChecked(event.target.checked)} className="mt-1 h-4 w-4 accent-[#2F7F7B]" />
-            <span>I understand my answers are processed by a third-party AI service (Anthropic&apos;s Claude) to guide my Purpose Lab journey, as described in the <a href="/privacy" className="text-[#2F7F7B] underline">Privacy Policy</a>.</span>
+            <span>I understand my answers are processed by a third-party AI service (Anthropic&apos;s Claude) to guide my Purpose Lab journey. If I use the microphone, my recording is sent to OpenAI for transcription when I stop recording. I can edit or discard the transcript, and it is only sent to my guide when I press send. The app does not keep raw recordings. See the <a href="/privacy" className="text-[#2F7F7B] underline">Privacy Policy</a>.</span>
           </label>
           <p className="mb-6 font-sans text-sm">By continuing you agree to the <a href="/terms" className="text-[#2F7F7B] underline">Terms of Use</a>.</p>
           <button

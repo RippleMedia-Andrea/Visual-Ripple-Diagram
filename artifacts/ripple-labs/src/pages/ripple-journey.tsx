@@ -1,14 +1,24 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { authClient } from "@/lib/auth-client";
+import {
+  useGetCurrentJourney,
+  getGetCurrentJourneyQueryKey,
+  useUpdateJourney,
+  useUpdateStoryCard,
+  type JourneyUpdate,
+} from "@workspace/api-client-react";
+import { StoryConfirmCard, RevealSummaries, PatternDiscoveryForm, PatternSummary, PurposePage, PracticePanel } from "@/components/Part4";
 import { STORY_PROMPTS } from "@workspace/story-prompts";
 import { Link } from "wouter";
 import rippleLabsLogo from "@assets/2876A1D3-1596-40F7-9384-F5AAA5F311E8_1777042604510.png";
 import { StageChat, type ChatMessage } from "@/components/StageChat";
 import { AccountMenu } from "@/components/AccountMenu";
 import { StoryCard, PurposeTheme, Season, ActionPlan, JourneyResponse } from "@/lib/types";
-import { StoryCardView, ThemeCardView, SeasonFormView, ActionPlanFormView } from "@/components/Discoveries";
+import { ThemeCardView, SeasonFormView, ActionPlanFormView } from "@/components/Discoveries";
 import { MyDiscoveries } from "@/components/MyDiscoveries";
 import { VisionForm } from "@/components/VisionForm";
-import type { Vision } from "@/lib/types";
+import type { Vision, PatternDiscovery } from "@/lib/types";
 
 const BASE_URL = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -21,7 +31,7 @@ const STAGES = [
     belief: "Your story holds clues.",
     teaching:
       "Begin with two stories where you felt most like yourself. Notice What I felt, What I did, and What changed.",
-    guidance: "Share freely. Your guide will listen, ask questions, and help you notice what your stories reveal.",
+    guidance: "Choose a prompt for each story. Your guide listens, reflects back what you felt, did, and what changed, and checks that it sounds right. Two stories minimum; more are welcome.",
     color: "#0F2A36",
     textColor: "#ffffff",
     cardBg: "rgba(255,255,255,0.06)",
@@ -36,7 +46,7 @@ const STAGES = [
     belief: "Patterns reveal purpose.",
     teaching:
       "Find your action word and the impact it has on others. Both carry equal weight and can show up in many roles.",
-    guidance: "Your guide will reflect back what they heard and help you name the patterns. Confirm, add, or refine.",
+    guidance: "Your saved summaries come first. Your guide will ask what you notice before offering anything. Then name your action and impact below in your own words.",
     color: "#1a4a55",
     textColor: "#ffffff",
     cardBg: "rgba(255,255,255,0.06)",
@@ -135,9 +145,43 @@ type AllMessages = ChatMessage[][];
 const emptyMessages = (): AllMessages => STAGES.map(() => []);
 
 export default function RippleJourney() {
+  const [practice, setPractice] = useState(false);
+  return <JourneyInner key={practice ? "practice" : "personal"} practice={practice} onTogglePractice={() => setPractice((p) => !p)} />;
+}
+
+function JourneyInner({ practice, onTogglePractice }: { practice: boolean; onTogglePractice: () => void }) {
+  const journeyParams = { practice };
+  const { data: session } = authClient.useSession();
+  const queryClient = useQueryClient();
+  const journeyKey = [...getGetCurrentJourneyQueryKey(journeyParams), session?.user.id];
+  const journeyQuery = useGetCurrentJourney(journeyParams, {
+    query: { queryKey: journeyKey, enabled: Boolean(session?.user.id), refetchOnWindowFocus: false, staleTime: 10000 },
+  });
+  const updateJourneyMutation = useUpdateJourney({ mutation: { onSuccess: (record, variables) => {
+    queryClient.setQueryData<JourneyResponse>(journeyKey, previous => previous ? {
+      ...previous,
+      ...variables.data,
+      // A slower response to an older draft must not undo a newer optimistic edit.
+      drafts: { ...record.drafts, ...previous.drafts },
+    } as JourneyResponse : previous);
+  } } });
+  const updateStoryCardMutation = useUpdateStoryCard();
+  const updateJourneyRef = useRef(updateJourneyMutation.mutateAsync);
+  updateJourneyRef.current = updateJourneyMutation.mutateAsync;
   const [journeyId, setJourneyId] = useState<number | null>(null);
   const [isLoadingJourney, setIsLoadingJourney] = useState(true);
   const [loadError, setLoadError] = useState("");
+  const [patternDiscovery, setPatternDiscovery] = useState<PatternDiscovery | null>(null);
+  const [drafts, setDrafts] = useState<Record<string, string>>({});
+  const [seed, setSeed] = useState<{ text: string; nonce: number } | null>(null);
+  const [showPurposePage, setShowPurposePage] = useState(false);
+  const [readAloudChecked, setReadAloudChecked] = useState(false);
+  const [purposeSaveError, setPurposeSaveError] = useState("");
+  const draftQueue = useRef<Promise<unknown>>(Promise.resolve());
+  const failedDrafts = useRef<Record<string, string>>({});
+  const [draftError, setDraftError] = useState("");
+  const [saveError, setSaveError] = useState("");
+  const [isAdvancing, setIsAdvancing] = useState(false);
   const [stageIdx, setStageIdx] = useState(0);
   const [highestStageIdx, setHighestStageIdx] = useState(0);
   const [allMessages, setAllMessages] = useState<AllMessages>(emptyMessages);
@@ -151,6 +195,7 @@ export default function RippleJourney() {
   const [purposeStatement, setPurposeStatement] = useState("");
 
   const [isStreaming, setIsStreaming] = useState(false);
+  const [isRecordingBusy, setIsRecordingBusy] = useState(false);
   const [openingError, setOpeningError] = useState("");
   const [isComplete, setIsComplete] = useState(false);
   const [isDiscoveriesOpen, setIsDiscoveriesOpen] = useState(false);
@@ -177,76 +222,93 @@ export default function RippleJourney() {
 
   const stage = STAGES[stageIdx];
 
+  const initializedRef = useRef(false);
   useEffect(() => {
-    let cancelled = false;
-    fetch(`${BASE_URL}/api/journeys/current`, { credentials: "include" })
-      .then(async (response) => {
-        if (!response.ok) throw new Error("Unable to load your journey.");
-        return (await response.json()) as JourneyResponse;
-      })
-      .then((journey) => {
-        if (cancelled) return;
-        const messages = STAGES.map((item) => journey.messages[item.id] ?? []);
-        const pStmt = journey.purposeStatement ?? "";
-        setJourneyId(journey.id);
-        setStageIdx(journey.currentStageIdx);
-        setHighestStageIdx(journey.currentStageIdx);
-        setAllMessages(messages);
-        setSelectedPrompts(journey.selectedPrompts ?? []);
-        setPromptsConfirmed(messages[0].length > 0);
-        setLegacySeasonMessages(journey.messages.personalize ?? []);
-        setPurposeOptions(journey.purposeOptions ?? []);
-        setEditedPurpose(pStmt);
-        setPurposeConfirmed(Boolean(pStmt));
-        setPurposeStatement(pStmt);
+    if (journeyQuery.isError && !initializedRef.current) {
+      setLoadError("Unable to load your journey.");
+      setIsLoadingJourney(false);
+      return;
+    }
+    const raw = journeyQuery.data;
+    if (!raw || initializedRef.current) return;
+    initializedRef.current = true;
+    setLoadError("");
+    const journey = raw as unknown as JourneyResponse;
+    const messages = STAGES.map((item) => (journey.messages[item.id] ?? []) as ChatMessage[]);
+    const pStmt = journey.purposeStatement ?? "";
+    setJourneyId(journey.id);
+    setStageIdx(journey.currentStageIdx);
+    setHighestStageIdx(journey.currentStageIdx);
+    setAllMessages(messages);
+    setSelectedPrompts(journey.selectedPrompts ?? []);
+    setPromptsConfirmed(messages[0].length > 0);
+    setLegacySeasonMessages((journey.messages.personalize ?? []) as ChatMessage[]);
+    setPurposeOptions(journey.purposeOptions ?? []);
+    setEditedPurpose(pStmt);
+    setPurposeConfirmed(Boolean(pStmt));
+    setPurposeStatement(pStmt);
+    setStoryCards(journey.storyCards ?? []);
+    setThemes(journey.themes ?? []);
+    setSeason(journey.season ?? null);
+    setVision(journey.vision ?? null);
+    setActionPlan(journey.actionPlan ?? null);
+    setPatternDiscovery(journey.patternDiscovery ?? null);
+    setDrafts(journey.drafts ?? {});
+    if (journey.status === "complete") setIsComplete(true);
+    setIsLoadingJourney(false);
+  }, [journeyQuery.data, journeyQuery.isError]);
 
-        setStoryCards(journey.storyCards ?? []);
-        setThemes(journey.themes ?? []);
-        setSeason(journey.season ?? null);
-        setVision(journey.vision ?? null);
-        setActionPlan(journey.actionPlan ?? null);
-
-        if (journey.status === "complete") {
-          setIsComplete(true);
+  function saveDrafts(patch: Record<string, string>) {
+    if (!journeyId) return;
+    const id = journeyId;
+    // serialize so a cleared draft is never overtaken by an older in-flight save
+    setDrafts((d) => ({ ...d, ...patch }));
+    queryClient.setQueryData<JourneyResponse>(journeyKey, previous => previous ? { ...previous, drafts: { ...previous.drafts, ...patch } } : previous);
+    draftQueue.current = draftQueue.current
+      .catch(() => undefined)
+      .then(async () => {
+        // newer values supersede any earlier failed ones for the same key
+        for (const k of Object.keys(patch)) delete failedDrafts.current[k];
+        try {
+          await updateJourneyRef.current({ id, data: { drafts: patch } });
+          if (!Object.keys(failedDrafts.current).length) setDraftError("");
+        } catch {
+          failedDrafts.current = { ...failedDrafts.current, ...patch };
+          setDraftError("Your latest draft hasn't saved yet. It's still here on this screen.");
         }
-
-        setIsLoadingJourney(false);
-      })
-      .catch((error: Error) => {
-        if (cancelled) return;
-        setLoadError(error.message);
-        setIsLoadingJourney(false);
       });
+  }
 
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  function retryDrafts() {
+    const p = failedDrafts.current;
+    failedDrafts.current = {};
+    if (Object.keys(p).length) saveDrafts(p);
+    else setDraftError("");
+  }
+
+  async function refreshJourney() {
+    const result = await journeyQuery.refetch();
+    const journey = result.data as unknown as JourneyResponse | undefined;
+    if (!journey) throw new Error("Unable to refresh your journey.");
+    setStoryCards(journey.storyCards ?? []);
+    setThemes(journey.themes ?? []);
+    setSeason(journey.season ?? null);
+    setVision(journey.vision ?? null);
+    setActionPlan(journey.actionPlan ?? null);
+    setPatternDiscovery(journey.patternDiscovery ?? null);
+    return journey;
+  }
 
   useEffect(() => {
     if (!journeyId || isLoadingJourney) return;
     const timeout = window.setTimeout(() => {
-      fetch(`${BASE_URL}/api/journeys/${journeyId}`, {
-        method: "PATCH",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          currentStageIdx: highestStageIdx,
-          selectedPrompts,
-          purposeOptions,
-          purposeStatement: purposeStatement || null,
-        }),
-      }).catch(() => {});
+      // only fields owned by this autosave; stage, status and statement are saved explicitly
+      updateJourneyRef.current({ id: journeyId, data: { selectedPrompts, purposeOptions } })
+        .then(() => setSaveError(""))
+        .catch(() => setSaveError("Your prompt choices didn't save. Check your connection; they'll save on the next change."));
     }, 350);
     return () => window.clearTimeout(timeout);
-  }, [
-    journeyId,
-    isLoadingJourney,
-    highestStageIdx,
-    selectedPrompts,
-    purposeOptions,
-    purposeStatement,
-  ]);
+  }, [journeyId, isLoadingJourney, selectedPrompts, purposeOptions]);
 
   const hasOpened = useRef<Record<number, boolean>>({});
 
@@ -255,7 +317,7 @@ export default function RippleJourney() {
     const promptLabels = prompts
       .map((id) => STORY_PROMPTS.find((p) => p.id === id)?.label ?? id)
       .join(", ");
-    const openingText = `Welcome me to Reveal, Your Story. Invite two stories where I felt most like myself, starting with one story. Reflect back What I felt / What I did / What changed after each. Optional extra prompts I chose: ${promptLabels || "none"}.`;
+    const openingText = `Welcome me to Reveal, Your Story. I chose this prompt for my first story: ${promptLabels || "a time I felt most like myself"}. Invite me to tell it my own way, one question at a time. Afterwards reflect back What you felt, What you did, and What changed, using my words, and ask if it sounds right. Do not name patterns or purpose yet.`;
     await streamAIOpening("reveal", openingText, 0);
   }
 
@@ -341,11 +403,11 @@ export default function RippleJourney() {
   }
 
   function triggerIdentifyOpening() {
-    streamAIOpening("identify", "I'm ready for Stage 2. Please reflect back the patterns and themes you noticed in my stories, and ask me to confirm or refine them.", 1);
+    streamAIOpening("identify", "I'm ready for Identify. My Reveal summaries are saved and shown on screen. Before offering any observations of your own, ask me what I notice repeating across my stories, especially what I do and the impact on others.", 1);
   }
 
   function triggerPinpointOpening() {
-    streamAIOpening("pinpoint", "I'm ready for Pinpoint. Help me explore my action and outward impact equally. Ask why the impact matters, then help me go deeper before offering optional statement starting points.", 2);
+    streamAIOpening("pinpoint", "I'm ready for Pinpoint. Show me my action and impact from Identify. Offer the optional form I wake up each day to [action] so that [impact], and make clear my own words are welcome. Help me draft, then ask why the impact matters more than once until it reaches the real change in someone else's life. Encourage plain everyday words. When I have a draft, invite me to read it out loud and ask if it feels true, not impressive, just true.", 2);
   }
 
   function triggerPictureOpening() {
@@ -378,25 +440,36 @@ export default function RippleJourney() {
     });
   }
 
-  function goNext() {
-    if (stageIdx >= STAGES.length - 1) {
-      setIsComplete(true);
-      if (journeyId) {
-        fetch(`${BASE_URL}/api/journeys/${journeyId}`, {
-          method: "PATCH",
-          credentials: "include",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ status: "complete", currentStageIdx: 5 }),
-        }).catch(() => {});
+  async function goNext() {
+    if (isRecordingBusy) return false;
+    if (!journeyId || isAdvancing) return false;
+    setSaveError("");
+    setIsAdvancing(true);
+    const finishing = stageIdx >= STAGES.length - 1;
+    const next = finishing ? 5 : stageIdx + 1;
+    const data: JourneyUpdate = finishing
+      ? { status: "complete", currentStageIdx: 5 }
+      : { currentStageIdx: Math.max(highestStageIdx, next), selectedPrompts };
+    try {
+      await updateJourneyMutation.mutateAsync({ id: journeyId, data });
+      if (finishing) {
+        setIsComplete(true);
+      } else {
+        setHighestStageIdx((current) => Math.max(current, next));
+        setStageIdx(next);
       }
-    } else {
-      const next = stageIdx + 1;
-      setHighestStageIdx((current) => Math.max(current, next));
-      setStageIdx(next);
+      return true;
+    } catch (err) {
+      const msg = err instanceof Error && err.message ? err.message : "";
+      setSaveError(`We couldn't move you forward yet${msg ? ` (${msg})` : ""}. Nothing was lost. Please try again.`);
+      return false;
+    } finally {
+      setIsAdvancing(false);
     }
   }
 
   function handleContinue() {
+    if (isRecordingBusy) return;
     const stageId = stage.id;
     if (["reveal", "identify", "picture", "live"].includes(stageId)) {
       setReviewState({ isReviewing: true, stageId, isExtracting: true, extractionFailed: false });
@@ -415,13 +488,7 @@ export default function RippleJourney() {
       });
       if (!res.ok) throw new Error("Extraction failed");
 
-      const currentRes = await fetch(`${BASE_URL}/api/journeys/current`, { credentials: "include" });
-      const journey = await currentRes.json();
-      setStoryCards(journey.storyCards ?? []);
-      setThemes(journey.themes ?? []);
-      setSeason(journey.season ?? null);
-      setVision(journey.vision ?? null);
-      setActionPlan(journey.actionPlan ?? null);
+      await refreshJourney();
 
       setReviewState(prev => ({ ...prev, isExtracting: false }));
     } catch {
@@ -437,11 +504,17 @@ export default function RippleJourney() {
     if (stageIdx > 0) setStageIdx((i) => i - 1);
   }
 
-  function confirmPurpose() {
+  async function confirmPurpose() {
     const stmt = editedPurpose.trim() || selectedOption;
-    if (!stmt || !actionChecked || !impactChecked) return;
-    setPurposeStatement(stmt);
-    setPurposeConfirmed(true);
+    if (!stmt || !actionChecked || !impactChecked || !readAloudChecked) return;
+    setPurposeSaveError("");
+    try {
+      await savePurposeStatementNow(stmt);
+      setPurposeStatement(stmt);
+      setPurposeConfirmed(true);
+    } catch {
+      setPurposeSaveError("Your statement didn't save. Please try again.");
+    }
   }
 
   async function saveVision(next: Vision) {
@@ -487,18 +560,37 @@ export default function RippleJourney() {
 
   // Update Discovery API calls
   async function updateStoryCard(card: StoryCard) {
-    setStoryCards(prev => prev.map(c => c.id === card.id ? card : c));
-    await fetch(`${BASE_URL}/api/story-cards/${card.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(card),
-      credentials: "include",
+    const saved = await updateStoryCardMutation.mutateAsync({
+      id: Number(card.id),
+      data: {
+        title: card.title,
+        summary: card.summary,
+        actions: card.actions,
+        feelings: card.feelings,
+        people: card.people,
+        impact: card.impact,
+        confirmed: Boolean(card.confirmed),
+      },
     });
+    const merged = { ...card, ...(saved as unknown as Partial<StoryCard>), id: card.id };
+    setStoryCards(prev => prev.map(c => c.id === card.id ? merged : c));
   }
 
   async function deleteStoryCard(id: string) {
     setStoryCards(prev => prev.filter(c => c.id !== id));
     await fetch(`${BASE_URL}/api/story-cards/${id}`, { method: "DELETE", credentials: "include" });
+  }
+
+  async function savePatternDiscovery(next: PatternDiscovery) {
+    if (!journeyId) throw new Error("No journey");
+    await updateJourneyMutation.mutateAsync({ id: journeyId, data: { patternDiscovery: next } });
+    setPatternDiscovery(next);
+  }
+
+  async function savePurposeStatementNow(stmt: string) {
+    if (!journeyId) return;
+    const data: JourneyUpdate = { purposeStatement: stmt, purposeOptions };
+    await updateJourneyMutation.mutateAsync({ id: journeyId, data });
   }
 
   async function updateTheme(theme: PurposeTheme) {
@@ -540,8 +632,10 @@ export default function RippleJourney() {
 
   if (isLoadingJourney) {
     return (
-      <div className="min-h-screen bg-[#0F2A36] text-[#D7ECEB] flex items-center justify-center font-sans">
-        Loading your journey…
+      <div className="min-h-screen bg-[#0F2A36] text-[#D7ECEB] flex flex-col items-center justify-center gap-4 font-sans" data-testid="status-loading-journey">
+        <div className="w-40 h-2 rounded-full bg-white/10 animate-pulse" />
+        <div className="w-24 h-2 rounded-full bg-white/10 animate-pulse" />
+        <p className="text-xs opacity-60">{practice ? "Opening your practice notebook" : "Opening your journey"}</p>
       </div>
     );
   }
@@ -549,7 +643,11 @@ export default function RippleJourney() {
   if (loadError) {
     return (
       <div className="min-h-screen bg-[#0F2A36] text-[#D7ECEB] flex items-center justify-center px-6 font-sans text-center">
-        {loadError} Please refresh and try again.
+        <div>
+          <p>{loadError}</p>
+          <button onClick={() => window.location.reload()} className="mt-4 px-5 py-2 rounded-full bg-[#C8A96A] text-[#0F2A36] text-sm" data-testid="button-retry-load">Try again</button>
+          {practice && <button onClick={onTogglePractice} className="mt-4 ml-3 px-5 py-2 rounded-full border border-[#C8A96A] text-sm" data-testid="button-exit-practice-error">Back to my journey</button>}
+        </div>
       </div>
     );
   }
@@ -582,7 +680,16 @@ export default function RippleJourney() {
           purposeStatement={purposeStatement}
           onReset={resetJourney}
           onOpenDiscoveries={() => setIsDiscoveriesOpen(true)}
+          onOpenPurposePage={() => setShowPurposePage(true)}
         />
+        {showPurposePage && purposeStatement && <PurposePage statement={purposeStatement} pattern={patternDiscovery} onClose={() => setShowPurposePage(false)} />}
+      {(draftError || saveError) && (
+        <div role="alert" className="flex flex-wrap items-center justify-center gap-3 px-4 py-2 text-xs font-sans" style={{ backgroundColor: "#F5F1E8", color: "#7a3b2e" }} data-testid="banner-save-error">
+          <span>{saveError || draftError}</span>
+          {draftError && !saveError && <button onClick={retryDrafts} className="underline" data-testid="button-retry-drafts">Save again</button>}
+          {saveError && <button onClick={() => setSaveError("")} className="underline" data-testid="button-dismiss-save-error">Dismiss</button>}
+        </div>
+      )}
       </>
     );
   }
@@ -644,9 +751,25 @@ export default function RippleJourney() {
           >
             ← Purpose Lab
           </Link>
+          <button
+            onClick={onTogglePractice}
+            disabled={isStreaming || isRecordingBusy}
+            className="text-[11px] font-sans px-3 py-1 rounded-full border transition-colors disabled:opacity-40"
+            style={{ color: stage.textColor, borderColor: practice ? "#C8A96A" : "rgba(200,169,106,0.35)", backgroundColor: practice ? "rgba(200,169,106,0.25)" : "transparent" }}
+            aria-pressed={practice}
+            data-testid="button-toggle-practice"
+          >
+            {practice ? "Practice on · back to mine" : "Practice"}
+          </button>
           <AccountMenu color={stage.textColor} />
         </div>
       </nav>
+      {practice && (
+        <div className="text-center text-[11px] font-sans py-1.5 tracking-wide" style={{ backgroundColor: "#C8A96A", color: "#0F2A36" }} data-testid="banner-practice">
+          Practice notebook. Separate from your own journey, and every stage is open.
+        </div>
+      )}
+      {showPurposePage && purposeStatement && <PurposePage statement={purposeStatement} pattern={patternDiscovery} onClose={() => setShowPurposePage(false)} />}
 
       {/* Progress bar */}
       <div className="h-1 w-full" style={{ backgroundColor: "rgba(255,255,255,0.1)" }}>
@@ -662,10 +785,14 @@ export default function RippleJourney() {
         {STAGES.map((s, i) => (
           <button
             key={s.id}
-            onClick={() => !isStreaming && !reviewState.isExtracting && i <= highestStageIdx && setStageIdx(i)}
+            onClick={() => {
+              if (isStreaming || isRecordingBusy || reviewState.isExtracting) return;
+              if (practice) { setHighestStageIdx((h) => Math.max(h, i)); setStageIdx(i); return; }
+              if (i <= highestStageIdx) setStageIdx(i);
+            }}
             data-testid={`stage-dot-${s.id}`}
             className="flex items-center gap-1.5 transition-all"
-            disabled={isStreaming || reviewState.isExtracting || i > highestStageIdx}
+            disabled={isStreaming || isRecordingBusy || reviewState.isExtracting || (!practice && i > highestStageIdx)}
           >
             <div
               className={`rounded-full transition-all duration-300 flex items-center justify-center text-[9px] font-bold ${
@@ -772,7 +899,7 @@ export default function RippleJourney() {
             <div className="flex items-center gap-3 pt-2">
               <button
                 onClick={goPrev}
-                disabled={stageIdx === 0 || isStreaming || reviewState.isExtracting}
+                disabled={stageIdx === 0 || isStreaming || isRecordingBusy || reviewState.isExtracting}
                 className="px-4 py-2 rounded-full text-xs font-sans border transition-all disabled:opacity-30"
                 style={{ borderColor: "rgba(255,255,255,0.2)", color: stage.textColor }}
                 data-testid="prev-stage-btn"
@@ -782,7 +909,7 @@ export default function RippleJourney() {
               {!reviewState.isReviewing && (
                 <button
                   onClick={stageIdx === 2 || stageIdx === 5 ? goNext : handleContinue}
-                  disabled={isStreaming || (stageIdx === 2 && !purposeConfirmed)}
+                  disabled={isStreaming || isRecordingBusy || isAdvancing || (!practice && stageIdx === 1 && !patternDiscovery?.confirmed) || (!practice && stageIdx === 2 && !purposeConfirmed)}
                   className="flex-1 px-4 py-2 rounded-full text-xs font-sans font-medium transition-all disabled:opacity-40 hover:opacity-90"
                   style={{ backgroundColor: "#C8A96A", color: "#0F2A36" }}
                   data-testid="next-stage-btn"
@@ -791,6 +918,9 @@ export default function RippleJourney() {
                 </button>
               )}
             </div>
+            {!practice && stageIdx === 1 && !patternDiscovery?.confirmed && !reviewState.isReviewing && (
+              <p className="text-[11px] font-sans opacity-60" style={{ color: stage.textColor }} data-testid="text-identify-gate">Confirm your action and impact to continue.</p>
+            )}
           </div>
 
           {/* Right: Chat + stage-specific UI */}
@@ -814,7 +944,11 @@ export default function RippleJourney() {
                     <p className="text-sm font-sans mb-6" style={{ color: stage.textColor }}>We couldn't gather this right now.</p>
                     <div className="flex gap-4">
                       <button onClick={() => runExtraction(reviewState.stageId)} className="px-5 py-2.5 rounded-full text-xs font-sans border border-[#C8A96A] text-[#C8A96A] hover:bg-[#C8A96A]/10 transition-colors">Try Again</button>
-                      <button onClick={() => { setReviewState(prev => ({...prev, isReviewing: false})); goNext(); }} className="px-5 py-2.5 rounded-full text-xs font-sans bg-[#C8A96A] text-[#0F2A36] hover:opacity-90 transition-opacity">Continue Anyway</button>
+                      {["reveal", "identify"].includes(reviewState.stageId) ? (
+                        <button onClick={() => setReviewState({ isReviewing: false, stageId: "", isExtracting: false, extractionFailed: false })} className="px-5 py-2.5 rounded-full text-xs font-sans bg-[#C8A96A] text-[#0F2A36]" data-testid="button-back-to-conversation">Back to the conversation</button>
+                      ) : (
+                        <button onClick={() => { setReviewState(prev => ({...prev, isReviewing: false})); goNext(); }} className="px-5 py-2.5 rounded-full text-xs font-sans bg-[#C8A96A] text-[#0F2A36] hover:opacity-90 transition-opacity">Continue Anyway</button>
+                      )}
                     </div>
                   </div>
                 ) : (
@@ -825,17 +959,31 @@ export default function RippleJourney() {
                     </div>
 
                     <div className="space-y-4 mb-8">
-                      {stage.id === "reveal" && storyCards.map(c => <StoryCardView key={c.id} card={c} onUpdate={updateStoryCard} onDelete={() => deleteStoryCard(c.id)} />)}
+                      {stage.id === "reveal" && storyCards.length === 0 && <p className="text-sm font-sans opacity-70" style={{ color: stage.textColor }}>No stories were gathered yet. Return to the conversation and share a story first.</p>}
+                      {stage.id === "reveal" && storyCards.map((c, i) => <StoryConfirmCard key={c.id} card={c} index={i} textColor={stage.textColor} onSave={updateStoryCard} onDelete={() => deleteStoryCard(c.id)} />)}
+                      {stage.id === "identify" && <PatternSummary value={patternDiscovery} textColor={stage.textColor} />}
                       {stage.id === "identify" && themes.map(t => <ThemeCardView key={t.id} theme={t} onUpdate={updateTheme} onDelete={() => deleteTheme(t.id)} />)}
                       {stage.id === "picture" && vision && <VisionForm vision={vision} onSave={saveVision} />}
                       {stage.id === "live" && season && <SeasonFormView season={season} onUpdate={updateSeasonApi} />}
                       {stage.id === "live" && actionPlan && <ActionPlanFormView actionPlan={actionPlan} onUpdate={updateActionPlanApi} />}
                     </div>
 
+                    {stage.id === "reveal" && (
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-4">
+                        <p className="text-xs font-sans flex-1" style={{ color: stage.textColor, opacity: 0.7 }} data-testid="text-confirmed-count">
+                          {storyCards.filter((c) => c.confirmed).length} of {Math.max(2, storyCards.length)} confirmed. Confirm at least two stories to continue. Copy these into your notebook too.
+                        </p>
+                        <button onClick={() => setReviewState({ isReviewing: false, stageId: "", isExtracting: false, extractionFailed: false })} className="px-4 py-2 rounded-full text-xs font-sans border" style={{ borderColor: "rgba(200,169,106,0.5)", color: stage.textColor }} data-testid="button-tell-another-story">
+                          Tell another story
+                        </button>
+                      </div>
+                    )}
                     <button
-                      onClick={() => { setReviewState(prev => ({...prev, isReviewing: false})); goNext(); }}
-                      className="w-full py-3.5 rounded-full text-sm font-sans font-medium transition-all hover:opacity-90"
+                      onClick={async () => { if (await goNext()) setReviewState(prev => ({...prev, isReviewing: false})); }}
+                      disabled={!practice && ((stage.id === "reveal" && storyCards.filter((c) => c.confirmed).length < 2) || (stage.id === "identify" && !patternDiscovery?.confirmed))}
+                      className="w-full py-3.5 rounded-full text-sm font-sans font-medium transition-all hover:opacity-90 disabled:opacity-40"
                       style={{ backgroundColor: "#C8A96A", color: "#0F2A36" }}
+                      data-testid="button-review-continue"
                     >
                       This feels right. Continue →
                     </button>
@@ -859,22 +1007,20 @@ export default function RippleJourney() {
                     className="text-sm font-sans leading-relaxed"
                     style={{ color: stage.textColor, opacity: 0.75 }}
                   >
-                    Begin with <strong>two stories</strong> where you felt most like yourself. The prompts below are optional extras.
+                    Choose a prompt to start your first story. Pick a time you felt most like yourself. You'll choose a different prompt for your second story.
                   </p>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5" data-testid="prompt-grid">
                   {STORY_PROMPTS.map((prompt) => {
-                    const isSelected = selectedPrompts.includes(prompt.id);
-                    const atMax = selectedPrompts.length >= 3 && !isSelected;
+                    const isSelected = selectedPrompts[0] === prompt.id;
+                    const atMax = false;
                     return (
                       <button
                         key={prompt.id}
                         onClick={() => {
                           if (atMax) return;
-                          setSelectedPrompts((prev) =>
-                            isSelected ? prev.filter((id) => id !== prompt.id) : [...prev, prompt.id]
-                          );
+                          setSelectedPrompts(isSelected ? [] : [prompt.id]);
                         }}
                         disabled={atMax}
                         className="text-left px-4 py-3.5 rounded-xl border transition-all duration-200"
@@ -928,11 +1074,11 @@ export default function RippleJourney() {
                     className="text-xs font-sans"
                     style={{ color: stage.textColor, opacity: selectedPrompts.length >= 2 ? 0.6 : 0.35 }}
                   >
-                    {selectedPrompts.length === 0 ? "You can begin without choosing a prompt" : `${selectedPrompts.length} optional prompts selected`}
+                    {selectedPrompts.length === 0 ? "Choose one prompt to begin" : "Ready when you are"}
                   </p>
                   <button
                     onClick={confirmAndBegin}
-                    disabled={isStreaming}
+                    disabled={isStreaming || selectedPrompts.length === 0}
                     className="px-6 py-2.5 rounded-full text-sm font-sans font-medium transition-all disabled:opacity-30 hover:opacity-90"
                     style={{ backgroundColor: "#C8A96A", color: "#0F2A36" }}
                     data-testid="begin-stories-btn"
@@ -942,7 +1088,43 @@ export default function RippleJourney() {
                 </div>
               </div>
             ) : (
+              <div className="space-y-4">
+              {practice && <PracticePanel textColor={stage.textColor} onUseSample={(text) => setSeed({ text, nonce: Date.now() })} />}
+              {stageIdx === 1 && <RevealSummaries cards={storyCards} textColor={stage.textColor} />}
+              {stageIdx === 2 && <PatternSummary value={patternDiscovery} textColor={stage.textColor} />}
+              {stageIdx === 0 && (
+                <div className="rounded-2xl p-4" style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(200,169,106,0.15)" }} data-testid="next-story-prompts">
+                  <p className="text-[10px] font-sans uppercase tracking-widest mb-2.5" style={{ color: stage.textColor, opacity: 0.5 }}>
+                    Ready for another story? Choose a different prompt
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {STORY_PROMPTS.map((p) => {
+                      const used = selectedPrompts.includes(p.id);
+                      return (
+                        <button
+                          key={p.id}
+                          disabled={isStreaming}
+                          onClick={() => {
+                            if (!used) setSelectedPrompts((prev) => [...prev, p.id]);
+                            setSeed({ text: `For my next story I chose: ${p.label}. `, nonce: Date.now() });
+                          }}
+                          className="px-3 py-1.5 rounded-full text-xs font-sans border transition-colors disabled:opacity-40"
+                          style={{ color: stage.textColor, borderColor: used ? "rgba(200,169,106,0.7)" : "rgba(255,255,255,0.15)", backgroundColor: used ? "rgba(200,169,106,0.14)" : "transparent" }}
+                          data-testid={`button-next-prompt-${p.id}`}
+                        >
+                          {used ? "Used: " : ""}{p.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
               <StageChat
+                key={`${journeyId}-${stage.id}`}
+                initialDraft={drafts[stage.id] ?? ""}
+                initialTranscript={drafts[`${stage.id}__transcript`] ?? ""}
+                onSaveDrafts={saveDrafts}
+                seed={seed}
                 stage={stage.id}
                 messages={allMessages[stageIdx]}
                 onMessages={(msgs) => updateStageMessages(stageIdx, msgs)}
@@ -954,7 +1136,10 @@ export default function RippleJourney() {
                 journeyId={journeyId!}
                 isStreaming={isStreaming}
                 setIsStreaming={setIsStreaming}
+                onRecordingBusy={setIsRecordingBusy}
               />
+              {stageIdx === 1 && <PatternDiscoveryForm key={journeyId ?? 0} value={patternDiscovery} textColor={stage.textColor} onSave={savePatternDiscovery} />}
+              </div>
             )}
 
             {/* Stage 2 (Pinpoint): Purpose statement picker */}
@@ -975,7 +1160,7 @@ export default function RippleJourney() {
                     className="text-xs font-sans"
                     style={{ color: stage.textColor, opacity: 0.6 }}
                   >
-                    Choose one as your starting point, then refine it below.
+                    Optional starting points. The form is optional; your own words are welcome.
                   </p>
                 </div>
 
@@ -989,6 +1174,7 @@ export default function RippleJourney() {
                         setPurposeConfirmed(false);
                         setActionChecked(false);
                         setImpactChecked(false);
+                        setReadAloudChecked(false);
                       }}
                       className="w-full text-left px-4 py-3 rounded-xl border transition-all text-sm font-sans leading-relaxed"
                       style={{
@@ -1033,6 +1219,7 @@ export default function RippleJourney() {
                       setEditedPurpose(e.target.value);
                       setActionChecked(false);
                       setImpactChecked(false);
+                      setReadAloudChecked(false);
                       setPurposeConfirmed(false);
                     }}
                     data-testid="purpose-editor"
@@ -1041,10 +1228,12 @@ export default function RippleJourney() {
                 <p className="text-sm" style={{ color: stage.textColor }}>The form is optional. Include both your action and an outward impact.</p>
                 <label className="block text-sm" style={{ color: stage.textColor }}><input type="checkbox" checked={actionChecked} onChange={(e) => setActionChecked(e.target.checked)} /> My statement names my action.</label>
                 <label className="block text-sm" style={{ color: stage.textColor }}><input type="checkbox" checked={impactChecked} onChange={(e) => setImpactChecked(e.target.checked)} /> My statement names the impact on others.</label>
+                <label className="block text-sm" style={{ color: stage.textColor }}><input type="checkbox" checked={readAloudChecked} onChange={(e) => setReadAloudChecked(e.target.checked)} data-testid="checkbox-read-aloud" /> I read it out loud. It feels true. Not impressive, just true.</label>
+                {purposeSaveError && <p role="alert" className="text-xs" style={{ color: stage.textColor }}>{purposeSaveError}</p>}
 
                 <button
                   onClick={confirmPurpose}
-                  disabled={!editedPurpose.trim() || !actionChecked || !impactChecked}
+                  disabled={!editedPurpose.trim() || !actionChecked || !impactChecked || !readAloudChecked || updateJourneyMutation.isPending}
                   className="w-full py-3 rounded-full text-sm font-sans font-medium transition-all disabled:opacity-40"
                   style={{ backgroundColor: "#C8A96A", color: "#0F2A36" }}
                   data-testid="confirm-purpose-btn"
@@ -1061,6 +1250,9 @@ export default function RippleJourney() {
                     <p className="font-script text-base leading-relaxed" style={{ color: stage.textColor }}>
                       {purposeStatement}
                     </p>
+                    <button onClick={() => setShowPurposePage(true)} className="mt-3 text-xs font-sans underline" style={{ color: stage.textColor }} data-testid="button-open-purpose-page">
+                      Open my purpose page to download or screenshot
+                    </button>
                   </div>
                 )}
               </div>
@@ -1080,6 +1272,7 @@ function JourneySummary({
   purposeStatement,
   onReset,
   onOpenDiscoveries,
+  onOpenPurposePage,
 }: {
   storyCards: StoryCard[];
   themes: PurposeTheme[];
@@ -1088,6 +1281,7 @@ function JourneySummary({
   purposeStatement: string | null;
   onReset: () => void;
   onOpenDiscoveries: () => void;
+  onOpenPurposePage: () => void;
 }) {
   const [storiesOpen, setStoriesOpen] = useState(false);
 
@@ -1151,6 +1345,9 @@ function JourneySummary({
               <p className="font-script text-3xl md:text-4xl text-white leading-relaxed max-w-full overflow-hidden break-words mx-auto">
                 {purposeStatement}
               </p>
+              <button onClick={onOpenPurposePage} className="mt-8 px-5 py-2.5 rounded-full text-xs font-sans border border-[#C8A96A]/50 text-[#C8A96A] hover:bg-[#C8A96A]/10" data-testid="button-open-purpose-page-summary">
+                Open my purpose page to download or screenshot
+              </button>
             </div>
           )}
 

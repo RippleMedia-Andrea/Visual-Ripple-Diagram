@@ -5,6 +5,18 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+export interface RecordingInput {
+  /**
+   * Base64 audio
+   * @maxLength 16777216
+   */
+  audio: string;
+}
+
+export interface RecordingTranscript {
+  text: string;
+}
+
 export interface CourseAccess {
   fullAccess: boolean;
   courseBuyer: boolean;
@@ -111,6 +123,8 @@ export interface StageMessages {
   expand: ChatMessage[];
 }
 
+export type JourneyRecordDrafts = { [key: string]: string };
+
 export type JourneyRecordStatus =
   (typeof JourneyRecordStatus)[keyof typeof JourneyRecordStatus];
 
@@ -118,6 +132,22 @@ export const JourneyRecordStatus = {
   in_progress: "in_progress",
   complete: "complete",
 } as const;
+
+export interface PatternDiscovery {
+  /**
+   * @maxItems 10
+   * @items.maxLength 100
+   */
+  actionWords: string[];
+  /**
+   * @maxItems 10
+   * @items.maxLength 100
+   */
+  adjectives: string[];
+  /** @maxLength 2000 */
+  impact: string;
+  confirmed: boolean;
+}
 
 export interface Season {
   summary?: string;
@@ -136,6 +166,9 @@ export interface ActionPlan {
 }
 
 export interface JourneyRecord {
+  isPractice?: boolean;
+  patternDiscovery?: PatternDiscovery;
+  drafts?: JourneyRecordDrafts;
   id: number;
   userId: string;
   status: JourneyRecordStatus;
@@ -158,6 +191,7 @@ export interface JourneyRecord {
 }
 
 export interface StoryCard {
+  confirmed?: boolean;
   id?: number;
   journeyId?: number;
   position?: number;
@@ -198,6 +232,8 @@ export type Journey = JourneyRecord & {
   themes: PurposeTheme[];
 };
 
+export type JourneyUpdateDrafts = { [key: string]: string };
+
 export type JourneyUpdateStatus =
   (typeof JourneyUpdateStatus)[keyof typeof JourneyUpdateStatus];
 
@@ -207,6 +243,8 @@ export const JourneyUpdateStatus = {
 } as const;
 
 export interface JourneyUpdate {
+  patternDiscovery?: PatternDiscovery;
+  drafts?: JourneyUpdateDrafts;
   /**
    * @minimum 0
    * @maximum 5
@@ -223,6 +261,7 @@ export interface JourneyUpdate {
 }
 
 export interface StoryCardUpdate {
+  confirmed?: boolean;
   title?: string;
   summary?: string;
   /** @nullable */
@@ -271,4 +310,8 @@ export type RecordAiConsent200 = {
 
 export type RecordWelcomeSeen200 = {
   welcomeSeenAt: string;
+};
+
+export type GetCurrentJourneyParams = {
+  practice?: boolean;
 };

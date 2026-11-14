@@ -7,6 +7,7 @@
  */
 
 export interface StoryCardUpdate {
+  confirmed?: boolean;
   title?: string;
   summary?: string;
   /** @nullable */
