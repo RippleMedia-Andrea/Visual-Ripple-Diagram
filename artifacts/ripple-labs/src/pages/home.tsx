@@ -54,8 +54,8 @@ export default function Home() {
         data-testid="hero-section"
       >
         <div className="max-w-2xl mx-auto">
-          <p className="text-[#C8A96A] text-xs font-sans font-medium uppercase tracking-widest mb-6" data-testid="hero-eyebrow">
-            Welcome to Ripple Labs
+          <p className="text-[#C8A96A] text-xs font-sans font-medium tracking-widest mb-6" data-testid="hero-eyebrow">
+            Hi, I'm Andrea. Welcome in.
           </p>
           <h1
             className="text-4xl md:text-6xl font-serif font-semibold text-[#0F2A36] leading-tight mb-6"
