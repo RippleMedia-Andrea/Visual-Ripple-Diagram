@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { STAGE_DESCRIPTIONS } from "@/lib/stage-descriptions";
 
 interface RingStage {
   id: string;
@@ -16,7 +17,7 @@ const stages: RingStage[] = [
     id: "reveal",
     title: "Reveal",
     subtitle: "Your Story",
-    description: "Begin with your story. Remember the moments when you felt most like yourself, and notice what they reveal about who you already are.",
+    description: STAGE_DESCRIPTIONS.reveal,
     radius: 52,
     textRadius: 0,
     fontSize: 18,
@@ -26,7 +27,7 @@ const stages: RingStage[] = [
     id: "identify",
     title: "Identify",
     subtitle: "Your Patterns",
-    description: "Look across your stories for what keeps showing up. Your patterns point to your action and the impact it has on others.",
+    description: STAGE_DESCRIPTIONS.identify,
     radius: 108,
     textRadius: 82,
     fontSize: 13,
@@ -36,7 +37,7 @@ const stages: RingStage[] = [
     id: "pinpoint",
     title: "Pinpoint",
     subtitle: "Your Purpose",
-    description: "Put who you are into words. Your purpose statement names your action and the impact it has on others.",
+    description: STAGE_DESCRIPTIONS.pinpoint,
     radius: 162,
     textRadius: 137,
     fontSize: 12,
@@ -46,7 +47,7 @@ const stages: RingStage[] = [
     id: "personalize",
     title: "Picture",
     subtitle: "Your Vision",
-    description: "See the life your purpose makes possible, and notice whose picture of success you've been borrowing.",
+    description: STAGE_DESCRIPTIONS.picture,
     radius: 216,
     textRadius: 190,
     fontSize: 11,
@@ -56,7 +57,7 @@ const stages: RingStage[] = [
     id: "live",
     title: "Live",
     subtitle: "Your Season",
-    description: "Your season is not the waiting room to your life. Live your purpose right where you are.",
+    description: STAGE_DESCRIPTIONS.live,
     radius: 268,
     textRadius: 244,
     fontSize: 11,
@@ -66,7 +67,7 @@ const stages: RingStage[] = [
     id: "expand",
     title: "Expand",
     subtitle: "Your Ripple",
-    description: "Your ripple reaches the people around you and keeps growing.",
+    description: STAGE_DESCRIPTIONS.expand,
     radius: 320,
     textRadius: 296,
     fontSize: 11,

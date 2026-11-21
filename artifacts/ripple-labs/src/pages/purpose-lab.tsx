@@ -4,6 +4,7 @@ import rippleLabsLogo from "@assets/2876A1D3-1596-40F7-9384-F5AAA5F311E8_1777042
 import purposeLabLogo from "@assets/31DC4C16-212D-406B-AC0B-609119CF0477_1777042604510.png";
 import { RippleMethodDiagram } from "@/components/RippleMethodDiagram";
 import { PurposeStatementBuilder } from "@/components/PurposeStatementBuilder";
+import { STAGE_DESCRIPTIONS } from "@/lib/stage-descriptions";
 
 const stages = [
   {
@@ -13,8 +14,7 @@ const stages = [
     subtitle: "Your Story",
     eyebrow: "Stage One",
     belief: "Your story holds clues.",
-    teaching:
-      "You are not becoming someone else. You are uncovering who you already are. Your stories hold threads of your purpose, so we begin here, with your story.",
+    teaching: STAGE_DESCRIPTIONS.reveal,
     what: "In this stage you'll share two stories when you felt most like yourself. For each one, you'll reflect on three things: What I felt, What I did, and What changed. The other prompts are optional extras.",
     prompts: [
       {
@@ -50,8 +50,7 @@ const stages = [
     subtitle: "Your Patterns",
     eyebrow: "Stage Two",
     belief: "Patterns reveal purpose.",
-    teaching:
-      "Across your stories, the same things keep showing up: the action you naturally take and the impact it has on others. These patterns are fingerprints of your purpose.",
+    teaching: STAGE_DESCRIPTIONS.identify,
     what: "Here you'll find your action word and your impact from your stories. Both carry equal weight, and your action is bigger than any single job or role.",
     prompts: [
       {
@@ -87,8 +86,7 @@ const stages = [
     subtitle: "Your Purpose",
     eyebrow: "Stage Three",
     belief: "You are not becoming someone else. You are naming who you already are.",
-    teaching:
-      "Put who you are into words. Your purpose statement names your action and the impact it has on others. Plain, everyday words work best.",
+    teaching: STAGE_DESCRIPTIONS.pinpoint,
     what: "Using your action and impact, you'll write your purpose statement. A suggested form is: \"I wake up each day to [action] so that [impact].\" The form is optional. An action and an outward impact are what matter.",
     prompts: [
       {
@@ -124,8 +122,7 @@ const stages = [
     subtitle: "Your Vision",
     eyebrow: "Stage Four",
     belief: "See the life your purpose makes possible.",
-    teaching:
-      "See the life your purpose makes possible, and notice whose picture of success you've been borrowing.",
+    teaching: STAGE_DESCRIPTIONS.picture,
     what: "In this stage, you'll picture what living your purpose looks like and make sure that picture is truly yours.",
     prompts: [
       {
@@ -156,8 +153,7 @@ const stages = [
     subtitle: "Your Season",
     eyebrow: "Stage Five",
     belief: "Live your purpose right where you are.",
-    teaching:
-      "Your season is not the waiting room to your life. Live your purpose right where you are. Your purpose stays the same, and this season gives it a shape all its own.",
+    teaching: STAGE_DESCRIPTIONS.live,
     what: "In this stage, you'll name the season you are in, the roles you carry, and where your purpose is already showing up.",
     prompts: [
       {
@@ -188,8 +184,7 @@ const stages = [
     subtitle: "Your Ripple",
     eyebrow: "Stage Six",
     belief: "What's within you creates a ripple.",
-    teaching:
-      "Your ripple reaches the people around you and keeps growing. Your family, your community, and your work all feel it, day after day, season after season.",
+    teaching: STAGE_DESCRIPTIONS.expand,
     what: "This final stage is about integration: building daily rhythms that keep you connected to your purpose, and setting the intention to return in future seasons as life changes.",
     prompts: [
       {

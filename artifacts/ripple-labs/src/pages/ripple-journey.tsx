@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { authClient } from "@/lib/auth-client";
+import { STAGE_DESCRIPTIONS } from "@/lib/stage-descriptions";
 import {
   useGetCurrentJourney,
   getGetCurrentJourneyQueryKey,
@@ -29,8 +30,7 @@ const STAGES = [
     title: "Reveal",
     subtitle: "Your Story",
     belief: "Your story holds clues.",
-    teaching:
-      "Begin with two stories where you felt most like yourself. Notice What I felt, What I did, and What changed.",
+    teaching: STAGE_DESCRIPTIONS.reveal,
     guidance: "Choose a prompt for each story. Your guide listens, reflects back what you felt, did, and what changed, and checks that it sounds right. Two stories minimum; more are welcome.",
     color: "#0B1F4B",
     textColor: "#ffffff",
@@ -44,8 +44,7 @@ const STAGES = [
     title: "Identify",
     subtitle: "Your Patterns",
     belief: "Patterns reveal purpose.",
-    teaching:
-      "Find your action word and the impact it has on others. Both carry equal weight and can show up in many roles.",
+    teaching: STAGE_DESCRIPTIONS.identify,
     guidance: "Your saved summaries come first. Your guide will ask what you notice before offering anything. Then name your action and impact below in your own words.",
     color: "#16306A",
     textColor: "#ffffff",
@@ -59,8 +58,7 @@ const STAGES = [
     title: "Pinpoint",
     subtitle: "Your Purpose",
     belief: "You are naming who you already are.",
-    teaching:
-      "Put who you are into words. Your purpose statement names your action and the impact it has on others.",
+    teaching: STAGE_DESCRIPTIONS.pinpoint,
     guidance: "Ask why the impact matters, then go deeper. Use an optional starting point or write your own words.",
     color: "#1E3A6E",
     textColor: "#ffffff",
@@ -74,8 +72,7 @@ const STAGES = [
     title: "Picture",
     subtitle: "Your Vision",
     belief: "See the life your purpose makes possible.",
-    teaching:
-      "See the life your purpose makes possible, and notice whose picture of success you've been borrowing.",
+    teaching: STAGE_DESCRIPTIONS.picture,
     guidance: "What do you picture? Whose life did that picture come from? What have you been telling yourself you need before you can start?",
     color: "#5A6B8C",
     textColor: "#0B1F4B",
@@ -89,8 +86,7 @@ const STAGES = [
     title: "Live",
     subtitle: "Your Season",
     belief: "Small actions create a life of purpose.",
-    teaching:
-      "Your season is not the waiting room to your life. Live your purpose right where you are.",
+    teaching: STAGE_DESCRIPTIONS.live,
     guidance: "Right now I'm in the season of... The roles I'm carrying... Where is my purpose already showing up?",
     color: "#B9C3D9",
     textColor: "#0B1F4B",
@@ -104,8 +100,7 @@ const STAGES = [
     title: "Expand",
     subtitle: "Your Ripple",
     belief: "What's within you creates a ripple.",
-    teaching:
-      "Your ripple reaches the people around you and keeps growing.",
+    teaching: STAGE_DESCRIPTIONS.expand,
     guidance: "Reflect on what you're taking away. Your guide will help you close this season of the journey.",
     color: "#EEE9DB",
     textColor: "#0B1F4B",

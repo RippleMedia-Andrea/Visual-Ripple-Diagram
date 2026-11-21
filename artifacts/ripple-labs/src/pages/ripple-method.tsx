@@ -1,6 +1,7 @@
 import { Link } from "wouter";
 import rippleLabsLogo from "@assets/2876A1D3-1596-40F7-9384-F5AAA5F311E8_1777042604510.png";
 import { RippleMethodDiagram } from "@/components/RippleMethodDiagram";
+import { STAGE_DESCRIPTIONS } from "@/lib/stage-descriptions";
 
 const stages = [
   {
@@ -8,8 +9,7 @@ const stages = [
     id: "reveal",
     title: "Reveal",
     subtitle: "Your Story",
-    teaching:
-      "Your story holds clues. In this stage, you begin noticing the experiences, moments, and memories that shaped you and revealed pieces of who you already are.",
+    teaching: STAGE_DESCRIPTIONS.reveal,
     color: "#0B1F4B",
     textColor: "#ffffff",
     borderColor: "rgba(237,228,204,0.12)",
@@ -19,8 +19,7 @@ const stages = [
     id: "identify",
     title: "Identify",
     subtitle: "Your Patterns",
-    teaching:
-      "Patterns reveal purpose. This stage helps you notice recurring themes, emotions, strengths, values, and ways you naturally impact others.",
+    teaching: STAGE_DESCRIPTIONS.identify,
     color: "#16306A",
     textColor: "#ffffff",
     borderColor: "rgba(237,228,204,0.12)",
@@ -30,8 +29,7 @@ const stages = [
     id: "pinpoint",
     title: "Pinpoint",
     subtitle: "Your Purpose",
-    teaching:
-      "Put who you are into words. Your purpose statement names your action and the impact it has on others.",
+    teaching: STAGE_DESCRIPTIONS.pinpoint,
     color: "#1E3A6E",
     textColor: "#ffffff",
     borderColor: "rgba(245,241,232,0.15)",
@@ -41,8 +39,7 @@ const stages = [
     id: "personalize",
     title: "Picture",
     subtitle: "Your Vision",
-    teaching:
-      "See the life your purpose makes possible, and notice whose picture of success you've been borrowing.",
+    teaching: STAGE_DESCRIPTIONS.picture,
     color: "#5A6B8C",
     textColor: "#F5F1E8",
     borderColor: "rgba(11,31,75,0.08)",
@@ -52,8 +49,7 @@ const stages = [
     id: "live",
     title: "Live",
     subtitle: "Your Season",
-    teaching:
-      "Your season is not the waiting room to your life. Live your purpose right where you are. This stage helps you see where your purpose is already showing up in your current roles.",
+    teaching: STAGE_DESCRIPTIONS.live,
     color: "#B9C3D9",
     textColor: "#0B1F4B",
     borderColor: "rgba(11,31,75,0.08)",
@@ -63,8 +59,7 @@ const stages = [
     id: "expand",
     title: "Expand",
     subtitle: "Your Ripple",
-    teaching:
-      "Your ripple reaches the people around you and keeps growing. Purpose is something you keep living, revisiting, and growing into as your life changes.",
+    teaching: STAGE_DESCRIPTIONS.expand,
     color: "#EEE9DB",
     textColor: "#0B1F4B",
     borderColor: "rgba(11,31,75,0.08)",

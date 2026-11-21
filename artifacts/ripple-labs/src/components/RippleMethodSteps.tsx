@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { STAGE_DESCRIPTIONS } from "@/lib/stage-descriptions";
 
 const steps = [
   {
@@ -7,8 +8,7 @@ const steps = [
     title: "Reveal",
     subtitle: "Your Story",
     belief: "Your story holds clues.",
-    teaching:
-      "You are uncovering who you already are. Start with two stories when you felt most like yourself. For each one, notice what you felt, what you did, and what changed.",
+    teaching: STAGE_DESCRIPTIONS.reveal,
     prompts: [
       "Two stories when you felt most like yourself",
       "What I felt / What I did / What changed",
@@ -25,8 +25,7 @@ const steps = [
     title: "Identify",
     subtitle: "Your Patterns",
     belief: "Patterns reveal purpose.",
-    teaching:
-      "Your stories hold patterns. Look for the action you keep taking and the impact it has on others. Both carry equal weight, and your action is bigger than any single job or role.",
+    teaching: STAGE_DESCRIPTIONS.identify,
     prompts: [
       "Your action word, found in your stories",
       "Your impact on others",
@@ -43,8 +42,7 @@ const steps = [
     title: "Pinpoint",
     subtitle: "Your Purpose",
     belief: "Purpose is who you are in motion.",
-    teaching:
-      "Your patterns point to a purpose that is uniquely yours. Put who you are into words. Your purpose statement names your action and the impact it has on others, in plain, everyday words.",
+    teaching: STAGE_DESCRIPTIONS.pinpoint,
     prompts: [
       '"I wake up each day to [action]…"',
       '"…so that [impact]."',
@@ -61,8 +59,7 @@ const steps = [
     title: "Picture",
     subtitle: "Your Vision",
     belief: "See the life your purpose makes possible.",
-    teaching:
-      "See the life your purpose makes possible, and notice whose picture of success you've been borrowing.",
+    teaching: STAGE_DESCRIPTIONS.picture,
     prompts: [
       "When I imagine living my purpose, what do I picture?",
       "Whose life did I get that picture from?",
@@ -78,8 +75,7 @@ const steps = [
     title: "Live",
     subtitle: "Your Season",
     belief: "Live your purpose right where you are.",
-    teaching:
-      "Your season is not the waiting room to your life. Live your purpose right where you are. The roles you carry today are where your purpose already shows up.",
+    teaching: STAGE_DESCRIPTIONS.live,
     prompts: [
       "Right now I'm in the season of...",
       "The roles I'm carrying...",
@@ -95,8 +91,7 @@ const steps = [
     title: "Expand",
     subtitle: "Your Ripple",
     belief: "What's within you creates a ripple.",
-    teaching:
-      "Your ripple reaches the people around you and keeps growing. Your family, your community, and your work all feel it as you live from the inside out.",
+    teaching: STAGE_DESCRIPTIONS.expand,
     prompts: [
       "Morning intention practice",
       "Evening reflection",

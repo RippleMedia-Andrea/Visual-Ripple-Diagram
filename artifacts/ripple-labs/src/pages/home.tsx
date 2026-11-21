@@ -2,6 +2,7 @@ import { Link } from "wouter";
 import rippleLabsLogo from "@assets/2876A1D3-1596-40F7-9384-F5AAA5F311E8_1777042604510.png";
 import purposeLabLogo from "@assets/31DC4C16-212D-406B-AC0B-609119CF0477_1777042604510.png";
 import { RippleMethodDiagram } from "@/components/RippleMethodDiagram";
+import { STAGE_DESCRIPTIONS } from "@/lib/stage-descriptions";
 
 export default function Home() {
   return (
@@ -334,12 +335,12 @@ export default function Home() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5" data-testid="stages-grid">
             {[
-              { number: "01", title: "Reveal", subtitle: "Your Story", desc: "Uncover the narrative you've been living." },
-              { number: "02", title: "Identify", subtitle: "Your Patterns", desc: "Notice the recurring themes shaping your path." },
-              { number: "03", title: "Pinpoint", subtitle: "Your Purpose", desc: "Put who you are into words. Your purpose statement names your action and the impact it has on others." },
-              { number: "04", title: "Picture", subtitle: "Your Vision", desc: "See the life your purpose makes possible, and notice whose picture of success you've been borrowing." },
-              { number: "05", title: "Live", subtitle: "Your Season", desc: "Your season is not the waiting room to your life. Live your purpose right where you are." },
-              { number: "06", title: "Expand", subtitle: "Your Ripple", desc: "Your ripple reaches the people around you and keeps growing." },
+              { number: "01", title: "Reveal", subtitle: "Your Story", desc: STAGE_DESCRIPTIONS.reveal },
+              { number: "02", title: "Identify", subtitle: "Your Patterns", desc: STAGE_DESCRIPTIONS.identify },
+              { number: "03", title: "Pinpoint", subtitle: "Your Purpose", desc: STAGE_DESCRIPTIONS.pinpoint },
+              { number: "04", title: "Picture", subtitle: "Your Vision", desc: STAGE_DESCRIPTIONS.picture },
+              { number: "05", title: "Live", subtitle: "Your Season", desc: STAGE_DESCRIPTIONS.live },
+              { number: "06", title: "Expand", subtitle: "Your Ripple", desc: STAGE_DESCRIPTIONS.expand },
             ].map((stage, i) => {
               const dark = i % 2 === 0;
               return (
@@ -461,6 +462,23 @@ export default function Home() {
             >
               AndreaJohn.com
             </a>
+            {[
+              { id: "podcast", label: "Podcast", href: "https://open.spotify.com/show/1gIJCZzVxyGTRLI38ULmVI?si=14fYYkYfSy6l9gqn7cayvA" },
+              { id: "instagram", label: "Instagram", href: "https://www.instagram.com/theandreavilar" },
+              { id: "facebook", label: "Facebook", href: "https://www.facebook.com/theandreavilar" },
+              { id: "youtube", label: "YouTube", href: "https://www.youtube.com/@theandreavilar" },
+            ].map((link) => (
+              <a
+                key={link.id}
+                href={link.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[#EDE4CC] text-xs font-sans hover:text-[#C9A84C] transition-colors focus-gold"
+                data-testid={`link-footer-${link.id}`}
+              >
+                {link.label}
+              </a>
+            ))}
           </nav>
         </div>
         <p className="max-w-5xl mx-auto mt-8 text-center md:text-left text-[#B9C3D9] text-xs font-sans" data-testid="text-footer-copyright">
