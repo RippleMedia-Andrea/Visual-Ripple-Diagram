@@ -76,7 +76,7 @@ export function PurposeStatementBuilder({ textColor, cardBg }: PurposeStatementB
       {/* Format callout */}
       <div
         className="rounded-2xl px-6 py-6 text-center"
-        style={{ backgroundColor: "rgba(200,169,106,0.12)", border: "1px solid rgba(200,169,106,0.25)" }}
+        style={{ backgroundColor: "rgba(201,168,76,0.12)", border: "1px solid rgba(201,168,76,0.25)" }}
         data-testid="format-callout"
       >
         <p
@@ -91,8 +91,8 @@ export function PurposeStatementBuilder({ textColor, cardBg }: PurposeStatementB
           data-testid="format-template"
         >
           "I wake up each day to{" "}
-          <span style={{ color: "#C8A96A" }}>[action]</span> so that{" "}
-          <span style={{ color: "#C8A96A" }}>[impact]</span>."
+          <span style={{ color: "#C9A84C" }}>[action]</span> so that{" "}
+          <span style={{ color: "#C9A84C" }}>[impact]</span>."
         </p>
         <p
           className="text-xs font-sans mt-3 max-w-md mx-auto leading-relaxed"
@@ -120,11 +120,11 @@ export function PurposeStatementBuilder({ textColor, cardBg }: PurposeStatementB
                 className="w-full text-left px-5 py-4 rounded-xl border transition-all duration-200 hover:opacity-90 group"
                 style={{
                   backgroundColor: isSelected
-                    ? "rgba(200,169,106,0.18)"
+                    ? "rgba(201,168,76,0.18)"
                     : cardBg,
                   borderColor: isSelected
-                    ? "rgba(200,169,106,0.6)"
-                    : "rgba(200,169,106,0.1)",
+                    ? "rgba(201,168,76,0.6)"
+                    : "rgba(201,168,76,0.1)",
                 }}
                 data-testid={`suggestion-${s.id}`}
               >
@@ -132,8 +132,8 @@ export function PurposeStatementBuilder({ textColor, cardBg }: PurposeStatementB
                   <div
                     className="flex-shrink-0 mt-0.5 w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all"
                     style={{
-                      borderColor: isSelected ? "#C8A96A" : "rgba(200,169,106,0.35)",
-                      backgroundColor: isSelected ? "#C8A96A" : "transparent",
+                      borderColor: isSelected ? "#C9A84C" : "rgba(201,168,76,0.35)",
+                      backgroundColor: isSelected ? "#C9A84C" : "transparent",
                     }}
                   >
                     {isSelected && (
@@ -157,11 +157,11 @@ export function PurposeStatementBuilder({ textColor, cardBg }: PurposeStatementB
 
       {/* Divider */}
       <div className="flex items-center gap-3">
-        <div className="flex-1 h-px" style={{ backgroundColor: "rgba(200,169,106,0.15)" }} />
+        <div className="flex-1 h-px" style={{ backgroundColor: "rgba(201,168,76,0.15)" }} />
         <span className="text-[10px] font-sans uppercase tracking-widest" style={{ color: textColor, opacity: 0.35 }}>
           or write your own
         </span>
-        <div className="flex-1 h-px" style={{ backgroundColor: "rgba(200,169,106,0.15)" }} />
+        <div className="flex-1 h-px" style={{ backgroundColor: "rgba(201,168,76,0.15)" }} />
       </div>
 
       {/* Custom editor */}
@@ -175,13 +175,13 @@ export function PurposeStatementBuilder({ textColor, cardBg }: PurposeStatementB
         <div
           className="rounded-xl overflow-hidden border transition-all"
           style={{
-            borderColor: mode === "custom" ? "rgba(200,169,106,0.5)" : "rgba(200,169,106,0.15)",
+            borderColor: mode === "custom" ? "rgba(201,168,76,0.5)" : "rgba(201,168,76,0.15)",
             backgroundColor: cardBg,
           }}
         >
           <div
             className="px-4 py-2.5 text-[10px] font-sans opacity-50 border-b"
-            style={{ color: textColor, borderColor: "rgba(200,169,106,0.1)" }}
+            style={{ color: textColor, borderColor: "rgba(201,168,76,0.1)" }}
           >
             Optional: "I wake up each day to [action] so that [impact]."
           </div>
@@ -231,8 +231,8 @@ export function PurposeStatementBuilder({ textColor, cardBg }: PurposeStatementB
                 <div
                   className="flex-shrink-0 w-4 h-4 rounded border-2 flex items-center justify-center transition-all"
                   style={{
-                    borderColor: checkedGuides[i] ? "#C8A96A" : "rgba(200,169,106,0.3)",
-                    backgroundColor: checkedGuides[i] ? "#C8A96A" : "transparent",
+                    borderColor: checkedGuides[i] ? "#C9A84C" : "rgba(201,168,76,0.3)",
+                    backgroundColor: checkedGuides[i] ? "#C9A84C" : "transparent",
                   }}
                 >
                   {checkedGuides[i] && (
@@ -257,7 +257,7 @@ export function PurposeStatementBuilder({ textColor, cardBg }: PurposeStatementB
             onClick={() => setConfirmed(true)}
             disabled={!checkedGuides[0] || !checkedGuides[2]}
             className="flex-1 py-3 px-6 rounded-full text-sm font-sans font-medium transition-all text-center hover:opacity-90 disabled:opacity-40"
-            style={{ backgroundColor: "#2F7F7B", color: "#ffffff" }}
+            style={{ backgroundColor: "#1E3A6E", color: "#ffffff" }}
             data-testid="confirm-statement-btn"
           >
             {confirmed ? "✓ Statement Saved" : "Save My Purpose Statement"}
@@ -282,7 +282,7 @@ export function PurposeStatementBuilder({ textColor, cardBg }: PurposeStatementB
       {confirmed && (
         <div
           className="rounded-xl px-5 py-4 text-center"
-          style={{ backgroundColor: "rgba(47,127,123,0.15)", border: "1px solid rgba(47,127,123,0.3)" }}
+          style={{ backgroundColor: "rgba(11,31,75,0.15)", border: "1px solid rgba(11,31,75,0.3)" }}
           data-testid="confirmed-statement"
         >
           <p

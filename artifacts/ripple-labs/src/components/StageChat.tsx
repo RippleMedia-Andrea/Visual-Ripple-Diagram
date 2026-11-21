@@ -369,7 +369,7 @@ export function StageChat({
     saveNow(`${stage}__transcript`, "", transcriptTimer);
   }
 
-  const gold = "#C8A96A";
+  const gold = "#C9A84C";
 
   return (
     <div className="flex flex-col" style={{ minHeight: 0 }} data-testid="stage-chat">
@@ -389,14 +389,14 @@ export function StageChat({
         {messages.map((msg, i) => (
           <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`} data-testid={`message-${i}`}>
             {msg.role === "assistant" && (
-              <div className="w-5 h-5 rounded-full flex-shrink-0 mr-2 mt-1 flex items-center justify-center text-[8px] font-bold" style={{ backgroundColor: gold, color: "#0F2A36" }}>R</div>
+              <div className="w-5 h-5 rounded-full flex-shrink-0 mr-2 mt-1 flex items-center justify-center text-[8px] font-bold" style={{ backgroundColor: gold, color: "#0B1F4B" }}>R</div>
             )}
             <div
               className={`max-w-[82%] px-4 py-3 rounded-2xl text-sm font-sans leading-relaxed whitespace-pre-wrap ${msg.role === "user" ? "rounded-br-sm" : "rounded-bl-sm"}`}
               style={
                 msg.role === "user"
-                  ? { backgroundColor: stageColor, color: stageTextColor, opacity: 0.9, boxShadow: "inset 0 0 0 1px rgba(200,169,106,0.2)" }
-                  : { backgroundColor: "rgba(200,169,106,0.1)", color: stageTextColor, border: "1px solid rgba(200,169,106,0.18)" }
+                  ? { backgroundColor: stageColor, color: stageTextColor, opacity: 0.9, boxShadow: "inset 0 0 0 1px rgba(201,168,76,0.2)" }
+                  : { backgroundColor: "rgba(201,168,76,0.1)", color: stageTextColor, border: "1px solid rgba(201,168,76,0.18)" }
               }
             >
               {msg.content}
@@ -406,8 +406,8 @@ export function StageChat({
 
         {streamingText && (
           <div className="flex justify-start" data-testid="streaming-message">
-            <div className="w-5 h-5 rounded-full flex-shrink-0 mr-2 mt-1 flex items-center justify-center text-[8px] font-bold" style={{ backgroundColor: gold, color: "#0F2A36" }}>R</div>
-            <div className="max-w-[82%] px-4 py-3 rounded-2xl rounded-bl-sm text-sm font-sans leading-relaxed whitespace-pre-wrap" style={{ backgroundColor: "rgba(200,169,106,0.1)", color: stageTextColor, border: "1px solid rgba(200,169,106,0.18)" }}>
+            <div className="w-5 h-5 rounded-full flex-shrink-0 mr-2 mt-1 flex items-center justify-center text-[8px] font-bold" style={{ backgroundColor: gold, color: "#0B1F4B" }}>R</div>
+            <div className="max-w-[82%] px-4 py-3 rounded-2xl rounded-bl-sm text-sm font-sans leading-relaxed whitespace-pre-wrap" style={{ backgroundColor: "rgba(201,168,76,0.1)", color: stageTextColor, border: "1px solid rgba(201,168,76,0.18)" }}>
               {streamingText}
               <span className="inline-block w-1 h-3 ml-0.5 animate-pulse" style={{ backgroundColor: gold }} />
             </div>
@@ -438,14 +438,14 @@ export function StageChat({
 
       {/* Transcript preview */}
       {(transcript || recState === "transcribing") && (
-        <div className="mb-3 rounded-2xl p-3.5" style={{ backgroundColor: "rgba(200,169,106,0.1)", border: "1px dashed rgba(200,169,106,0.45)" }} data-testid="transcript-preview">
+        <div className="mb-3 rounded-2xl p-3.5" style={{ backgroundColor: "rgba(201,168,76,0.1)", border: "1px dashed rgba(201,168,76,0.45)" }} data-testid="transcript-preview">
           <p className="text-[10px] font-sans uppercase tracking-widest mb-2" style={{ color: stageTextColor, opacity: 0.55 }}>
             {recState === "transcribing" ? "Turning your words into text..." : "Your words, ready to edit. Nothing is sent until you choose."}
           </p>
           {recState === "transcribing" && !transcript ? (
             <div className="space-y-2 py-1">
-              <div className="h-2.5 rounded-full w-11/12 animate-pulse" style={{ backgroundColor: "rgba(200,169,106,0.25)" }} />
-              <div className="h-2.5 rounded-full w-2/3 animate-pulse" style={{ backgroundColor: "rgba(200,169,106,0.18)" }} />
+              <div className="h-2.5 rounded-full w-11/12 animate-pulse" style={{ backgroundColor: "rgba(201,168,76,0.25)" }} />
+              <div className="h-2.5 rounded-full w-2/3 animate-pulse" style={{ backgroundColor: "rgba(201,168,76,0.18)" }} />
             </div>
           ) : (
             <textarea
@@ -458,10 +458,10 @@ export function StageChat({
             />
           )}
           <div className="flex gap-2 justify-end mt-2">
-            <button onClick={discardTranscript} disabled={!transcript} className="px-3 py-1.5 rounded-full text-xs font-sans border disabled:opacity-30" style={{ borderColor: "rgba(200,169,106,0.35)", color: stageTextColor }} data-testid="button-discard-transcript">
+            <button onClick={discardTranscript} disabled={!transcript} className="px-3 py-1.5 rounded-full text-xs font-sans border disabled:opacity-30" style={{ borderColor: "rgba(201,168,76,0.35)", color: stageTextColor }} data-testid="button-discard-transcript">
               Discard
             </button>
-            <button onClick={useTranscript} disabled={!transcript.trim()} className="px-3 py-1.5 rounded-full text-xs font-sans font-medium disabled:opacity-30" style={{ backgroundColor: gold, color: "#0F2A36" }} data-testid="button-use-transcript">
+            <button onClick={useTranscript} disabled={!transcript.trim()} className="px-3 py-1.5 rounded-full text-xs font-sans font-medium disabled:opacity-30" style={{ backgroundColor: gold, color: "#0B1F4B" }} data-testid="button-use-transcript">
               Move into my message
             </button>
           </div>
@@ -469,7 +469,7 @@ export function StageChat({
       )}
 
       {/* Input */}
-      <div className="flex items-end gap-2 px-3 py-2.5 rounded-2xl" style={{ backgroundColor: "rgba(200,169,106,0.08)", border: "1px solid rgba(200,169,106,0.2)" }}>
+      <div className="flex items-end gap-2 px-3 py-2.5 rounded-2xl" style={{ backgroundColor: "rgba(201,168,76,0.08)", border: "1px solid rgba(201,168,76,0.2)" }}>
         {recState === "recording" ? (
           <div className="flex-1 flex items-center gap-3 min-h-[40px]" data-testid="status-recording">
             <span className="relative flex w-2.5 h-2.5">
@@ -524,12 +524,12 @@ export function StageChat({
           onClick={sendMessage}
           disabled={!input.trim() || isStreaming || recState === "recording"}
           className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-all disabled:opacity-30"
-          style={{ backgroundColor: gold, color: "#0F2A36" }}
+          style={{ backgroundColor: gold, color: "#0B1F4B" }}
           aria-label="Send"
           data-testid="send-button"
         >
           {isStreaming ? (
-            <span className="w-3 h-3 border-2 border-[#0F2A36] border-t-transparent rounded-full animate-spin" />
+            <span className="w-3 h-3 border-2 border-[#0B1F4B] border-t-transparent rounded-full animate-spin" />
           ) : (
             <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
               <path d="M1 6h10M6 1l5 5-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />

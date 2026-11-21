@@ -48,7 +48,7 @@ function EditableText({
       onChange: (e: any) => setLocalValue(e.target.value),
       onBlur: handleBlur,
       onKeyDown: handleKeyDown,
-      className: `bg-white/10 outline-none border border-[#C8A96A]/50 rounded-md px-2 py-1 w-full focus:border-[#C8A96A] ${className}`,
+      className: `bg-white/10 outline-none border border-[#C9A84C]/50 rounded-md px-2 py-1 w-full focus:border-[#C9A84C] ${className}`,
       placeholder,
       autoFocus: true,
     };
@@ -123,7 +123,7 @@ function EditableChipList({
             onChange={(e) => setNewItem(e.target.value)}
             onBlur={handleAdd}
             onKeyDown={(e) => e.key === "Enter" && handleAdd()}
-            className="px-3 py-1 rounded-full text-xs bg-white/10 border border-[#C8A96A] outline-none min-w-[5rem] w-auto max-w-full"
+            className="px-3 py-1 rounded-full text-xs bg-white/10 border border-[#C9A84C] outline-none min-w-[5rem] w-auto max-w-full"
             autoFocus
           />
         ) : (
@@ -175,7 +175,7 @@ function EditableStringList({
       <ul className="space-y-2 mb-2">
         {items.map((item, idx) => (
           <li key={idx} className="flex items-start gap-2 group">
-            <span className="text-[#C8A96A] mt-0.5 min-w-[12px]">•</span>
+            <span className="text-[#C9A84C] mt-0.5 min-w-[12px]">•</span>
             <div className="flex-1 min-w-0">
               <EditableText
                 value={item}
@@ -199,7 +199,7 @@ function EditableStringList({
           onChange={(e) => setNewItem(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleAdd()}
           placeholder={`Add to ${label.toLowerCase()}...`}
-          className="flex-1 min-w-0 bg-white/5 border border-white/10 rounded-md px-3 py-1.5 text-sm outline-none focus:border-[#C8A96A]"
+          className="flex-1 min-w-0 bg-white/5 border border-white/10 rounded-md px-3 py-1.5 text-sm outline-none focus:border-[#C9A84C]"
         />
         <button onClick={handleAdd} className="px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-md text-sm transition-colors whitespace-nowrap flex-shrink-0">
           Add
@@ -223,7 +223,7 @@ export function StoryCardView({
   const save = (changes: Partial<StoryCard>) => onUpdate({ ...card, ...changes });
 
   return (
-    <div className="bg-[#0F2A36]/40 border border-[#C8A96A]/20 rounded-2xl p-5 mb-4 relative group">
+    <div className="bg-[#0B1F4B]/40 border border-[#C9A84C]/20 rounded-2xl p-5 mb-4 relative group">
       <button
         onClick={onDelete}
         className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-300 text-xs transition-opacity"
@@ -235,7 +235,7 @@ export function StoryCardView({
         value={card.title}
         onChange={(title) => save({ title })}
         onSave={() => {}}
-        className="font-serif text-lg text-[#C8A96A] mb-2"
+        className="font-serif text-lg text-[#C9A84C] mb-2"
         placeholder="Story Title"
       />
       <EditableText
@@ -269,7 +269,7 @@ export function ThemeCardView({
   const save = (changes: Partial<PurposeTheme>) => onUpdate({ ...theme, ...changes });
 
   return (
-    <div className="bg-[#0F2A36]/40 border border-[#2F7F7B]/30 rounded-2xl p-5 mb-4 relative group">
+    <div className="bg-[#0B1F4B]/40 border border-[#1E3A6E]/30 rounded-2xl p-5 mb-4 relative group">
       <button
         onClick={onDelete}
         className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-300 text-xs transition-opacity"
@@ -281,7 +281,7 @@ export function ThemeCardView({
         value={theme.name}
         onChange={(name) => save({ name })}
         onSave={() => {}}
-        className="font-serif text-lg text-[#5FA8A5] mb-2"
+        className="font-serif text-lg text-[#EDE4CC] mb-2"
         placeholder="Theme Name"
       />
       <EditableText
@@ -307,7 +307,7 @@ export function ThemeCardView({
                   save({ evidence: evs });
                 }}
                 onSave={() => {}}
-                className="font-medium text-[#D7ECEB]"
+                className="font-medium text-[#EDE4CC]"
                 placeholder="Story Title"
               />
               <span className="opacity-80 text-xs mt-1">Detail:</span>
@@ -340,7 +340,7 @@ export function SeasonFormView({
   const save = (changes: Partial<Season>) => onUpdate({ ...season, ...changes });
 
   return (
-    <div className="bg-[#0F2A36]/40 border border-[#C8A96A]/20 rounded-2xl p-5 mb-4">
+    <div className="bg-[#0B1F4B]/40 border border-[#C9A84C]/20 rounded-2xl p-5 mb-4">
       <p className="text-[10px] font-sans uppercase tracking-widest mb-1 opacity-70">Current Season</p>
       <EditableText
         value={season.summary}
@@ -367,7 +367,7 @@ export function SeasonFormView({
       <EditableChipList items={season.opportunities || []} onChange={(opportunities) => save({ opportunities })} label="Opportunities" />
 
       <div className="mt-6 pt-4 border-t border-white/10">
-        <p className="text-[10px] font-sans uppercase tracking-widest mb-3 text-[#5FA8A5]">Ways to live your purpose now</p>
+        <p className="text-[10px] font-sans uppercase tracking-widest mb-3 text-[#EDE4CC]">Ways to live your purpose now</p>
         <EditableStringList
           items={season.expressions || []}
           onChange={(expressions) => save({ expressions })}
@@ -388,7 +388,7 @@ export function ActionPlanFormView({
   const save = (changes: Partial<ActionPlan>) => onUpdate({ ...actionPlan, ...changes });
 
   return (
-    <div className="bg-[#0F2A36]/40 border border-[#C8A96A]/20 rounded-2xl p-5 mb-4">
+    <div className="bg-[#0B1F4B]/40 border border-[#C9A84C]/20 rounded-2xl p-5 mb-4">
       <EditableStringList
         items={actionPlan.start || []}
         onChange={(start) => save({ start })}
@@ -405,8 +405,8 @@ export function ActionPlanFormView({
         label="Continue"
       />
 
-      <div className="mt-6 pt-5 border-t border-[#C8A96A]/20">
-        <p className="text-[10px] font-sans uppercase tracking-widest mb-2 text-[#C8A96A]">One Step This Week</p>
+      <div className="mt-6 pt-5 border-t border-[#C9A84C]/20">
+        <p className="text-[10px] font-sans uppercase tracking-widest mb-2 text-[#C9A84C]">One Step This Week</p>
         <EditableText
           value={actionPlan.oneStepThisWeek}
           onChange={(oneStepThisWeek) => save({ oneStepThisWeek })}

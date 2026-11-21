@@ -12,7 +12,7 @@ export default function TermsPage() {
       <Section title="Acceptable use"><p>Please don't misuse the service, attempt to access other people's accounts, or use it to harm others.</p></Section>
       <Section title="Changes and availability"><p>We may update the service or these terms. We will update the effective date when we do. We may suspend accounts that misuse the service.</p></Section>
       <Section title="Limitation"><p>The service is provided "as is." To the extent allowed by law, Ripple Media LLC is not liable for decisions you make based on your use of the Purpose Lab.</p></Section>
-      <Section title="Contact"><p><a className="text-[#2F7F7B] underline" href="mailto:admin@ripplemedia.space">admin@ripplemedia.space</a></p></Section>
+      <Section title="Contact"><p><a className="text-[#1E3A6E] underline" href="mailto:admin@ripplemedia.space">admin@ripplemedia.space</a></p></Section>
     </PublicPageLayout>
   );
 }

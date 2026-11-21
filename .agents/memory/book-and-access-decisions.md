@@ -20,3 +20,9 @@ Keep the exact tagline “What's within you creates a ripple.” and retain The 
 **Why:** These are explicit brand and book copy instructions.
 
 **How to apply:** Apply consistently across website, phone app, graphics, and film. Preserve user-mandated exact wording even when it contains negative wording.
+
+The website rebrand uses navy `#0B1F4B` and gold `#C9A84C`, not the earlier teal palette. Preserve the home-page “Guided by Andrea John” card with Andrea’s actual photo and “Hi, I'm Andrea. Welcome in.”
+
+**Why:** The user corrected repeated claims that the rebrand was already on Main when the site still used teal. These exact colors and the portrait card identify the intended design.
+
+**How to apply:** Verify theme tokens and rendered headers, subtitles, buttons, and stage cards on Main. Matching branch contents or the presence of a dark color and gold accent does not prove the intended rebrand is present. Never substitute an invented portrait.

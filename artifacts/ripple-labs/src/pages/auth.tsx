@@ -73,7 +73,7 @@ export default function AuthPage({ mode }: { mode: "sign-in" | "sign-up" }) {
   }
 
   return (
-    <main className="min-h-screen bg-[#F5F1E8] text-[#0F2A36] flex flex-col">
+    <main className="min-h-screen bg-[#F5F1E8] text-[#0B1F4B] flex flex-col">
       <nav className="px-6 md:px-10 py-5">
         <Link href="/">
           <img src={rippleLabsLogo} alt="Ripple Labs" className="h-9 w-auto rounded-md" />
@@ -82,13 +82,13 @@ export default function AuthPage({ mode }: { mode: "sign-in" | "sign-up" }) {
       <div className="flex-1 flex items-center justify-center px-5 py-10">
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
-            <p className="text-[#2F7F7B] text-xs uppercase tracking-[0.24em] font-sans mb-3">
+            <p className="text-[#1E3A6E] text-xs uppercase tracking-[0.24em] font-sans mb-3">
               Purpose Lab
             </p>
             <h1 className="font-serif text-4xl mb-3">
               {isSignUp ? "Create your account" : "Welcome back"}
             </h1>
-            <p className="font-sans text-sm text-[#0F2A36]/65">
+            <p className="font-sans text-sm text-[#0B1F4B]/65">
               {isSignUp
                 ? "Save your reflections and return to your journey anytime."
                 : "Sign in to continue your Purpose Lab journey."}
@@ -97,7 +97,7 @@ export default function AuthPage({ mode }: { mode: "sign-in" | "sign-up" }) {
 
           <form
             onSubmit={submit}
-            className="rounded-2xl bg-white/55 border border-[#2F7F7B]/15 shadow-sm p-6 md:p-8 space-y-5"
+            className="rounded-2xl bg-white/55 border border-[#1E3A6E]/15 shadow-sm p-6 md:p-8 space-y-5"
           >
             {isSignUp && (
               <label className="block font-sans text-sm">
@@ -107,7 +107,7 @@ export default function AuthPage({ mode }: { mode: "sign-in" | "sign-up" }) {
                   autoComplete="given-name"
                   value={firstName}
                   onChange={(event) => setFirstName(event.target.value)}
-                  className="w-full rounded-xl border border-[#2F7F7B]/20 bg-[#F5F1E8]/70 px-4 py-3 outline-none focus:border-[#C8A96A]"
+                  className="w-full rounded-xl border border-[#1E3A6E]/20 bg-[#F5F1E8]/70 px-4 py-3 outline-none focus:border-[#C9A84C]"
                 />
               </label>
             )}
@@ -119,7 +119,7 @@ export default function AuthPage({ mode }: { mode: "sign-in" | "sign-up" }) {
                 autoComplete="email"
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
-                className="w-full rounded-xl border border-[#2F7F7B]/20 bg-[#F5F1E8]/70 px-4 py-3 outline-none focus:border-[#C8A96A]"
+                className="w-full rounded-xl border border-[#1E3A6E]/20 bg-[#F5F1E8]/70 px-4 py-3 outline-none focus:border-[#C9A84C]"
               />
             </label>
             <label className="block font-sans text-sm">
@@ -131,24 +131,24 @@ export default function AuthPage({ mode }: { mode: "sign-in" | "sign-up" }) {
                 autoComplete={isSignUp ? "new-password" : "current-password"}
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
-                className="w-full rounded-xl border border-[#2F7F7B]/20 bg-[#F5F1E8]/70 px-4 py-3 outline-none focus:border-[#C8A96A]"
+                className="w-full rounded-xl border border-[#1E3A6E]/20 bg-[#F5F1E8]/70 px-4 py-3 outline-none focus:border-[#C9A84C]"
               />
             </label>
             {isSignUp && (
               <div className="space-y-3 text-sm leading-relaxed">
                 <label className="flex items-start gap-3">
-                  <input type="checkbox" required checked={aiConsent} onChange={(event) => setAiConsent(event.target.checked)} className="mt-1 h-4 w-4 accent-[#2F7F7B]" />
-                  <span>I understand my answers are processed by a third-party AI service (Anthropic's Claude) to guide my Purpose Lab journey. If I use the microphone, my recording is sent to OpenAI for transcription when I stop recording. I can edit or discard the transcript, and it is only sent to my guide when I press send. The app does not keep raw recordings. See the <Link href="/privacy" className="text-[#2F7F7B] underline">Privacy Policy</Link>.</span>
+                  <input type="checkbox" required checked={aiConsent} onChange={(event) => setAiConsent(event.target.checked)} className="mt-1 h-4 w-4 accent-[#1E3A6E]" />
+                  <span>I understand my answers are processed by a third-party AI service (Anthropic's Claude) to guide my Purpose Lab journey. If I use the microphone, my recording is sent to OpenAI for transcription when I stop recording. I can edit or discard the transcript, and it is only sent to my guide when I press send. The app does not keep raw recordings. See the <Link href="/privacy" className="text-[#1E3A6E] underline">Privacy Policy</Link>.</span>
                 </label>
-                <p>By creating an account you agree to the <Link href="/terms" className="text-[#2F7F7B] underline">Terms of Use</Link>.</p>
+                <p>By creating an account you agree to the <Link href="/terms" className="text-[#1E3A6E] underline">Terms of Use</Link>.</p>
               </div>
             )}
             {!isSignUp && resetAvailability?.available && (
-              <button type="button" onClick={requestReset} className="text-left text-sm text-[#2F7F7B] underline underline-offset-4">
+              <button type="button" onClick={requestReset} className="text-left text-sm text-[#1E3A6E] underline underline-offset-4">
                 Forgot password?
               </button>
             )}
-            {resetMessage && <p role="status" className="font-sans text-sm text-[#2F7F7B]">{resetMessage}</p>}
+            {resetMessage && <p role="status" className="font-sans text-sm text-[#1E3A6E]">{resetMessage}</p>}
             {error && (
               <p role="alert" className="font-sans text-sm text-red-700">
                 {error}
@@ -157,7 +157,7 @@ export default function AuthPage({ mode }: { mode: "sign-in" | "sign-up" }) {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full rounded-full bg-[#0F2A36] text-[#F5F1E8] py-3 font-sans text-sm font-medium disabled:opacity-50"
+              className="w-full rounded-full bg-[#0B1F4B] text-[#F5F1E8] py-3 font-sans text-sm font-medium disabled:opacity-50"
             >
               {isSubmitting
                 ? "Please wait…"
@@ -167,11 +167,11 @@ export default function AuthPage({ mode }: { mode: "sign-in" | "sign-up" }) {
             </button>
           </form>
 
-          <p className="text-center mt-6 font-sans text-sm text-[#0F2A36]/65">
+          <p className="text-center mt-6 font-sans text-sm text-[#0B1F4B]/65">
             {isSignUp ? "Already have an account?" : "New to Ripple Labs?"}{" "}
             <Link
               href={`${isSignUp ? "/sign-in" : "/create-account"}?returnTo=${encodeURIComponent(safeReturnTo())}`}
-              className="text-[#2F7F7B] font-medium underline underline-offset-4"
+              className="text-[#1E3A6E] font-medium underline underline-offset-4"
             >
               {isSignUp ? "Sign in" : "Create an account"}
             </Link>

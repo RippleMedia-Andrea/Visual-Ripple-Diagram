@@ -10,9 +10,9 @@ const stages = [
     subtitle: "Your Story",
     teaching:
       "Your story holds clues. In this stage, you begin noticing the experiences, moments, and memories that shaped you and revealed pieces of who you already are.",
-    color: "#0F2A36",
+    color: "#0B1F4B",
     textColor: "#ffffff",
-    borderColor: "rgba(215,236,235,0.12)",
+    borderColor: "rgba(237,228,204,0.12)",
   },
   {
     number: "02",
@@ -21,9 +21,9 @@ const stages = [
     subtitle: "Your Patterns",
     teaching:
       "Patterns reveal purpose. This stage helps you notice recurring themes, emotions, strengths, values, and ways you naturally impact others.",
-    color: "#1a4a55",
+    color: "#16306A",
     textColor: "#ffffff",
-    borderColor: "rgba(215,236,235,0.12)",
+    borderColor: "rgba(237,228,204,0.12)",
   },
   {
     number: "03",
@@ -32,7 +32,7 @@ const stages = [
     subtitle: "Your Purpose",
     teaching:
       "Put who you are into words. Your purpose statement names your action and the impact it has on others.",
-    color: "#2F7F7B",
+    color: "#1E3A6E",
     textColor: "#ffffff",
     borderColor: "rgba(245,241,232,0.15)",
   },
@@ -43,9 +43,9 @@ const stages = [
     subtitle: "Your Vision",
     teaching:
       "See the life your purpose makes possible, and notice whose picture of success you've been borrowing.",
-    color: "#5FA8A5",
-    textColor: "#0F2A36",
-    borderColor: "rgba(15,42,54,0.08)",
+    color: "#5A6B8C",
+    textColor: "#F5F1E8",
+    borderColor: "rgba(11,31,75,0.08)",
   },
   {
     number: "05",
@@ -54,9 +54,9 @@ const stages = [
     subtitle: "Your Season",
     teaching:
       "Your season is not the waiting room to your life. Live your purpose right where you are. This stage helps you see where your purpose is already showing up in your current roles.",
-    color: "#9fd0cd",
-    textColor: "#0F2A36",
-    borderColor: "rgba(15,42,54,0.08)",
+    color: "#B9C3D9",
+    textColor: "#0B1F4B",
+    borderColor: "rgba(11,31,75,0.08)",
   },
   {
     number: "06",
@@ -66,8 +66,8 @@ const stages = [
     teaching:
       "Your ripple reaches the people around you and keeps growing. Purpose is something you keep living, revisiting, and growing into as your life changes.",
     color: "#EEE9DB",
-    textColor: "#0F2A36",
-    borderColor: "rgba(15,42,54,0.08)",
+    textColor: "#0B1F4B",
+    borderColor: "rgba(11,31,75,0.08)",
   },
 ];
 
@@ -81,7 +81,7 @@ export default function RippleMethod() {
       {/* Nav */}
       <nav
         className="w-full px-6 md:px-12 py-4 flex items-center justify-between sticky top-0 z-50"
-        style={{ backgroundColor: "#0F2A36" }}
+        style={{ backgroundColor: "#0B1F4B" }}
         data-testid="nav"
       >
         <Link href="/">
@@ -95,21 +95,21 @@ export default function RippleMethod() {
         <div className="flex items-center gap-5">
           <Link
             href="/"
-            className="text-[#D7ECEB] text-xs font-sans hover:text-[#C8A96A] transition-colors"
+            className="text-[#EDE4CC] text-xs font-sans hover:text-[#C9A84C] transition-colors"
             data-testid="nav-home"
           >
             ← Home
           </Link>
           <Link
             href="/purpose-lab"
-            className="text-[#D7ECEB] text-xs font-sans hover:text-[#C8A96A] transition-colors hidden sm:inline"
+            className="text-[#EDE4CC] text-xs font-sans hover:text-[#C9A84C] transition-colors hidden sm:inline"
             data-testid="nav-purpose-lab"
           >
             Purpose Lab
           </Link>
           <Link
             href="/purpose-lab"
-            className="px-4 py-2 rounded-full text-xs font-sans font-medium transition-all border border-[#2F7F7B] text-[#D7ECEB] hover:bg-[#2F7F7B] hover:text-white"
+            className="px-4 py-2 rounded-full text-xs font-sans font-medium transition-all border border-[#1E3A6E] text-[#EDE4CC] hover:bg-[#1E3A6E] hover:text-white"
             data-testid="nav-enter-purpose-lab"
           >
             Enter Purpose Lab
@@ -120,12 +120,12 @@ export default function RippleMethod() {
       {/* Hero */}
       <section
         className="px-6 md:px-12 py-20 text-center"
-        style={{ backgroundColor: "#0F2A36" }}
+        style={{ backgroundColor: "#0B1F4B" }}
         data-testid="hero-section"
       >
         <div className="max-w-2xl mx-auto">
           <div className="inline-block px-3 py-1 rounded-full text-[10px] font-sans font-medium uppercase tracking-widest mb-6 border"
-            style={{ borderColor: "#C8A96A", color: "#C8A96A", backgroundColor: "rgba(200,169,106,0.08)" }}
+            style={{ borderColor: "#C9A84C", color: "#C9A84C", backgroundColor: "rgba(201,168,76,0.08)" }}
             data-testid="free-badge"
           >
             Free Overview
@@ -138,10 +138,10 @@ export default function RippleMethod() {
             The Ripple Method™
           </h1>
           <div className="gold-divider w-24 mx-auto my-6" />
-          <p className="text-[#9fd0cd] font-sans text-base leading-relaxed mb-6 max-w-xl mx-auto" data-testid="hero-intro">
+          <p className="text-[#B9C3D9] font-sans text-base leading-relaxed mb-6 max-w-xl mx-auto" data-testid="hero-intro">
             The Ripple Method™ is a guided framework designed to help you uncover what is already within you and learn how to live it with clarity and intention. Purpose is something you recognize, name, and live.
           </p>
-          <p className="font-script text-xl text-[#D7ECEB]" data-testid="hero-anchor">
+          <p className="font-script text-xl text-[#EDE4CC]" data-testid="hero-anchor">
             What's within you creates a ripple.
           </p>
         </div>
@@ -165,19 +165,19 @@ export default function RippleMethod() {
                     {stage.number}
                   </div>
                   <p
-                    className="text-xs font-serif font-semibold text-[#0F2A36] leading-tight"
+                    className="text-xs font-serif font-semibold text-[#0B1F4B] leading-tight"
                     style={{ fontFamily: "'Playfair Display', serif" }}
                   >
                     {stage.title}
                   </p>
-                  <p className="text-[9px] font-sans uppercase tracking-wider text-[#5FA8A5] mt-0.5">
+                  <p className="text-[9px] font-sans uppercase tracking-wider text-[#5A6B8C] mt-0.5">
                     {stage.subtitle}
                   </p>
                 </div>
                 {idx < stages.length - 1 && (
                   <div className="flex items-center mx-1">
-                    <div className="w-6 h-px" style={{ backgroundColor: "#C8A96A", opacity: 0.5 }} />
-                    <span className="text-[#C8A96A] text-xs opacity-50">›</span>
+                    <div className="w-6 h-px" style={{ backgroundColor: "#C9A84C", opacity: 0.5 }} />
+                    <span className="text-[#C9A84C] text-xs opacity-50">›</span>
                   </div>
                 )}
               </div>
@@ -194,11 +194,11 @@ export default function RippleMethod() {
       >
         <div className="max-w-2xl mx-auto">
           <div className="text-center mb-12">
-            <p className="text-[#C8A96A] text-xs font-sans uppercase tracking-widest mb-3">
+            <p className="text-[#C9A84C] text-xs font-sans uppercase tracking-widest mb-3">
               The Six Stages
             </p>
             <h2
-              className="text-3xl font-serif font-semibold text-[#0F2A36]"
+              className="text-3xl font-serif font-semibold text-[#0B1F4B]"
               style={{ fontFamily: "'Playfair Display', serif" }}
               data-testid="stages-heading"
             >
@@ -229,7 +229,7 @@ export default function RippleMethod() {
                       >
                         {stage.number}
                       </p>
-                      <div className="w-4 h-px" style={{ backgroundColor: "#C8A96A" }} />
+                      <div className="w-4 h-px" style={{ backgroundColor: "#C9A84C" }} />
                     </div>
                   </div>
 
@@ -283,17 +283,17 @@ export default function RippleMethod() {
         data-testid="diagram-section"
       >
         <div className="max-w-2xl mx-auto text-center">
-          <p className="text-[#C8A96A] text-xs font-sans uppercase tracking-widest mb-3">
+          <p className="text-[#C9A84C] text-xs font-sans uppercase tracking-widest mb-3">
             The Full Picture
           </p>
           <h2
-            className="text-2xl font-serif font-semibold text-[#0F2A36] mb-3"
+            className="text-2xl font-serif font-semibold text-[#0B1F4B] mb-3"
             style={{ fontFamily: "'Playfair Display', serif" }}
             data-testid="diagram-heading"
           >
             All Six Stages Together
           </h2>
-          <p className="text-[#5FA8A5] font-sans text-sm mb-10">
+          <p className="text-[#5A6B8C] font-sans text-sm mb-10">
             Tap any ring to explore what happens at each stage.
           </p>
           <RippleMethodDiagram size={560} />
@@ -303,11 +303,11 @@ export default function RippleMethod() {
       {/* CTA Section */}
       <section
         className="px-6 md:px-12 py-20"
-        style={{ backgroundColor: "#0F2A36" }}
+        style={{ backgroundColor: "#0B1F4B" }}
         data-testid="cta-section"
       >
         <div className="max-w-2xl mx-auto text-center">
-          <p className="text-[#C8A96A] text-xs font-sans uppercase tracking-widest mb-4" data-testid="cta-eyebrow">
+          <p className="text-[#C9A84C] text-xs font-sans uppercase tracking-widest mb-4" data-testid="cta-eyebrow">
             Ready to Go Deeper?
           </p>
           <h2
@@ -318,7 +318,7 @@ export default function RippleMethod() {
             Ready to go deeper?
           </h2>
           <div className="gold-divider w-24 mx-auto my-6" />
-          <p className="text-[#9fd0cd] font-sans text-sm leading-relaxed mb-10 max-w-lg mx-auto" data-testid="cta-body">
+          <p className="text-[#B9C3D9] font-sans text-sm leading-relaxed mb-10 max-w-lg mx-auto" data-testid="cta-body">
             If you would like a more hands-on experience uncovering your purpose using The Ripple Method™, you can enter Purpose Lab or book a personal consultation.
           </p>
 
@@ -328,18 +328,18 @@ export default function RippleMethod() {
             <div
               className="rounded-2xl px-7 py-8 text-left border"
               style={{
-                backgroundColor: "rgba(47,127,123,0.15)",
-                borderColor: "rgba(47,127,123,0.3)",
+                backgroundColor: "rgba(11,31,75,0.15)",
+                borderColor: "rgba(11,31,75,0.3)",
               }}
               data-testid="cta-card-purpose-lab"
             >
               <div className="flex items-center justify-between mb-3">
-                <p className="text-[#C8A96A] text-[10px] font-sans uppercase tracking-widest">
+                <p className="text-[#C9A84C] text-[10px] font-sans uppercase tracking-widest">
                   Guided Experience
                 </p>
                 <span
                   className="px-2.5 py-1 rounded-full text-[10px] font-sans font-semibold"
-                  style={{ backgroundColor: "#C8A96A", color: "#0F2A36" }}
+                  style={{ backgroundColor: "#C9A84C", color: "#0B1F4B" }}
                   data-testid="price-badge"
                 >
                   $47
@@ -351,19 +351,19 @@ export default function RippleMethod() {
               >
                 Purpose Lab
               </h3>
-              <div className="w-6 h-px mb-3" style={{ backgroundColor: "#C8A96A" }} />
-              <p className="text-[#9fd0cd] text-sm font-sans leading-relaxed mb-5">
+              <div className="w-6 h-px mb-3" style={{ backgroundColor: "#C9A84C" }} />
+              <p className="text-[#B9C3D9] text-sm font-sans leading-relaxed mb-5">
                 Purpose Lab walks you through the full guided experience with your stories, your patterns, your purpose statement, your vision, and living your purpose in the season you are in.
               </p>
               <Link
                 href="/purpose-lab"
                 className="block text-center px-6 py-3 rounded-full font-sans font-medium text-white text-sm transition-all shadow-md hover:opacity-90"
-                style={{ backgroundColor: "#2F7F7B" }}
+                style={{ backgroundColor: "#1E3A6E" }}
                 data-testid="cta-purchase-purpose-lab"
               >
                 Purchase Purpose Lab · $47
               </Link>
-              <p className="text-[#D7ECEB] text-xs font-sans leading-relaxed mt-3 text-center opacity-80" data-testid="text-course-buyer">
+              <p className="text-[#EDE4CC] text-xs font-sans leading-relaxed mt-3 text-center opacity-80" data-testid="text-course-buyer">
                 Bought the course? Sign up with the same email you used and your access is already waiting.
               </p>
             </div>
@@ -372,13 +372,13 @@ export default function RippleMethod() {
             <div
               className="rounded-2xl px-7 py-8 text-left border"
               style={{
-                backgroundColor: "rgba(200,169,106,0.08)",
-                borderColor: "rgba(200,169,106,0.2)",
+                backgroundColor: "rgba(201,168,76,0.08)",
+                borderColor: "rgba(201,168,76,0.2)",
               }}
               data-testid="cta-card-consultation"
             >
               <div className="flex items-center justify-between mb-3">
-                <p className="text-[#C8A96A] text-[10px] font-sans uppercase tracking-widest">
+                <p className="text-[#C9A84C] text-[10px] font-sans uppercase tracking-widest">
                   Personal Support
                 </p>
               </div>
@@ -388,14 +388,14 @@ export default function RippleMethod() {
               >
                 Book a Consultation
               </h3>
-              <div className="w-6 h-px mb-3" style={{ backgroundColor: "#C8A96A" }} />
-              <p className="text-[#9fd0cd] text-sm font-sans leading-relaxed mb-5">
+              <div className="w-6 h-px mb-3" style={{ backgroundColor: "#C9A84C" }} />
+              <p className="text-[#B9C3D9] text-sm font-sans leading-relaxed mb-5">
                 Consultations are available for those who want personal support understanding and applying their results.
               </p>
               <a
                 href="#"
-                className="block text-center px-6 py-3 rounded-full font-sans font-medium text-[#0F2A36] text-sm transition-all border hover:opacity-90"
-                style={{ backgroundColor: "#C8A96A", borderColor: "#C8A96A" }}
+                className="block text-center px-6 py-3 rounded-full font-sans font-medium text-[#0B1F4B] text-sm transition-all border hover:opacity-90"
+                style={{ backgroundColor: "#C9A84C", borderColor: "#C9A84C" }}
                 data-testid="cta-book-consultation"
               >
                 Book a Consultation
@@ -403,7 +403,7 @@ export default function RippleMethod() {
             </div>
           </div>
 
-          <p className="text-[#5FA8A5] text-xs font-sans opacity-60">
+          <p className="text-[#B9C3D9] text-xs font-sans">
             The Ripple Method™ overview is always free and available to everyone.
           </p>
         </div>
@@ -412,7 +412,7 @@ export default function RippleMethod() {
       {/* Footer */}
       <footer
         className="px-6 py-8 flex flex-col md:flex-row items-center justify-between gap-4"
-        style={{ backgroundColor: "#081E28" }}
+        style={{ backgroundColor: "#071433" }}
         data-testid="footer"
       >
         <img
@@ -421,15 +421,15 @@ export default function RippleMethod() {
           className="h-7 w-auto object-contain rounded-md opacity-80"
           data-testid="footer-logo"
         />
-        <p className="text-[#5FA8A5] text-xs font-sans opacity-60 text-center">
+        <p className="text-[#B9C3D9] text-xs font-sans text-center">
           © {new Date().getFullYear()} Ripple Labs. What's within you creates a ripple.
         </p>
         <div className="flex gap-5">
-          <Link href="/" className="text-[#5FA8A5] text-xs font-sans hover:text-[#D7ECEB] transition-colors">Home</Link>
-          <Link href="/purpose-lab" className="text-[#5FA8A5] text-xs font-sans hover:text-[#D7ECEB] transition-colors">Purpose Lab</Link>
-          <Link href="/privacy" className="text-[#5FA8A5] text-xs font-sans hover:text-[#D7ECEB] transition-colors">Privacy</Link>
-          <Link href="/terms" className="text-[#5FA8A5] text-xs font-sans hover:text-[#D7ECEB] transition-colors">Terms</Link>
-          <Link href="/support" className="text-[#5FA8A5] text-xs font-sans hover:text-[#D7ECEB] transition-colors">Support</Link>
+          <Link href="/" className="text-[#EDE4CC] text-xs font-sans hover:text-[#C9A84C] transition-colors">Home</Link>
+          <Link href="/purpose-lab" className="text-[#EDE4CC] text-xs font-sans hover:text-[#C9A84C] transition-colors">Purpose Lab</Link>
+          <Link href="/privacy" className="text-[#EDE4CC] text-xs font-sans hover:text-[#C9A84C] transition-colors">Privacy</Link>
+          <Link href="/terms" className="text-[#EDE4CC] text-xs font-sans hover:text-[#C9A84C] transition-colors">Terms</Link>
+          <Link href="/support" className="text-[#EDE4CC] text-xs font-sans hover:text-[#C9A84C] transition-colors">Support</Link>
         </div>
       </footer>
     </div>

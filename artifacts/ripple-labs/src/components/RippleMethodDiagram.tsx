@@ -75,12 +75,12 @@ const stages: RingStage[] = [
 ];
 
 const ringColors = [
-  { fill: "#0F2A36", stroke: "#1a3d4e" },
-  { fill: "#1a4a55", stroke: "#2F7F7B" },
-  { fill: "#2F7F7B", stroke: "#4a9a96" },
-  { fill: "#5FA8A5", stroke: "#7bbfbc" },
-  { fill: "#9fd0cd", stroke: "#b8e0de" },
-  { fill: "#D7ECEB", stroke: "#c0dfde" },
+  { fill: "#0B1F4B", stroke: "#C9A84C" },
+  { fill: "#16306A", stroke: "#2B4A86" },
+  { fill: "#1E3A6E", stroke: "#3A5794" },
+  { fill: "#2E4A85", stroke: "#4A6399" },
+  { fill: "#DCC68A", stroke: "#C9A84C" },
+  { fill: "#EDE4CC", stroke: "#D9C79A" },
 ];
 
 interface Props {
@@ -108,7 +108,7 @@ export function RippleMethodDiagram({ className = "", size = 700 }: Props) {
         >
           <defs>
             <radialGradient id="bgGlow" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor="#D7ECEB" stopOpacity="0.3" />
+              <stop offset="0%" stopColor="#EDE4CC" stopOpacity="0.3" />
               <stop offset="100%" stopColor="#F5F1E8" stopOpacity="0" />
             </radialGradient>
             <filter id="ringGlow">
@@ -116,7 +116,7 @@ export function RippleMethodDiagram({ className = "", size = 700 }: Props) {
               <feComposite in="SourceGraphic" in2="blur" operator="over" />
             </filter>
             <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
-              <feDropShadow dx="0" dy="4" stdDeviation="8" floodColor="#0F2A36" floodOpacity="0.12" />
+              <feDropShadow dx="0" dy="4" stdDeviation="8" floodColor="#0B1F4B" floodOpacity="0.12" />
             </filter>
           </defs>
 
@@ -137,13 +137,13 @@ export function RippleMethodDiagram({ className = "", size = 700 }: Props) {
                   cy={cy}
                   r={stage.radius * scaleFactor}
                   fill={color.fill}
-                  stroke={isActive ? "#C8A96A" : color.stroke}
+                  stroke={isActive ? "#C9A84C" : color.stroke}
                   strokeWidth={isActive ? 2.5 : 1}
                   opacity={isActive ? 1 : 0.92}
                   style={{
                     cursor: "pointer",
                     transition: "all 0.3s ease",
-                    filter: isActive ? "drop-shadow(0 0 12px rgba(200, 169, 106, 0.5))" : undefined,
+                    filter: isActive ? "drop-shadow(0 0 12px rgba(201,168,76, 0.5))" : undefined,
                   }}
                   onClick={() => setActiveStage(isActive ? null : stage.id)}
                   data-testid={`ring-${stage.id}`}
@@ -168,8 +168,8 @@ export function RippleMethodDiagram({ className = "", size = 700 }: Props) {
           {stages.map((stage, idx) => {
             const isCenter = idx === 0;
             const isActive = activeStage === stage.id;
-            const textColor = idx <= 2 ? "#ffffff" : "#0F2A36";
-            const subtitleColor = idx <= 2 ? "rgba(255,255,255,0.7)" : "rgba(15,42,54,0.65)";
+            const textColor = idx <= 3 ? "#F5F1E8" : "#0B1F4B";
+            const subtitleColor = idx <= 3 ? "rgba(245,241,232,0.75)" : "rgba(11,31,75,0.65)";
 
             if (isCenter) {
               return (
@@ -226,7 +226,7 @@ export function RippleMethodDiagram({ className = "", size = 700 }: Props) {
                   y={ty - 5 * scaleFactor}
                   textAnchor="middle"
                   dominantBaseline="middle"
-                  fill={isActive ? "#C8A96A" : textColor}
+                  fill={isActive ? "#C9A84C" : textColor}
                   fontSize={stage.fontSize * scaleFactor}
                   fontFamily="'Playfair Display', serif"
                   fontWeight="500"
@@ -252,7 +252,7 @@ export function RippleMethodDiagram({ className = "", size = 700 }: Props) {
           })}
 
           {/* Gold accent dot at center */}
-          <circle cx={cx} cy={cy} r={4 * scaleFactor} fill="#C8A96A" opacity="0.9" />
+          <circle cx={cx} cy={cy} r={4 * scaleFactor} fill="#C9A84C" opacity="0.9" />
         </svg>
 
         {/* Hover/click tooltip overlay */}
@@ -261,23 +261,23 @@ export function RippleMethodDiagram({ className = "", size = 700 }: Props) {
             className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-full mt-4 z-10 w-full max-w-xs"
             data-testid="stage-description"
           >
-            <div className="mt-4 bg-white/90 backdrop-blur-sm border border-[#D7ECEB] rounded-2xl shadow-lg px-6 py-5 text-center">
-              <div className="text-[#C8A96A] text-xs font-sans font-500 uppercase tracking-widest mb-1">
+            <div className="mt-4 bg-white/90 backdrop-blur-sm border border-[#EDE4CC] rounded-2xl shadow-lg px-6 py-5 text-center">
+              <div className="text-[#C9A84C] text-xs font-sans font-500 uppercase tracking-widest mb-1">
                 {activeStageData.subtitle}
               </div>
               <div
-                className="text-[#0F2A36] font-serif text-lg font-semibold mb-2"
+                className="text-[#0B1F4B] font-serif text-lg font-semibold mb-2"
                 style={{ fontFamily: "'Playfair Display', serif" }}
               >
                 {activeStageData.title}
               </div>
               <div className="gold-divider my-2" />
-              <p className="text-[#2F7F7B] text-sm leading-relaxed font-sans">
+              <p className="text-[#1E3A6E] text-sm leading-relaxed font-sans">
                 {activeStageData.description}
               </p>
               <button
                 onClick={() => setActiveStage(null)}
-                className="mt-3 text-xs text-[#5FA8A5] hover:text-[#2F7F7B] transition-colors"
+                className="mt-3 text-xs text-[#5A6B8C] hover:text-[#1E3A6E] transition-colors"
                 data-testid="close-description"
               >
                 close
@@ -290,7 +290,7 @@ export function RippleMethodDiagram({ className = "", size = 700 }: Props) {
       {/* Tagline */}
       <div className="text-center mt-4" data-testid="ripple-tagline">
         <div className="gold-divider w-32 mx-auto mb-4" />
-        <p className="font-script text-xl text-[#2F7F7B]">What's within you creates a ripple.</p>
+        <p className="font-script text-xl text-[#1E3A6E]">What's within you creates a ripple.</p>
         <div className="gold-divider w-32 mx-auto mt-4" />
       </div>
 
@@ -303,8 +303,8 @@ export function RippleMethodDiagram({ className = "", size = 700 }: Props) {
             data-testid={`legend-${stage.id}`}
             className={`px-3 py-1.5 rounded-full text-xs font-sans font-medium transition-all duration-200 border ${
               activeStage === stage.id
-                ? "bg-[#2F7F7B] text-white border-[#2F7F7B] shadow-md"
-                : "bg-white/60 text-[#0F2A36] border-[#D7ECEB] hover:bg-[#D7ECEB] hover:border-[#5FA8A5]"
+                ? "bg-[#1E3A6E] text-white border-[#1E3A6E] shadow-md"
+                : "bg-white/60 text-[#0B1F4B] border-[#EDE4CC] hover:bg-[#EDE4CC] hover:border-[#5A6B8C]"
             }`}
           >
             {stage.title} · {stage.subtitle}

@@ -15,9 +15,9 @@ const steps = [
       "Optional: early experiences that shaped you",
       "Optional: challenges and turning points",
     ],
-    color: "#0F2A36",
+    color: "#0B1F4B",
     textColor: "#ffffff",
-    accentColor: "#D7ECEB",
+    accentColor: "#EDE4CC",
   },
   {
     number: "02",
@@ -33,9 +33,9 @@ const steps = [
       "Action and impact carry equal weight",
       "Bigger than any single job or role",
     ],
-    color: "#1a4a55",
+    color: "#16306A",
     textColor: "#ffffff",
-    accentColor: "#D7ECEB",
+    accentColor: "#EDE4CC",
   },
   {
     number: "03",
@@ -51,7 +51,7 @@ const steps = [
       "Ask why more than once to go deeper on impact",
       "Plain, everyday words",
     ],
-    color: "#2F7F7B",
+    color: "#1E3A6E",
     textColor: "#ffffff",
     accentColor: "#F5F1E8",
   },
@@ -68,9 +68,9 @@ const steps = [
       "Whose life did I get that picture from?",
       "What have I been telling myself I need before I can start living my season?",
     ],
-    color: "#5FA8A5",
-    textColor: "#0F2A36",
-    accentColor: "#0F2A36",
+    color: "#5A6B8C",
+    textColor: "#F5F1E8",
+    accentColor: "#0B1F4B",
   },
   {
     number: "05",
@@ -85,9 +85,9 @@ const steps = [
       "The roles I'm carrying...",
       "Where is my purpose already showing up in this season?",
     ],
-    color: "#9fd0cd",
-    textColor: "#0F2A36",
-    accentColor: "#0F2A36",
+    color: "#B9C3D9",
+    textColor: "#0B1F4B",
+    accentColor: "#0B1F4B",
   },
   {
     number: "06",
@@ -104,8 +104,8 @@ const steps = [
       "Invite others into the journey",
     ],
     color: "#EEE9DB",
-    textColor: "#0F2A36",
-    accentColor: "#0F2A36",
+    textColor: "#0B1F4B",
+    accentColor: "#0B1F4B",
   },
 ];
 
@@ -126,7 +126,7 @@ export function RippleMethodSteps({ showFull = false, className = "" }: Props) {
           className="hidden md:block absolute top-[52px] left-[8%] right-[8%] h-px z-0"
           style={{
             background:
-              "linear-gradient(to right, #0F2A36, #2F7F7B, #5FA8A5, #9fd0cd, #D7ECEB)",
+              "linear-gradient(to right, #0B1F4B, #1E3A6E, #5A6B8C, #B9C3D9, #EDE4CC)",
           }}
         />
 
@@ -150,7 +150,7 @@ export function RippleMethodSteps({ showFull = false, className = "" }: Props) {
                   style={{
                     backgroundColor: step.color,
                     color: step.textColor,
-                    borderColor: isActive ? "#C8A96A" : step.color,
+                    borderColor: isActive ? "#C9A84C" : step.color,
                   }}
                 >
                   {step.number}
@@ -158,19 +158,19 @@ export function RippleMethodSteps({ showFull = false, className = "" }: Props) {
 
                 <p
                   className={`text-sm font-serif font-semibold transition-colors ${
-                    isActive ? "text-[#2F7F7B]" : "text-[#0F2A36] group-hover:text-[#2F7F7B]"
+                    isActive ? "text-[#1E3A6E]" : "text-[#0B1F4B] group-hover:text-[#1E3A6E]"
                   }`}
                   style={{ fontFamily: "'Playfair Display', serif" }}
                 >
                   {step.title}
                 </p>
-                <p className="text-[10px] font-sans uppercase tracking-widest text-[#5FA8A5] mt-0.5">
+                <p className="text-[10px] font-sans uppercase tracking-widest text-[#5A6B8C] mt-0.5">
                   {step.subtitle}
                 </p>
 
                 {/* Mobile: connector arrow between steps */}
                 {idx < steps.length - 1 && (
-                  <div className="md:hidden text-[#C8A96A] text-xs mt-2 opacity-50">↓</div>
+                  <div className="md:hidden text-[#C9A84C] text-xs mt-2 opacity-50">↓</div>
                 )}
               </button>
             );
@@ -195,7 +195,7 @@ export function RippleMethodSteps({ showFull = false, className = "" }: Props) {
                   <div
                     className="w-12 h-12 rounded-full flex items-center justify-center text-sm font-sans font-semibold flex-shrink-0 mt-1 border"
                     style={{
-                      borderColor: "#C8A96A",
+                      borderColor: "#C9A84C",
                       color: step.textColor,
                       backgroundColor: "rgba(255,255,255,0.12)",
                     }}
@@ -218,7 +218,7 @@ export function RippleMethodSteps({ showFull = false, className = "" }: Props) {
                     >
                       {step.title}
                     </h3>
-                    <div className="w-8 h-px mb-4" style={{ backgroundColor: "#C8A96A" }} />
+                    <div className="w-8 h-px mb-4" style={{ backgroundColor: "#C9A84C" }} />
                     <p
                       className="font-script text-lg mb-4"
                       style={{ color: step.accentColor }}
@@ -242,7 +242,7 @@ export function RippleMethodSteps({ showFull = false, className = "" }: Props) {
                           >
                             <span
                               className="mt-1.5 w-1.5 h-1.5 rounded-full flex-shrink-0"
-                              style={{ backgroundColor: "#C8A96A" }}
+                              style={{ backgroundColor: "#C9A84C" }}
                             />
                             {prompt}
                           </div>

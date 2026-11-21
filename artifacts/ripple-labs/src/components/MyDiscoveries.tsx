@@ -49,9 +49,9 @@ export function MyDiscoveries({
       />
 
       {/* Panel */}
-      <div className="relative w-full max-w-md h-full bg-[#0F2A36] text-[#D7ECEB] shadow-2xl overflow-y-auto border-l border-white/10 flex flex-col animate-in slide-in-from-right duration-300">
-        <div className="sticky top-0 z-10 bg-[#0F2A36]/90 backdrop-blur-md px-6 py-4 border-b border-white/10 flex items-center justify-between">
-          <h2 className="font-serif text-2xl" style={{ color: "#C8A96A" }}>My Discoveries</h2>
+      <div className="relative w-full max-w-md h-full bg-[#0B1F4B] text-[#EDE4CC] shadow-2xl overflow-y-auto border-l border-white/10 flex flex-col animate-in slide-in-from-right duration-300">
+        <div className="sticky top-0 z-10 bg-[#0B1F4B]/90 backdrop-blur-md px-6 py-4 border-b border-white/10 flex items-center justify-between">
+          <h2 className="font-serif text-2xl" style={{ color: "#C9A84C" }}>My Discoveries</h2>
           <button onClick={onClose} className="p-2 opacity-60 hover:opacity-100 transition-opacity">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M18 6L6 18M6 6l12 12" />
@@ -65,7 +65,7 @@ export function MyDiscoveries({
           {purposeStatement && (
             <section>
               <h3 className="text-[10px] font-sans uppercase tracking-widest mb-4 opacity-50">Purpose Statement</h3>
-              <div className="bg-[#2F7F7B]/20 border border-[#2F7F7B]/40 rounded-xl p-5">
+              <div className="bg-[#1E3A6E]/20 border border-[#1E3A6E]/40 rounded-xl p-5">
                 <p className="font-script text-xl leading-relaxed">{purposeStatement}</p>
               </div>
             </section>

@@ -32,7 +32,7 @@ const STAGES = [
     teaching:
       "Begin with two stories where you felt most like yourself. Notice What I felt, What I did, and What changed.",
     guidance: "Choose a prompt for each story. Your guide listens, reflects back what you felt, did, and what changed, and checks that it sounds right. Two stories minimum; more are welcome.",
-    color: "#0F2A36",
+    color: "#0B1F4B",
     textColor: "#ffffff",
     cardBg: "rgba(255,255,255,0.06)",
     placeholder: "Start by sharing a moment when you felt most alive, most yourself...",
@@ -47,7 +47,7 @@ const STAGES = [
     teaching:
       "Find your action word and the impact it has on others. Both carry equal weight and can show up in many roles.",
     guidance: "Your saved summaries come first. Your guide will ask what you notice before offering anything. Then name your action and impact below in your own words.",
-    color: "#1a4a55",
+    color: "#16306A",
     textColor: "#ffffff",
     cardBg: "rgba(255,255,255,0.06)",
     placeholder: "Does this resonate? What would you add or change?",
@@ -62,7 +62,7 @@ const STAGES = [
     teaching:
       "Put who you are into words. Your purpose statement names your action and the impact it has on others.",
     guidance: "Ask why the impact matters, then go deeper. Use an optional starting point or write your own words.",
-    color: "#2F7F7B",
+    color: "#1E3A6E",
     textColor: "#ffffff",
     cardBg: "rgba(255,255,255,0.08)",
     placeholder: "How does this feel? Which option resonates? Or share what you'd change...",
@@ -77,9 +77,9 @@ const STAGES = [
     teaching:
       "See the life your purpose makes possible, and notice whose picture of success you've been borrowing.",
     guidance: "What do you picture? Whose life did that picture come from? What have you been telling yourself you need before you can start?",
-    color: "#5FA8A5",
-    textColor: "#0F2A36",
-    cardBg: "rgba(15,42,54,0.06)",
+    color: "#5A6B8C",
+    textColor: "#0B1F4B",
+    cardBg: "rgba(11,31,75,0.06)",
     placeholder: "When I imagine living my purpose, I picture...",
     openingPrompt: null,
   },
@@ -92,9 +92,9 @@ const STAGES = [
     teaching:
       "Your season is not the waiting room to your life. Live your purpose right where you are.",
     guidance: "Right now I'm in the season of... The roles I'm carrying... Where is my purpose already showing up?",
-    color: "#9fd0cd",
-    textColor: "#0F2A36",
-    cardBg: "rgba(15,42,54,0.06)",
+    color: "#B9C3D9",
+    textColor: "#0B1F4B",
+    cardBg: "rgba(11,31,75,0.06)",
     placeholder: "Share what comes to mind...",
     openingPrompt: null,
   },
@@ -108,8 +108,8 @@ const STAGES = [
       "Your ripple reaches the people around you and keeps growing.",
     guidance: "Reflect on what you're taking away. Your guide will help you close this season of the journey.",
     color: "#EEE9DB",
-    textColor: "#0F2A36",
-    cardBg: "rgba(15,42,54,0.05)",
+    textColor: "#0B1F4B",
+    cardBg: "rgba(11,31,75,0.05)",
     placeholder: "Share what you're taking away from this journey...",
     openingPrompt: null,
   },
@@ -632,7 +632,7 @@ function JourneyInner({ practice, onTogglePractice }: { practice: boolean; onTog
 
   if (isLoadingJourney) {
     return (
-      <div className="min-h-screen bg-[#0F2A36] text-[#D7ECEB] flex flex-col items-center justify-center gap-4 font-sans" data-testid="status-loading-journey">
+      <div className="min-h-screen bg-[#0B1F4B] text-[#EDE4CC] flex flex-col items-center justify-center gap-4 font-sans" data-testid="status-loading-journey">
         <div className="w-40 h-2 rounded-full bg-white/10 animate-pulse" />
         <div className="w-24 h-2 rounded-full bg-white/10 animate-pulse" />
         <p className="text-xs opacity-60">{practice ? "Opening your practice notebook" : "Opening your journey"}</p>
@@ -642,11 +642,11 @@ function JourneyInner({ practice, onTogglePractice }: { practice: boolean; onTog
 
   if (loadError) {
     return (
-      <div className="min-h-screen bg-[#0F2A36] text-[#D7ECEB] flex items-center justify-center px-6 font-sans text-center">
+      <div className="min-h-screen bg-[#0B1F4B] text-[#EDE4CC] flex items-center justify-center px-6 font-sans text-center">
         <div>
           <p>{loadError}</p>
-          <button onClick={() => window.location.reload()} className="mt-4 px-5 py-2 rounded-full bg-[#C8A96A] text-[#0F2A36] text-sm" data-testid="button-retry-load">Try again</button>
-          {practice && <button onClick={onTogglePractice} className="mt-4 ml-3 px-5 py-2 rounded-full border border-[#C8A96A] text-sm" data-testid="button-exit-practice-error">Back to my journey</button>}
+          <button onClick={() => window.location.reload()} className="mt-4 px-5 py-2 rounded-full bg-[#C9A84C] text-[#0B1F4B] text-sm" data-testid="button-retry-load">Try again</button>
+          {practice && <button onClick={onTogglePractice} className="mt-4 ml-3 px-5 py-2 rounded-full border border-[#C9A84C] text-sm" data-testid="button-exit-practice-error">Back to my journey</button>}
         </div>
       </div>
     );
@@ -755,7 +755,7 @@ function JourneyInner({ practice, onTogglePractice }: { practice: boolean; onTog
             onClick={onTogglePractice}
             disabled={isStreaming || isRecordingBusy}
             className="text-[11px] font-sans px-3 py-1 rounded-full border transition-colors disabled:opacity-40"
-            style={{ color: stage.textColor, borderColor: practice ? "#C8A96A" : "rgba(200,169,106,0.35)", backgroundColor: practice ? "rgba(200,169,106,0.25)" : "transparent" }}
+            style={{ color: stage.textColor, borderColor: practice ? "#C9A84C" : "rgba(201,168,76,0.35)", backgroundColor: practice ? "rgba(201,168,76,0.25)" : "transparent" }}
             aria-pressed={practice}
             data-testid="button-toggle-practice"
           >
@@ -765,7 +765,7 @@ function JourneyInner({ practice, onTogglePractice }: { practice: boolean; onTog
         </div>
       </nav>
       {practice && (
-        <div className="text-center text-[11px] font-sans py-1.5 tracking-wide" style={{ backgroundColor: "#C8A96A", color: "#0F2A36" }} data-testid="banner-practice">
+        <div className="text-center text-[11px] font-sans py-1.5 tracking-wide" style={{ backgroundColor: "#C9A84C", color: "#0B1F4B" }} data-testid="banner-practice">
           Practice notebook. Separate from your own journey, and every stage is open.
         </div>
       )}
@@ -775,7 +775,7 @@ function JourneyInner({ practice, onTogglePractice }: { practice: boolean; onTog
       <div className="h-1 w-full" style={{ backgroundColor: "rgba(255,255,255,0.1)" }}>
         <div
           className="h-full transition-all duration-700"
-          style={{ width: `${progressPct}%`, backgroundColor: "#C8A96A" }}
+          style={{ width: `${progressPct}%`, backgroundColor: "#C9A84C" }}
           data-testid="progress-bar"
         />
       </div>
@@ -803,8 +803,8 @@ function JourneyInner({ practice, onTogglePractice }: { practice: boolean; onTog
                   : "w-4 h-4 opacity-30"
               }`}
               style={{
-                backgroundColor: i <= stageIdx ? "#C8A96A" : "rgba(255,255,255,0.2)",
-                color: "#0F2A36",
+                backgroundColor: i <= stageIdx ? "#C9A84C" : "rgba(255,255,255,0.2)",
+                color: "#0B1F4B",
               }}
             >
               {i < stageIdx || (i === stageIdx && reviewState.isReviewing) ? "✓" : i === stageIdx ? s.number : ""}
@@ -813,7 +813,7 @@ function JourneyInner({ practice, onTogglePractice }: { practice: boolean; onTog
               <div
                 className="w-5 md:w-10 h-px"
                 style={{
-                  backgroundColor: i < stageIdx || (i === stageIdx && reviewState.isReviewing) ? "#C8A96A" : "rgba(255,255,255,0.15)",
+                  backgroundColor: i < stageIdx || (i === stageIdx && reviewState.isReviewing) ? "#C9A84C" : "rgba(255,255,255,0.15)",
                 }}
               />
             )}
@@ -849,7 +849,7 @@ function JourneyInner({ practice, onTogglePractice }: { practice: boolean; onTog
               </p>
             </div>
 
-            <div className="w-8 h-px" style={{ backgroundColor: "#C8A96A" }} />
+            <div className="w-8 h-px" style={{ backgroundColor: "#C9A84C" }} />
 
             <p
               className="font-script text-lg leading-relaxed"
@@ -870,10 +870,10 @@ function JourneyInner({ practice, onTogglePractice }: { practice: boolean; onTog
             <div
               className="rounded-xl px-4 py-3 text-xs font-sans leading-relaxed"
               style={{
-                backgroundColor: "rgba(200,169,106,0.12)",
+                backgroundColor: "rgba(201,168,76,0.12)",
                 color: stage.textColor,
                 opacity: 0.85,
-                border: "1px solid rgba(200,169,106,0.2)",
+                border: "1px solid rgba(201,168,76,0.2)",
               }}
               data-testid="stage-guidance"
             >
@@ -883,7 +883,7 @@ function JourneyInner({ practice, onTogglePractice }: { practice: boolean; onTog
             {stageIdx >= 3 && purposeStatement && (
               <div
                 className="rounded-xl px-4 py-4"
-                style={{ backgroundColor: "rgba(200,169,106,0.1)", border: "1px solid rgba(200,169,106,0.25)" }}
+                style={{ backgroundColor: "rgba(201,168,76,0.1)", border: "1px solid rgba(201,168,76,0.25)" }}
                 data-testid="purpose-display"
               >
                 <p className="text-[10px] font-sans uppercase tracking-widest mb-2" style={{ color: stage.textColor, opacity: 0.45 }}>
@@ -911,7 +911,7 @@ function JourneyInner({ practice, onTogglePractice }: { practice: boolean; onTog
                   onClick={stageIdx === 2 || stageIdx === 5 ? goNext : handleContinue}
                   disabled={isStreaming || isRecordingBusy || isAdvancing || (!practice && stageIdx === 1 && !patternDiscovery?.confirmed) || (!practice && stageIdx === 2 && !purposeConfirmed)}
                   className="flex-1 px-4 py-2 rounded-full text-xs font-sans font-medium transition-all disabled:opacity-40 hover:opacity-90"
-                  style={{ backgroundColor: "#C8A96A", color: "#0F2A36" }}
+                  style={{ backgroundColor: "#C9A84C", color: "#0B1F4B" }}
                   data-testid="next-stage-btn"
                 >
                   {stageIdx === STAGES.length - 1 ? "Complete Journey →" : `Continue to ${STAGES[Math.min(stageIdx + 1, STAGES.length - 1)].title} →`}
@@ -927,27 +927,27 @@ function JourneyInner({ practice, onTogglePractice }: { practice: boolean; onTog
           <div className="space-y-5">
             {openingError && <p role="alert" className="text-sm font-sans px-4 py-3">{openingError}</p>}
             {stageIdx === 3 && vision && !reviewState.isReviewing && <VisionForm vision={vision} onSave={saveVision} />}
-            {stageIdx === 4 && legacySeasonMessages.length > 0 && <details className="rounded-xl bg-white/70 p-4 text-[#0F2A36]">
+            {stageIdx === 4 && legacySeasonMessages.length > 0 && <details className="rounded-xl bg-white/70 p-4 text-[#0B1F4B]">
               <summary>Earlier season reflection</summary>
               <p className="text-sm my-2">Saved from the earlier version of the journey. Your original words are preserved.</p>
               {legacySeasonMessages.map((message, i) => <p key={i} className="text-sm my-2"><strong>{message.role === "user" ? "You" : "Guide"}:</strong> {message.content}</p>)}
             </details>}
             {reviewState.isReviewing ? (
-              <div className="rounded-2xl p-6 md:p-8" style={{ backgroundColor: "rgba(255,255,255,0.05)", border: "1px solid rgba(200,169,106,0.18)" }}>
+              <div className="rounded-2xl p-6 md:p-8" style={{ backgroundColor: "rgba(255,255,255,0.05)", border: "1px solid rgba(201,168,76,0.18)" }}>
                 {reviewState.isExtracting ? (
                   <div className="flex flex-col items-center justify-center py-16">
-                    <span className="w-8 h-8 border-2 border-[#C8A96A] border-t-transparent rounded-full animate-spin mb-5" />
+                    <span className="w-8 h-8 border-2 border-[#C9A84C] border-t-transparent rounded-full animate-spin mb-5" />
                     <p className="text-sm font-sans" style={{ color: stage.textColor }}>Gathering what you shared…</p>
                   </div>
                 ) : reviewState.extractionFailed ? (
                   <div className="flex flex-col items-center justify-center py-12 text-center">
                     <p className="text-sm font-sans mb-6" style={{ color: stage.textColor }}>We couldn't gather this right now.</p>
                     <div className="flex gap-4">
-                      <button onClick={() => runExtraction(reviewState.stageId)} className="px-5 py-2.5 rounded-full text-xs font-sans border border-[#C8A96A] text-[#C8A96A] hover:bg-[#C8A96A]/10 transition-colors">Try Again</button>
+                      <button onClick={() => runExtraction(reviewState.stageId)} className="px-5 py-2.5 rounded-full text-xs font-sans border border-[#C9A84C] text-[#C9A84C] hover:bg-[#C9A84C]/10 transition-colors">Try Again</button>
                       {["reveal", "identify"].includes(reviewState.stageId) ? (
-                        <button onClick={() => setReviewState({ isReviewing: false, stageId: "", isExtracting: false, extractionFailed: false })} className="px-5 py-2.5 rounded-full text-xs font-sans bg-[#C8A96A] text-[#0F2A36]" data-testid="button-back-to-conversation">Back to the conversation</button>
+                        <button onClick={() => setReviewState({ isReviewing: false, stageId: "", isExtracting: false, extractionFailed: false })} className="px-5 py-2.5 rounded-full text-xs font-sans bg-[#C9A84C] text-[#0B1F4B]" data-testid="button-back-to-conversation">Back to the conversation</button>
                       ) : (
-                        <button onClick={() => { setReviewState(prev => ({...prev, isReviewing: false})); goNext(); }} className="px-5 py-2.5 rounded-full text-xs font-sans bg-[#C8A96A] text-[#0F2A36] hover:opacity-90 transition-opacity">Continue Anyway</button>
+                        <button onClick={() => { setReviewState(prev => ({...prev, isReviewing: false})); goNext(); }} className="px-5 py-2.5 rounded-full text-xs font-sans bg-[#C9A84C] text-[#0B1F4B] hover:opacity-90 transition-opacity">Continue Anyway</button>
                       )}
                     </div>
                   </div>
@@ -973,7 +973,7 @@ function JourneyInner({ practice, onTogglePractice }: { practice: boolean; onTog
                         <p className="text-xs font-sans flex-1" style={{ color: stage.textColor, opacity: 0.7 }} data-testid="text-confirmed-count">
                           {storyCards.filter((c) => c.confirmed).length} of {Math.max(2, storyCards.length)} confirmed. Confirm at least two stories to continue. Copy these into your notebook too.
                         </p>
-                        <button onClick={() => setReviewState({ isReviewing: false, stageId: "", isExtracting: false, extractionFailed: false })} className="px-4 py-2 rounded-full text-xs font-sans border" style={{ borderColor: "rgba(200,169,106,0.5)", color: stage.textColor }} data-testid="button-tell-another-story">
+                        <button onClick={() => setReviewState({ isReviewing: false, stageId: "", isExtracting: false, extractionFailed: false })} className="px-4 py-2 rounded-full text-xs font-sans border" style={{ borderColor: "rgba(201,168,76,0.5)", color: stage.textColor }} data-testid="button-tell-another-story">
                           Tell another story
                         </button>
                       </div>
@@ -982,7 +982,7 @@ function JourneyInner({ practice, onTogglePractice }: { practice: boolean; onTog
                       onClick={async () => { if (await goNext()) setReviewState(prev => ({...prev, isReviewing: false})); }}
                       disabled={!practice && ((stage.id === "reveal" && storyCards.filter((c) => c.confirmed).length < 2) || (stage.id === "identify" && !patternDiscovery?.confirmed))}
                       className="w-full py-3.5 rounded-full text-sm font-sans font-medium transition-all hover:opacity-90 disabled:opacity-40"
-                      style={{ backgroundColor: "#C8A96A", color: "#0F2A36" }}
+                      style={{ backgroundColor: "#C9A84C", color: "#0B1F4B" }}
                       data-testid="button-review-continue"
                     >
                       This feels right. Continue →
@@ -993,7 +993,7 @@ function JourneyInner({ practice, onTogglePractice }: { practice: boolean; onTog
             ) : stageIdx === 0 && !promptsConfirmed ? (
               <div
                 className="rounded-2xl p-6 space-y-5"
-                style={{ backgroundColor: "rgba(255,255,255,0.05)", border: "1px solid rgba(200,169,106,0.18)" }}
+                style={{ backgroundColor: "rgba(255,255,255,0.05)", border: "1px solid rgba(201,168,76,0.18)" }}
                 data-testid="prompt-selector"
               >
                 <div>
@@ -1026,10 +1026,10 @@ function JourneyInner({ practice, onTogglePractice }: { practice: boolean; onTog
                         className="text-left px-4 py-3.5 rounded-xl border transition-all duration-200"
                         style={{
                           backgroundColor: isSelected
-                            ? "rgba(200,169,106,0.18)"
+                            ? "rgba(201,168,76,0.18)"
                             : "rgba(255,255,255,0.03)",
                           borderColor: isSelected
-                            ? "rgba(200,169,106,0.6)"
+                            ? "rgba(201,168,76,0.6)"
                             : "rgba(255,255,255,0.08)",
                           opacity: atMax ? 0.35 : 1,
                         }}
@@ -1039,13 +1039,13 @@ function JourneyInner({ practice, onTogglePractice }: { practice: boolean; onTog
                           <div
                             className="flex-shrink-0 w-4 h-4 rounded border-2 mt-0.5 flex items-center justify-center transition-all"
                             style={{
-                              borderColor: isSelected ? "#C8A96A" : "rgba(200,169,106,0.3)",
-                              backgroundColor: isSelected ? "#C8A96A" : "transparent",
+                              borderColor: isSelected ? "#C9A84C" : "rgba(201,168,76,0.3)",
+                              backgroundColor: isSelected ? "#C9A84C" : "transparent",
                             }}
                           >
                             {isSelected && (
                               <svg width="8" height="6" viewBox="0 0 8 6" fill="none">
-                                <path d="M1 3L3 5L7 1" stroke="#0F2A36" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                <path d="M1 3L3 5L7 1" stroke="#0B1F4B" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                               </svg>
                             )}
                           </div>
@@ -1080,7 +1080,7 @@ function JourneyInner({ practice, onTogglePractice }: { practice: boolean; onTog
                     onClick={confirmAndBegin}
                     disabled={isStreaming || selectedPrompts.length === 0}
                     className="px-6 py-2.5 rounded-full text-sm font-sans font-medium transition-all disabled:opacity-30 hover:opacity-90"
-                    style={{ backgroundColor: "#C8A96A", color: "#0F2A36" }}
+                    style={{ backgroundColor: "#C9A84C", color: "#0B1F4B" }}
                     data-testid="begin-stories-btn"
                   >
                     {isStreaming ? "Starting..." : "Let's Begin →"}
@@ -1093,7 +1093,7 @@ function JourneyInner({ practice, onTogglePractice }: { practice: boolean; onTog
               {stageIdx === 1 && <RevealSummaries cards={storyCards} textColor={stage.textColor} />}
               {stageIdx === 2 && <PatternSummary value={patternDiscovery} textColor={stage.textColor} />}
               {stageIdx === 0 && (
-                <div className="rounded-2xl p-4" style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(200,169,106,0.15)" }} data-testid="next-story-prompts">
+                <div className="rounded-2xl p-4" style={{ backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(201,168,76,0.15)" }} data-testid="next-story-prompts">
                   <p className="text-[10px] font-sans uppercase tracking-widest mb-2.5" style={{ color: stage.textColor, opacity: 0.5 }}>
                     Ready for another story? Choose a different prompt
                   </p>
@@ -1109,7 +1109,7 @@ function JourneyInner({ practice, onTogglePractice }: { practice: boolean; onTog
                             setSeed({ text: `For my next story I chose: ${p.label}. `, nonce: Date.now() });
                           }}
                           className="px-3 py-1.5 rounded-full text-xs font-sans border transition-colors disabled:opacity-40"
-                          style={{ color: stage.textColor, borderColor: used ? "rgba(200,169,106,0.7)" : "rgba(255,255,255,0.15)", backgroundColor: used ? "rgba(200,169,106,0.14)" : "transparent" }}
+                          style={{ color: stage.textColor, borderColor: used ? "rgba(201,168,76,0.7)" : "rgba(255,255,255,0.15)", backgroundColor: used ? "rgba(201,168,76,0.14)" : "transparent" }}
                           data-testid={`button-next-prompt-${p.id}`}
                         >
                           {used ? "Used: " : ""}{p.label}
@@ -1146,7 +1146,7 @@ function JourneyInner({ practice, onTogglePractice }: { practice: boolean; onTog
             {!reviewState.isReviewing && stageIdx === 2 && (
               <div
                 className="rounded-2xl p-5 space-y-4"
-                style={{ backgroundColor: "rgba(255,255,255,0.05)", border: "1px solid rgba(200,169,106,0.2)" }}
+                style={{ backgroundColor: "rgba(255,255,255,0.05)", border: "1px solid rgba(201,168,76,0.2)" }}
                 data-testid="purpose-picker"
               >
                 <div>
@@ -1180,12 +1180,12 @@ function JourneyInner({ practice, onTogglePractice }: { practice: boolean; onTog
                       style={{
                         backgroundColor:
                           selectedOption === opt
-                            ? "rgba(200,169,106,0.18)"
+                            ? "rgba(201,168,76,0.18)"
                             : "rgba(255,255,255,0.04)",
                         borderColor:
                           selectedOption === opt
-                            ? "rgba(200,169,106,0.6)"
-                            : "rgba(200,169,106,0.12)",
+                            ? "rgba(201,168,76,0.6)"
+                            : "rgba(201,168,76,0.12)",
                         color: stage.textColor,
                       }}
                       data-testid={`purpose-option-${i}`}
@@ -1206,12 +1206,12 @@ function JourneyInner({ practice, onTogglePractice }: { practice: boolean; onTog
                     Make it yours
                   </p>
                   <textarea
-                    className="w-full rounded-xl px-4 py-3 text-sm font-sans leading-relaxed resize-none outline-none focus:border-[#C8A96A] transition-colors"
+                    className="w-full rounded-xl px-4 py-3 text-sm font-sans leading-relaxed resize-none outline-none focus:border-[#C9A84C] transition-colors"
                     rows={3}
                     style={{
                       backgroundColor: "rgba(255,255,255,0.06)",
                       color: stage.textColor,
-                      border: "1px solid rgba(200,169,106,0.25)",
+                      border: "1px solid rgba(201,168,76,0.25)",
                     }}
                     placeholder="I wake up each day to [action] so that [impact]. Or use your own words."
                     value={editedPurpose}
@@ -1235,7 +1235,7 @@ function JourneyInner({ practice, onTogglePractice }: { practice: boolean; onTog
                   onClick={confirmPurpose}
                   disabled={!editedPurpose.trim() || !actionChecked || !impactChecked || !readAloudChecked || updateJourneyMutation.isPending}
                   className="w-full py-3 rounded-full text-sm font-sans font-medium transition-all disabled:opacity-40"
-                  style={{ backgroundColor: "#C8A96A", color: "#0F2A36" }}
+                  style={{ backgroundColor: "#C9A84C", color: "#0B1F4B" }}
                   data-testid="confirm-purpose-btn"
                 >
                   {purposeConfirmed ? "✓ Purpose Statement Saved" : "Save My Purpose Statement"}
@@ -1244,7 +1244,7 @@ function JourneyInner({ practice, onTogglePractice }: { practice: boolean; onTog
                 {purposeConfirmed && (
                   <div
                     className="rounded-xl px-4 py-3 text-center"
-                    style={{ backgroundColor: "rgba(47,127,123,0.15)", border: "1px solid rgba(47,127,123,0.3)" }}
+                    style={{ backgroundColor: "rgba(11,31,75,0.15)", border: "1px solid rgba(11,31,75,0.3)" }}
                     data-testid="confirmed-purpose"
                   >
                     <p className="font-script text-base leading-relaxed" style={{ color: stage.textColor }}>
@@ -1288,7 +1288,7 @@ function JourneySummary({
   return (
     <div
       className="min-h-screen flex flex-col"
-      style={{ backgroundColor: "#0F2A36" }}
+      style={{ backgroundColor: "#0B1F4B" }}
       data-testid="journey-summary"
     >
       <nav
@@ -1301,26 +1301,26 @@ function JourneySummary({
         <div className="flex items-center gap-4">
           <button
             onClick={onOpenDiscoveries}
-            className="text-xs font-sans opacity-60 hover:opacity-100 transition-opacity flex items-center gap-1.5 text-[#D7ECEB]"
+            className="text-xs font-sans opacity-60 hover:opacity-100 transition-opacity flex items-center gap-1.5 text-[#EDE4CC]"
           >
             <span className="hidden sm:inline">My Discoveries</span>
             <span className="sm:hidden">Discoveries</span>
           </button>
-          <span className="hidden sm:inline text-xs font-sans opacity-30 text-[#D7ECEB]">|</span>
-          <Link href="/purpose-lab" className="hidden sm:inline text-[#D7ECEB] text-xs font-sans opacity-60 hover:opacity-100">
+          <span className="hidden sm:inline text-xs font-sans opacity-30 text-[#EDE4CC]">|</span>
+          <Link href="/purpose-lab" className="hidden sm:inline text-[#EDE4CC] text-xs font-sans opacity-60 hover:opacity-100">
             ← Purpose Lab
           </Link>
-          <AccountMenu color="#D7ECEB" />
+          <AccountMenu color="#EDE4CC" />
         </div>
       </nav>
 
-      <div className="flex-1 px-6 md:px-12 py-12 max-w-3xl mx-auto w-full text-[#D7ECEB]">
+      <div className="flex-1 px-6 md:px-12 py-12 max-w-3xl mx-auto w-full text-[#EDE4CC]">
         <div className="text-center mb-12">
           <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-5 text-2xl"
-            style={{ backgroundColor: "#C8A96A", color: "#0F2A36" }}>
+            style={{ backgroundColor: "#C9A84C", color: "#0B1F4B" }}>
             ✦
           </div>
-          <p className="text-[#C8A96A] text-xs font-sans uppercase tracking-widest mb-3">
+          <p className="text-[#C9A84C] text-xs font-sans uppercase tracking-widest mb-3">
             Journey Complete
           </p>
           <h1
@@ -1329,23 +1329,23 @@ function JourneySummary({
           >
             Your Purpose Profile
           </h1>
-          <div className="w-24 h-px mx-auto" style={{ backgroundColor: "#C8A96A" }} />
+          <div className="w-24 h-px mx-auto" style={{ backgroundColor: "#C9A84C" }} />
         </div>
 
         <div className="space-y-10">
           {purposeStatement && (
             <div
               className="rounded-2xl px-7 py-10 text-center"
-              style={{ backgroundColor: "rgba(200,169,106,0.1)", border: "1px solid rgba(200,169,106,0.25)" }}
+              style={{ backgroundColor: "rgba(201,168,76,0.1)", border: "1px solid rgba(201,168,76,0.25)" }}
               data-testid="summary-purpose"
             >
-              <p className="text-[10px] font-sans uppercase tracking-widest mb-6 opacity-80" style={{ color: "#C8A96A" }}>
+              <p className="text-[10px] font-sans uppercase tracking-widest mb-6 opacity-80" style={{ color: "#C9A84C" }}>
                 Your Purpose Statement
               </p>
               <p className="font-script text-3xl md:text-4xl text-white leading-relaxed max-w-full overflow-hidden break-words mx-auto">
                 {purposeStatement}
               </p>
-              <button onClick={onOpenPurposePage} className="mt-8 px-5 py-2.5 rounded-full text-xs font-sans border border-[#C8A96A]/50 text-[#C8A96A] hover:bg-[#C8A96A]/10" data-testid="button-open-purpose-page-summary">
+              <button onClick={onOpenPurposePage} className="mt-8 px-5 py-2.5 rounded-full text-xs font-sans border border-[#C9A84C]/50 text-[#C9A84C] hover:bg-[#C9A84C]/10" data-testid="button-open-purpose-page-summary">
                 Open my purpose page to download or screenshot
               </button>
             </div>
@@ -1357,7 +1357,7 @@ function JourneySummary({
               <div className="grid gap-4">
                 {themes.map(t => (
                   <div key={t.id} className="bg-white/5 border border-white/10 rounded-xl p-5 md:p-6">
-                    <h3 className="font-serif text-xl text-[#5FA8A5] mb-2">{t.name}</h3>
+                    <h3 className="font-serif text-xl text-[#5A6B8C] mb-2">{t.name}</h3>
                     <p className="text-sm font-sans opacity-80 mb-5">{t.description}</p>
                     {t.evidence && t.evidence.length > 0 && (
                       <div className="border-t border-white/10 pt-4">
@@ -1365,7 +1365,7 @@ function JourneySummary({
                         <ul className="space-y-3">
                           {t.evidence.map((ev, i) => (
                             <li key={i} className="text-sm flex gap-3 leading-relaxed">
-                              <span className="text-[#C8A96A] mt-0.5">✦</span>
+                              <span className="text-[#C9A84C] mt-0.5">✦</span>
                               <span><strong className="font-medium">{ev.storyTitle}:</strong> <span className="opacity-75">{ev.detail}</span></span>
                             </li>
                           ))}
@@ -1391,7 +1391,7 @@ function JourneySummary({
                 <div className="mt-4 grid gap-4">
                   {storyCards.map(c => (
                     <div key={c.id} className="bg-white/5 border border-white/10 rounded-xl p-5 md:p-6">
-                      <h3 className="font-serif text-lg text-[#C8A96A] mb-2">{c.title}</h3>
+                      <h3 className="font-serif text-lg text-[#C9A84C] mb-2">{c.title}</h3>
                       <p className="text-sm font-sans opacity-80 leading-relaxed">{c.summary}</p>
                     </div>
                   ))}
@@ -1406,11 +1406,11 @@ function JourneySummary({
               <div className="bg-white/5 border border-white/10 rounded-xl p-6 md:p-8">
                 <p className="text-sm font-sans leading-relaxed opacity-90 mb-6">{season.summary}</p>
                 <div className="border-t border-white/10 pt-5">
-                  <p className="text-[10px] uppercase tracking-widest opacity-50 mb-3 text-[#5FA8A5]">Ways to live your purpose now</p>
+                  <p className="text-[10px] uppercase tracking-widest opacity-50 mb-3 text-[#5A6B8C]">Ways to live your purpose now</p>
                   <ul className="space-y-3">
                     {season.expressions?.map((exp, i) => (
                       <li key={i} className="text-sm flex gap-3 leading-relaxed">
-                        <span className="text-[#C8A96A]">•</span> <span className="opacity-80">{exp}</span>
+                        <span className="text-[#C9A84C]">•</span> <span className="opacity-80">{exp}</span>
                       </li>
                     ))}
                   </ul>
@@ -1422,7 +1422,7 @@ function JourneySummary({
           {actionPlan && (
             <div>
               <p className="text-[10px] font-sans uppercase tracking-widest mb-4 text-center opacity-60">Your Next Steps</p>
-              <div className="bg-white/5 border border-[#C8A96A]/30 rounded-xl p-6 md:p-8">
+              <div className="bg-white/5 border border-[#C9A84C]/30 rounded-xl p-6 md:p-8">
                 <div className="grid sm:grid-cols-3 gap-8 mb-8">
                   <div>
                     <p className="text-[10px] uppercase tracking-widest opacity-50 mb-3">Start</p>
@@ -1438,8 +1438,8 @@ function JourneySummary({
                   </div>
                 </div>
                 {actionPlan.oneStepThisWeek && (
-                  <div className="bg-[#C8A96A]/10 border border-[#C8A96A]/30 rounded-lg p-5 text-center">
-                    <p className="text-[10px] uppercase tracking-widest text-[#C8A96A] mb-2">One Step This Week</p>
+                  <div className="bg-[#C9A84C]/10 border border-[#C9A84C]/30 rounded-lg p-5 text-center">
+                    <p className="text-[10px] uppercase tracking-widest text-[#C9A84C] mb-2">One Step This Week</p>
                     <p className="text-base font-medium">{actionPlan.oneStepThisWeek}</p>
                   </div>
                 )}
@@ -1448,17 +1448,17 @@ function JourneySummary({
           )}
 
           <div className="pt-16 pb-8 text-center border-t border-white/10 mt-12">
-            <p className="font-script text-3xl md:text-4xl text-[#C8A96A] mb-12">What's within you creates a ripple.</p>
+            <p className="font-script text-3xl md:text-4xl text-[#C9A84C] mb-12">What's within you creates a ripple.</p>
             <div className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
               <Link
                 href="/purpose-lab"
-                className="flex-1 py-3.5 px-6 rounded-full text-sm font-sans font-medium text-center transition-all hover:opacity-90 bg-[#2F7F7B] text-white"
+                className="flex-1 py-3.5 px-6 rounded-full text-sm font-sans font-medium text-center transition-all hover:opacity-90 bg-[#1E3A6E] text-white"
               >
                 Return to Purpose Lab
               </Link>
               <button
                 onClick={onReset}
-                className="flex-1 py-3.5 px-6 rounded-full text-sm font-sans font-medium border transition-all hover:bg-white/5 border-[#C8A96A]/40 text-[#C8A96A]"
+                className="flex-1 py-3.5 px-6 rounded-full text-sm font-sans font-medium border transition-all hover:bg-white/5 border-[#C9A84C]/40 text-[#C9A84C]"
               >
                 Begin a New Journey
               </button>

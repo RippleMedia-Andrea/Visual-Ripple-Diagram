@@ -38,9 +38,9 @@ const stages = [
           "Describe a moment when everything shifted. What was before, and what became possible after?",
       },
     ],
-    color: "#0F2A36",
+    color: "#0B1F4B",
     textColor: "#ffffff",
-    bg: "#0F2A36",
+    bg: "#0B1F4B",
     cardBg: "rgba(255,255,255,0.06)",
   },
   {
@@ -75,9 +75,9 @@ const stages = [
           "Where else does your action show up, outside of work or any single role you hold?",
       },
     ],
-    color: "#1a4a55",
+    color: "#16306A",
     textColor: "#ffffff",
-    bg: "#1a4a55",
+    bg: "#16306A",
     cardBg: "rgba(255,255,255,0.06)",
   },
   {
@@ -112,9 +112,9 @@ const stages = [
           "Does your impact focus outward, on what others gain or experience because of who you are?",
       },
     ],
-    color: "#2F7F7B",
+    color: "#1E3A6E",
     textColor: "#ffffff",
-    bg: "#2F7F7B",
+    bg: "#1E3A6E",
     cardBg: "rgba(255,255,255,0.08)",
   },
   {
@@ -144,10 +144,10 @@ const stages = [
           "What have I been telling myself I need before I can start living my season?",
       },
     ],
-    color: "#5FA8A5",
-    textColor: "#0F2A36",
-    bg: "#5FA8A5",
-    cardBg: "rgba(15,42,54,0.06)",
+    color: "#5A6B8C",
+    textColor: "#0B1F4B",
+    bg: "#5A6B8C",
+    cardBg: "rgba(11,31,75,0.06)",
   },
   {
     number: "05",
@@ -176,10 +176,10 @@ const stages = [
           "Where is my purpose already showing up in this season?",
       },
     ],
-    color: "#9fd0cd",
-    textColor: "#0F2A36",
-    bg: "#9fd0cd",
-    cardBg: "rgba(15,42,54,0.06)",
+    color: "#B9C3D9",
+    textColor: "#0B1F4B",
+    bg: "#B9C3D9",
+    cardBg: "rgba(11,31,75,0.06)",
   },
   {
     number: "06",
@@ -214,9 +214,9 @@ const stages = [
       },
     ],
     color: "#EEE9DB",
-    textColor: "#0F2A36",
+    textColor: "#0B1F4B",
     bg: "#EEE9DB",
-    cardBg: "rgba(15,42,54,0.05)",
+    cardBg: "rgba(11,31,75,0.05)",
   },
 ];
 
@@ -238,8 +238,8 @@ function StageProgress({ activeId }: { activeId: string }) {
                 isActive
                   ? "text-white shadow-sm"
                   : isPast
-                  ? "text-[#5FA8A5]"
-                  : "text-[#5FA8A5] opacity-40"
+                  ? "text-[#5A6B8C]"
+                  : "text-[#5A6B8C] opacity-80"
               }`}
               style={{
                 backgroundColor: isActive ? stage.color : "transparent",
@@ -251,7 +251,7 @@ function StageProgress({ activeId }: { activeId: string }) {
                   isActive
                     ? "bg-white/20 border-white/30 text-white"
                     : isPast
-                    ? "border-[#2F7F7B] text-[#2F7F7B]"
+                    ? "border-[#1E3A6E] text-[#1E3A6E]"
                     : "border-current"
                 }`}
               >
@@ -262,7 +262,7 @@ function StageProgress({ activeId }: { activeId: string }) {
             {idx < stages.length - 1 && (
               <div
                 className={`w-3 h-px flex-shrink-0 ${
-                  isPast ? "bg-[#2F7F7B]" : "bg-[#D7ECEB]"
+                  isPast ? "bg-[#1E3A6E]" : "bg-[#EDE4CC]"
                 }`}
               />
             )}
@@ -294,7 +294,7 @@ export default function PurposeLab() {
       {/* Nav */}
       <nav
         className="w-full px-6 md:px-12 py-4 flex items-center justify-between sticky top-0 z-50"
-        style={{ backgroundColor: "#0F2A36" }}
+        style={{ backgroundColor: "#0B1F4B" }}
         data-testid="nav"
       >
         <Link href="/">
@@ -308,14 +308,14 @@ export default function PurposeLab() {
         <div className="flex items-center gap-4">
           <Link
             href="/"
-            className="text-[#D7ECEB] text-xs font-sans hover:text-[#C8A96A] transition-colors"
+            className="text-[#EDE4CC] text-xs font-sans hover:text-[#C9A84C] transition-colors"
             data-testid="nav-home"
           >
             ← Home
           </Link>
           <Link
             href="/ripple-method"
-            className="text-[#D7ECEB] text-xs font-sans hover:text-[#C8A96A] transition-colors hidden sm:inline"
+            className="text-[#EDE4CC] text-xs font-sans hover:text-[#C9A84C] transition-colors hidden sm:inline"
             data-testid="nav-ripple-method"
           >
             The Ripple Method™
@@ -326,7 +326,7 @@ export default function PurposeLab() {
       {/* Purpose Lab Hero */}
       <section
         className="px-6 md:px-12 py-16 md:py-20 text-center"
-        style={{ backgroundColor: "#0F2A36" }}
+        style={{ backgroundColor: "#0B1F4B" }}
         data-testid="purpose-lab-hero"
       >
         <div className="max-w-2xl mx-auto">
@@ -336,7 +336,7 @@ export default function PurposeLab() {
             className="w-28 h-28 object-contain mx-auto mb-6 rounded-2xl"
             data-testid="purpose-lab-hero-logo"
           />
-          <p className="text-[#C8A96A] text-xs font-sans uppercase tracking-widest mb-3">
+          <p className="text-[#C9A84C] text-xs font-sans uppercase tracking-widest mb-3">
             A Ripple Labs Experience
           </p>
           <h1
@@ -347,10 +347,10 @@ export default function PurposeLab() {
             Purpose Lab
           </h1>
           <div className="gold-divider w-24 mx-auto my-5" />
-          <p className="font-script text-xl text-[#D7ECEB] mb-4">
+          <p className="font-script text-xl text-[#EDE4CC] mb-4">
             Uncover who you are. Live your purpose. Love your life.
           </p>
-          <p className="text-[#9fd0cd] font-sans text-sm leading-relaxed max-w-lg mx-auto">
+          <p className="text-[#B9C3D9] font-sans text-sm leading-relaxed max-w-lg mx-auto">
             Purpose Lab is a guided journey through The Ripple Method, a six-stage process
             that helps you move from your story to your purpose, and from your purpose to
             a life you love living.
@@ -366,17 +366,17 @@ export default function PurposeLab() {
       >
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-10">
-            <p className="text-[#C8A96A] text-xs font-sans uppercase tracking-widest mb-3">
+            <p className="text-[#C9A84C] text-xs font-sans uppercase tracking-widest mb-3">
               The Approach
             </p>
             <h2
-              className="text-3xl font-serif font-semibold text-[#0F2A36] mb-3"
+              className="text-3xl font-serif font-semibold text-[#0B1F4B] mb-3"
               style={{ fontFamily: "'Playfair Display', serif" }}
               data-testid="approach-heading"
             >
               Built on The Ripple Method
             </h2>
-            <p className="text-[#5FA8A5] font-sans text-sm leading-relaxed max-w-xl mx-auto">
+            <p className="text-[#5A6B8C] font-sans text-sm leading-relaxed max-w-xl mx-auto">
               Purpose is not something you create. It is something already within you
               that you uncover, name, and live. The Ripple Method is the framework
               that guides that journey: six stages, moving from your innermost story
@@ -391,7 +391,7 @@ export default function PurposeLab() {
               className="hidden md:block absolute top-[26px] left-[calc(8.33%+26px)] right-[calc(8.33%+26px)] h-px z-0"
               style={{
                 background:
-                  "linear-gradient(to right, #0F2A36, #1a4a55, #2F7F7B, #5FA8A5, #9fd0cd, #C8A96A)",
+                  "linear-gradient(to right, #0B1F4B, #16306A, #1E3A6E, #5A6B8C, #B9C3D9, #C9A84C)",
               }}
             />
             <div className="grid grid-cols-3 md:grid-cols-6 gap-3 relative z-10 mb-10">
@@ -405,7 +405,7 @@ export default function PurposeLab() {
                   <div
                     className={`w-[52px] h-[52px] rounded-full flex items-center justify-center text-sm font-sans font-semibold mb-2 transition-all duration-200 border-2 ${
                       activeStageId === stage.id
-                        ? "scale-110 shadow-lg border-[#C8A96A]"
+                        ? "scale-110 shadow-lg border-[#C9A84C]"
                         : "scale-100 border-transparent group-hover:scale-105"
                     }`}
                     style={{
@@ -417,13 +417,13 @@ export default function PurposeLab() {
                   </div>
                   <p
                     className={`text-xs font-serif font-semibold ${
-                      activeStageId === stage.id ? "text-[#2F7F7B]" : "text-[#0F2A36]"
+                      activeStageId === stage.id ? "text-[#1E3A6E]" : "text-[#0B1F4B]"
                     }`}
                     style={{ fontFamily: "'Playfair Display', serif" }}
                   >
                     {stage.title}
                   </p>
-                  <p className="text-[9px] font-sans uppercase tracking-wider text-[#5FA8A5] mt-0.5">
+                  <p className="text-[9px] font-sans uppercase tracking-wider text-[#5A6B8C] mt-0.5">
                     {stage.subtitle}
                   </p>
                 </button>
@@ -453,7 +453,7 @@ export default function PurposeLab() {
                   >
                     {activeStage.title} · {activeStage.subtitle}
                   </h3>
-                  <div className="w-8 h-px mb-4" style={{ backgroundColor: "#C8A96A" }} />
+                  <div className="w-8 h-px mb-4" style={{ backgroundColor: "#C9A84C" }} />
                   <p
                     className="font-script text-lg mb-3"
                     style={{
@@ -476,7 +476,7 @@ export default function PurposeLab() {
 
           {/* Circular diagram */}
           <div className="mt-16 text-center">
-            <p className="text-[#C8A96A] text-xs font-sans uppercase tracking-widest mb-8">
+            <p className="text-[#C9A84C] text-xs font-sans uppercase tracking-widest mb-8">
               The Full Picture
             </p>
             <RippleMethodDiagram size={580} />
@@ -492,17 +492,17 @@ export default function PurposeLab() {
       >
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-10">
-            <p className="text-[#C8A96A] text-xs font-sans uppercase tracking-widest mb-3">
+            <p className="text-[#C9A84C] text-xs font-sans uppercase tracking-widest mb-3">
               Your Guided Journey
             </p>
             <h2
-              className="text-3xl font-serif font-semibold text-[#0F2A36] mb-3"
+              className="text-3xl font-serif font-semibold text-[#0B1F4B] mb-3"
               style={{ fontFamily: "'Playfair Display', serif" }}
               data-testid="journey-heading"
             >
               Move Through Each Stage
             </h2>
-            <p className="text-[#5FA8A5] font-sans text-sm leading-relaxed">
+            <p className="text-[#5A6B8C] font-sans text-sm leading-relaxed">
               Each stage of Purpose Lab is a guided experience. Explore them below.
             </p>
           </div>
@@ -548,7 +548,7 @@ export default function PurposeLab() {
 
             {/* Gold divider */}
             <div className="px-8">
-              <div className="h-px" style={{ backgroundColor: "#C8A96A", opacity: 0.4 }} />
+              <div className="h-px" style={{ backgroundColor: "#C9A84C", opacity: 0.4 }} />
             </div>
 
             {/* Belief + Teaching */}
@@ -620,7 +620,7 @@ export default function PurposeLab() {
                   >
                     <div
                       className="w-4 h-px mb-2"
-                      style={{ backgroundColor: "#C8A96A" }}
+                      style={{ backgroundColor: "#C9A84C" }}
                     />
                     <p
                       className="text-xs font-sans font-semibold uppercase tracking-wide mb-2"
@@ -678,11 +678,11 @@ export default function PurposeLab() {
       {/* Key teachings strip */}
       <section
         className="px-6 md:px-12 py-14"
-        style={{ backgroundColor: "#0F2A36" }}
+        style={{ backgroundColor: "#0B1F4B" }}
         data-testid="teachings-section"
       >
         <div className="max-w-4xl mx-auto text-center">
-          <p className="text-[#C8A96A] text-xs font-sans uppercase tracking-widest mb-8">
+          <p className="text-[#C9A84C] text-xs font-sans uppercase tracking-widest mb-8">
             Core Teachings
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -698,13 +698,13 @@ export default function PurposeLab() {
                 key={i}
                 className="px-5 py-5 rounded-xl border"
                 style={{
-                  backgroundColor: "rgba(215,236,235,0.05)",
-                  borderColor: "rgba(215,236,235,0.1)",
+                  backgroundColor: "rgba(237,228,204,0.05)",
+                  borderColor: "rgba(237,228,204,0.1)",
                 }}
                 data-testid={`teaching-${i}`}
               >
-                <div className="w-6 h-px mb-3 mx-auto" style={{ backgroundColor: "#C8A96A" }} />
-                <p className="font-script text-base text-[#D7ECEB] leading-relaxed">
+                <div className="w-6 h-px mb-3 mx-auto" style={{ backgroundColor: "#C9A84C" }} />
+                <p className="font-script text-base text-[#EDE4CC] leading-relaxed">
                   {teaching}
                 </p>
               </div>
@@ -727,24 +727,24 @@ export default function PurposeLab() {
             data-testid="cta-logo"
           />
           <h2
-            className="text-2xl font-serif font-semibold text-[#0F2A36] mb-3"
+            className="text-2xl font-serif font-semibold text-[#0B1F4B] mb-3"
             style={{ fontFamily: "'Playfair Display', serif" }}
           >
             Ready to begin?
           </h2>
-          <p className="text-[#5FA8A5] font-sans text-sm leading-relaxed mb-6">
+          <p className="text-[#5A6B8C] font-sans text-sm leading-relaxed mb-6">
             Small actions create a life of purpose. Your journey through Purpose Lab
             starts with a single story.
           </p>
           <Link
             href="/ripple-journey"
             className="inline-block px-9 py-3.5 rounded-full font-sans font-medium text-white transition-all shadow-md hover:shadow-lg hover:opacity-90"
-            style={{ backgroundColor: "#2F7F7B" }}
+            style={{ backgroundColor: "#1E3A6E" }}
             data-testid="begin-journey-btn"
           >
             Begin Your Journey →
           </Link>
-          <p className="text-[#2F7F7B] font-sans text-xs leading-relaxed mt-4 max-w-sm mx-auto" data-testid="text-course-buyer">
+          <p className="text-[#1E3A6E] font-sans text-xs leading-relaxed mt-4 max-w-sm mx-auto" data-testid="text-course-buyer">
             Bought the course? Sign up with the same email you used and your access is already waiting.
           </p>
         </div>
@@ -753,7 +753,7 @@ export default function PurposeLab() {
       {/* Footer */}
       <footer
         className="px-6 py-8 flex flex-col md:flex-row items-center justify-between gap-4"
-        style={{ backgroundColor: "#081E28" }}
+        style={{ backgroundColor: "#071433" }}
         data-testid="footer"
       >
         <img
@@ -762,16 +762,16 @@ export default function PurposeLab() {
           className="h-7 w-auto object-contain brightness-0 invert opacity-60"
           data-testid="footer-logo"
         />
-        <p className="text-[#5FA8A5] text-xs font-sans opacity-60 text-center">
+        <p className="text-[#B9C3D9] text-xs font-sans text-center">
           © {new Date().getFullYear()} Ripple Labs · Purpose Lab
         </p>
         <div className="flex gap-5">
-          <Link href="/" className="text-[#5FA8A5] text-xs font-sans hover:text-[#D7ECEB] transition-colors">
+          <Link href="/" className="text-[#EDE4CC] text-xs font-sans hover:text-[#C9A84C] transition-colors">
             Home
           </Link>
-          <Link href="/privacy" className="text-[#5FA8A5] text-xs font-sans hover:text-[#D7ECEB] transition-colors">Privacy</Link>
-          <Link href="/terms" className="text-[#5FA8A5] text-xs font-sans hover:text-[#D7ECEB] transition-colors">Terms</Link>
-          <Link href="/support" className="text-[#5FA8A5] text-xs font-sans hover:text-[#D7ECEB] transition-colors">Support</Link>
+          <Link href="/privacy" className="text-[#EDE4CC] text-xs font-sans hover:text-[#C9A84C] transition-colors">Privacy</Link>
+          <Link href="/terms" className="text-[#EDE4CC] text-xs font-sans hover:text-[#C9A84C] transition-colors">Terms</Link>
+          <Link href="/support" className="text-[#EDE4CC] text-xs font-sans hover:text-[#C9A84C] transition-colors">Support</Link>
         </div>
       </footer>
     </div>

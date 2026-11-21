@@ -60,19 +60,19 @@ export function AccountMenu({ color }: { color: string }) {
           {firstName} ▾
         </button>
         {open && (
-          <div className="absolute right-0 top-full mt-3 w-52 rounded-xl bg-[#F5F1E8] text-[#0F2A36] border border-[#C8A96A]/30 shadow-xl p-2 z-50 font-sans">
-            <p className="px-3 py-2 text-xs border-b border-[#0F2A36]/10 mb-1">
+          <div className="absolute right-0 top-full mt-3 w-52 rounded-xl bg-[#F5F1E8] text-[#0B1F4B] border border-[#C9A84C]/30 shadow-xl p-2 z-50 font-sans">
+            <p className="px-3 py-2 text-xs border-b border-[#0B1F4B]/10 mb-1">
               Signed in as <strong>{firstName}</strong>
             </p>
             {session && courseAccess?.isOwner && (
-              <Link href="/admin/course-buyers" onClick={() => setOpen(false)} className="block w-full text-left px-3 py-2 text-xs rounded-lg hover:bg-[#D7ECEB] transition-colors" data-testid="link-course-buyers">
+              <Link href="/admin/course-buyers" onClick={() => setOpen(false)} className="block w-full text-left px-3 py-2 text-xs rounded-lg hover:bg-[#EDE4CC] transition-colors" data-testid="link-course-buyers">
                 Course buyers
               </Link>
             )}
             {session && courseAccess?.courseBuyer && (
               <p className="px-3 py-2 text-xs">Your course includes full Purpose Lab access.</p>
             )}
-            <button onClick={signOut} className="w-full text-left px-3 py-2 text-xs rounded-lg hover:bg-[#D7ECEB] transition-colors">
+            <button onClick={signOut} className="w-full text-left px-3 py-2 text-xs rounded-lg hover:bg-[#EDE4CC] transition-colors">
               Sign Out
             </button>
             <button
@@ -90,7 +90,7 @@ export function AccountMenu({ color }: { color: string }) {
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => !deleting && setShowDeleteDialog(false)} />
           <form
             onSubmit={(e) => { e.preventDefault(); confirmDelete(); }}
-            className="relative bg-[#F5F1E8] text-[#0F2A36] rounded-2xl w-full max-w-sm p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200"
+            className="relative bg-[#F5F1E8] text-[#0B1F4B] rounded-2xl w-full max-w-sm p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200"
           >
             <h3 className="font-serif text-2xl mb-2">Delete Account</h3>
             <p className="font-sans text-sm opacity-80 mb-6">
@@ -103,7 +103,7 @@ export function AccountMenu({ color }: { color: string }) {
                 placeholder="Your password"
                 value={deletePassword}
                 onChange={(e) => setDeletePassword(e.target.value)}
-                className="w-full bg-white/50 border border-[#2F7F7B]/20 rounded-xl px-4 py-3 outline-none focus:border-[#C8A96A] font-sans text-sm"
+                className="w-full bg-white/50 border border-[#1E3A6E]/20 rounded-xl px-4 py-3 outline-none focus:border-[#C9A84C] font-sans text-sm"
                 disabled={deleting}
               />
               {deleteError && (
@@ -118,7 +118,7 @@ export function AccountMenu({ color }: { color: string }) {
                 type="button"
                 onClick={() => setShowDeleteDialog(false)}
                 disabled={deleting}
-                className="flex-1 py-3 rounded-full text-sm font-sans font-medium border border-[#2F7F7B]/20 hover:bg-black/5 transition-colors disabled:opacity-50"
+                className="flex-1 py-3 rounded-full text-sm font-sans font-medium border border-[#1E3A6E]/20 hover:bg-black/5 transition-colors disabled:opacity-50"
               >
                 Cancel
               </button>

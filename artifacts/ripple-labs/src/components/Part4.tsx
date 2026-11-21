@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import type { PatternDiscovery, StoryCard } from "@/lib/types";
 import rippleLabsLogo from "@assets/2876A1D3-1596-40F7-9384-F5AAA5F311E8_1777042604510.png";
 
-const GOLD = "#C8A96A";
+const GOLD = "#C9A84C";
 
 const lines = (v: string) => v.split("\n").map((x) => x.trim()).filter(Boolean);
 const words = (v: string) => v.split(",").map((x) => x.trim()).filter(Boolean).slice(0, 10);
@@ -63,8 +63,8 @@ export function StoryConfirmCard({
     <article
       className="rounded-2xl p-5 md:p-6 transition-colors"
       style={{
-        backgroundColor: confirmed ? "rgba(200,169,106,0.1)" : "rgba(255,255,255,0.04)",
-        border: `1px solid ${confirmed ? "rgba(200,169,106,0.5)" : "rgba(255,255,255,0.1)"}`,
+        backgroundColor: confirmed ? "rgba(201,168,76,0.1)" : "rgba(255,255,255,0.04)",
+        border: `1px solid ${confirmed ? "rgba(201,168,76,0.5)" : "rgba(255,255,255,0.1)"}`,
         color: textColor,
       }}
       data-testid={`card-story-${card.id}`}
@@ -73,12 +73,12 @@ export function StoryConfirmCard({
         <div className="min-w-0">
           <p className="text-[10px] font-sans uppercase tracking-widest opacity-50 mb-1">Story {index + 1}</p>
           {editing ? (
-            <input value={title} onChange={(e) => setTitle(e.target.value)} className="w-full bg-transparent border-b font-serif text-xl outline-none pb-1" style={{ borderColor: "rgba(200,169,106,0.4)" }} data-testid={`input-story-title-${card.id}`} />
+            <input value={title} onChange={(e) => setTitle(e.target.value)} className="w-full bg-transparent border-b font-serif text-xl outline-none pb-1" style={{ borderColor: "rgba(201,168,76,0.4)" }} data-testid={`input-story-title-${card.id}`} />
           ) : (
             <h3 className="font-serif text-xl leading-snug">{card.title}</h3>
           )}
         </div>
-        <span className="flex-shrink-0 text-[10px] font-sans uppercase tracking-widest px-2.5 py-1 rounded-full" style={{ backgroundColor: confirmed ? GOLD : "transparent", color: confirmed ? "#0F2A36" : textColor, border: confirmed ? "none" : "1px solid rgba(255,255,255,0.2)", opacity: confirmed ? 1 : 0.6 }} data-testid={`status-story-${card.id}`}>
+        <span className="flex-shrink-0 text-[10px] font-sans uppercase tracking-widest px-2.5 py-1 rounded-full" style={{ backgroundColor: confirmed ? GOLD : "transparent", color: confirmed ? "#0B1F4B" : textColor, border: confirmed ? "none" : "1px solid rgba(255,255,255,0.2)", opacity: confirmed ? 1 : 0.6 }} data-testid={`status-story-${card.id}`}>
           {confirmed ? "Confirmed" : "Not yet confirmed"}
         </span>
       </header>
@@ -109,7 +109,7 @@ export function StoryConfirmCard({
           <>
             <button onClick={() => setEditing(false)} className="px-4 py-2 rounded-full text-xs font-sans border" style={{ borderColor: "rgba(255,255,255,0.2)" }} data-testid={`button-cancel-story-${card.id}`}>Cancel</button>
             <button onClick={() => persist(false)} disabled={saving} className="px-4 py-2 rounded-full text-xs font-sans border disabled:opacity-40" style={{ borderColor: GOLD }} data-testid={`button-save-story-${card.id}`}>Save edits</button>
-            <button onClick={() => persist(true)} disabled={saving} className="px-4 py-2 rounded-full text-xs font-sans font-medium disabled:opacity-40" style={{ backgroundColor: GOLD, color: "#0F2A36" }} data-testid={`button-save-confirm-story-${card.id}`}>Save and confirm</button>
+            <button onClick={() => persist(true)} disabled={saving} className="px-4 py-2 rounded-full text-xs font-sans font-medium disabled:opacity-40" style={{ backgroundColor: GOLD, color: "#0B1F4B" }} data-testid={`button-save-confirm-story-${card.id}`}>Save and confirm</button>
           </>
         ) : (
           <>
@@ -119,7 +119,7 @@ export function StoryConfirmCard({
             {confirmed ? (
               <button onClick={() => persist(false)} disabled={saving} className="px-4 py-2 rounded-full text-xs font-sans underline opacity-70 disabled:opacity-40" data-testid={`button-unconfirm-story-${card.id}`}>Undo confirm</button>
             ) : (
-              <button onClick={() => persist(true)} disabled={saving} className="px-4 py-2 rounded-full text-xs font-sans font-medium disabled:opacity-40" style={{ backgroundColor: GOLD, color: "#0F2A36" }} data-testid={`button-confirm-story-${card.id}`}>
+              <button onClick={() => persist(true)} disabled={saving} className="px-4 py-2 rounded-full text-xs font-sans font-medium disabled:opacity-40" style={{ backgroundColor: GOLD, color: "#0B1F4B" }} data-testid={`button-confirm-story-${card.id}`}>
                 {saving ? "Saving..." : "Yes, that sounds right"}
               </button>
             )}
@@ -137,7 +137,7 @@ export function RevealSummaries({ cards, textColor }: { cards: StoryCard[]; text
   const shown = cards.filter((c) => c.confirmed).length ? cards.filter((c) => c.confirmed) : cards;
   if (!shown.length) return null;
   return (
-    <section className="rounded-2xl p-5" style={{ backgroundColor: "rgba(255,255,255,0.05)", border: "1px solid rgba(200,169,106,0.2)", color: textColor }} data-testid="reveal-summaries">
+    <section className="rounded-2xl p-5" style={{ backgroundColor: "rgba(255,255,255,0.05)", border: "1px solid rgba(201,168,76,0.2)", color: textColor }} data-testid="reveal-summaries">
       <button onClick={() => setOpen(!open)} className="w-full flex items-center justify-between" data-testid="button-toggle-summaries">
         <span className="text-[10px] font-sans uppercase tracking-widest opacity-60">Your Reveal summaries · {shown.length}</span>
         <span className="text-xs font-sans opacity-50">{open ? "Hide" : "Show"}</span>
@@ -204,9 +204,9 @@ export function PatternDiscoveryForm({
     }
   }
 
-  const field = "w-full rounded-xl bg-black/10 px-3.5 py-2.5 text-sm font-sans outline-none border focus:border-[#C8A96A]";
+  const field = "w-full rounded-xl bg-black/10 px-3.5 py-2.5 text-sm font-sans outline-none border focus:border-[#C9A84C]";
   return (
-    <section className="rounded-2xl p-5 md:p-6 space-y-4" style={{ backgroundColor: "rgba(255,255,255,0.05)", border: `1px solid ${confirmed ? GOLD : "rgba(200,169,106,0.2)"}`, color: textColor }} data-testid="form-pattern-discovery">
+    <section className="rounded-2xl p-5 md:p-6 space-y-4" style={{ backgroundColor: "rgba(255,255,255,0.05)", border: `1px solid ${confirmed ? GOLD : "rgba(201,168,76,0.2)"}`, color: textColor }} data-testid="form-pattern-discovery">
       <div>
         <p className="text-[10px] font-sans uppercase tracking-widest opacity-50 mb-1">In your own words</p>
         <h3 className="font-serif text-2xl">What you do, and what it changes</h3>
@@ -224,19 +224,19 @@ export function PatternDiscoveryForm({
         <span className="text-xs font-sans opacity-70">Impact: what changes in other people</span>
         <textarea value={impact} onChange={(e) => setImpact(e.target.value)} rows={3} maxLength={2000} placeholder="People feel brave enough to try again." className={field} style={{ color: textColor, borderColor: "rgba(255,255,255,0.1)" }} data-testid="input-impact" />
       </label>
-      <div className="space-y-2.5 rounded-xl p-4" style={{ backgroundColor: "rgba(200,169,106,0.08)" }}>
+      <div className="space-y-2.5 rounded-xl p-4" style={{ backgroundColor: "rgba(201,168,76,0.08)" }}>
         <label className="flex gap-3 text-sm font-sans leading-relaxed cursor-pointer">
-          <input type="checkbox" checked={equalCheck} onChange={(e) => setEqualCheck(e.target.checked)} className="mt-1 accent-[#C8A96A]" data-testid="checkbox-equal-weight" />
+          <input type="checkbox" checked={equalCheck} onChange={(e) => setEqualCheck(e.target.checked)} className="mt-1 accent-[#C9A84C]" data-testid="checkbox-equal-weight" />
           <span>Both my action and its impact on others are named here.</span>
         </label>
         <label className="flex gap-3 text-sm font-sans leading-relaxed cursor-pointer">
-          <input type="checkbox" checked={roleCheck} onChange={(e) => setRoleCheck(e.target.checked)} className="mt-1 accent-[#C8A96A]" data-testid="checkbox-any-season" />
+          <input type="checkbox" checked={roleCheck} onChange={(e) => setRoleCheck(e.target.checked)} className="mt-1 accent-[#C9A84C]" data-testid="checkbox-any-season" />
           <span>Would this be true of me at home, at work, with friends, in any season? Yes, it isn't tied to one job or role.</span>
         </label>
       </div>
       <div className="flex flex-wrap gap-2 items-center">
         <button onClick={() => save(false)} disabled={saving} className="px-4 py-2 rounded-full text-xs font-sans border disabled:opacity-40" style={{ borderColor: GOLD }} data-testid="button-save-pattern">Save without confirming</button>
-        <button onClick={() => save(true)} disabled={saving || !canConfirm} className="px-5 py-2 rounded-full text-xs font-sans font-medium disabled:opacity-40" style={{ backgroundColor: GOLD, color: "#0F2A36" }} data-testid="button-confirm-pattern">
+        <button onClick={() => save(true)} disabled={saving || !canConfirm} className="px-5 py-2 rounded-full text-xs font-sans font-medium disabled:opacity-40" style={{ backgroundColor: GOLD, color: "#0B1F4B" }} data-testid="button-confirm-pattern">
           {confirmed ? "Update and keep confirmed" : "This rings true. Confirm"}
         </button>
         {note && <span className="text-xs font-sans opacity-70" data-testid="text-pattern-status">{note}</span>}
@@ -248,13 +248,13 @@ export function PatternDiscoveryForm({
 export function PatternSummary({ value, textColor }: { value: PatternDiscovery | null; textColor: string }) {
   if (!value || !value.confirmed) {
     return (
-      <div className="rounded-2xl p-5 text-sm font-sans" style={{ border: "1px dashed rgba(200,169,106,0.35)", color: textColor, opacity: 0.75 }} data-testid="pattern-summary-empty">
+      <div className="rounded-2xl p-5 text-sm font-sans" style={{ border: "1px dashed rgba(201,168,76,0.35)", color: textColor, opacity: 0.75 }} data-testid="pattern-summary-empty">
         Your action and impact from Identify aren't confirmed yet. You can return to Identify, or name them here with your guide.
       </div>
     );
   }
   return (
-    <section className="rounded-2xl p-5 grid sm:grid-cols-2 gap-5" style={{ backgroundColor: "rgba(200,169,106,0.1)", border: "1px solid rgba(200,169,106,0.35)", color: textColor }} data-testid="pattern-summary">
+    <section className="rounded-2xl p-5 grid sm:grid-cols-2 gap-5" style={{ backgroundColor: "rgba(201,168,76,0.1)", border: "1px solid rgba(201,168,76,0.35)", color: textColor }} data-testid="pattern-summary">
       <div>
         <p className="text-[10px] font-sans uppercase tracking-widest mb-2" style={{ color: GOLD }}>Your action</p>
         <p className="font-serif text-2xl leading-tight">{value.actionWords.join(", ")}</p>
@@ -299,10 +299,10 @@ export function PurposePage({ statement, pattern, onClose }: { statement: string
     const action = pattern?.confirmed ? pattern.actionWords.join(", ") : "";
     const impact = pattern?.confirmed ? pattern.impact : "";
     const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>My Purpose</title>
-<style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#F5F1E8;color:#0F2A36;font-family:Georgia,'Times New Roman',serif}
-main{max-width:640px;padding:64px 32px;text-align:center}.k{font:600 11px/1 system-ui,sans-serif;letter-spacing:.28em;text-transform:uppercase;color:#2F7F7B}
-.rule{width:56px;height:1px;background:#C8A96A;margin:28px auto}h1{font-weight:400;font-style:italic;font-size:34px;line-height:1.35;margin:0}
-.g{display:flex;gap:32px;justify-content:center;margin-top:36px;text-align:left}.g p{margin:6px 0 0;font-size:16px}.f{margin-top:56px;font:12px system-ui,sans-serif;color:#5b6d70}</style></head>
+<style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#F5F1E8;color:#0B1F4B;font-family:Georgia,'Times New Roman',serif}
+main{max-width:640px;padding:64px 32px;text-align:center}.k{font:600 11px/1 system-ui,sans-serif;letter-spacing:.28em;text-transform:uppercase;color:#1E3A6E}
+.rule{width:56px;height:1px;background:#C9A84C;margin:28px auto}h1{font-weight:400;font-style:italic;font-size:34px;line-height:1.35;margin:0}
+.g{display:flex;gap:32px;justify-content:center;margin-top:36px;text-align:left}.g p{margin:6px 0 0;font-size:16px}.f{margin-top:56px;font:12px system-ui,sans-serif;color:#5A6B8C}</style></head>
 <body><main><p class="k">My purpose</p><div class="rule"></div><h1>${escapeHtml(statement)}</h1><div class="rule"></div>
 ${action || impact ? `<div class="g">${action ? `<div><span class="k">Action</span><p>${escapeHtml(action)}</p></div>` : ""}${impact ? `<div><span class="k">Impact</span><p>${escapeHtml(impact)}</p></div>` : ""}</div>` : ""}
 <p class="f">Named in the Ripple Labs Purpose Lab · ${escapeHtml(date)}</p></main></body></html>`;
@@ -317,36 +317,36 @@ ${action || impact ? `<div class="g">${action ? `<div><span class="k">Action</sp
   }
 
   return (
-    <div className="fixed inset-0 z-[100] overflow-y-auto bg-[#F5F1E8] text-[#0F2A36] print:static" role="dialog" aria-modal="true" aria-label="Your purpose page" data-testid="purpose-page">
-      <div className="absolute inset-0 pointer-events-none opacity-[0.35]" style={{ background: "radial-gradient(circle at 50% 38%, rgba(95,168,165,0.18), transparent 55%), radial-gradient(circle at 50% 38%, transparent 30%, rgba(200,169,106,0.12) 31%, transparent 32%, transparent 44%, rgba(200,169,106,0.08) 45%, transparent 46%)" }} />
+    <div className="fixed inset-0 z-[100] overflow-y-auto bg-[#F5F1E8] text-[#0B1F4B] print:static" role="dialog" aria-modal="true" aria-label="Your purpose page" data-testid="purpose-page">
+      <div className="absolute inset-0 pointer-events-none opacity-[0.35]" style={{ background: "radial-gradient(circle at 50% 38%, rgba(95,168,165,0.18), transparent 55%), radial-gradient(circle at 50% 38%, transparent 30%, rgba(201,168,76,0.12) 31%, transparent 32%, transparent 44%, rgba(201,168,76,0.08) 45%, transparent 46%)" }} />
       <div className="relative min-h-[100dvh] flex flex-col">
         <div className="flex flex-wrap items-center justify-end gap-2 p-4 print:hidden">
-          <button onClick={downloadHtml} className="px-4 py-2 rounded-full text-xs font-sans bg-[#0F2A36] text-[#F5F1E8]" data-testid="button-download-html">Download page</button>
-          <button onClick={downloadText} className="px-4 py-2 rounded-full text-xs font-sans border border-[#0F2A36]/25" data-testid="button-download-text">Download text</button>
-          <button onClick={() => window.print()} className="px-4 py-2 rounded-full text-xs font-sans border border-[#0F2A36]/25" data-testid="button-print">Print</button>
+          <button onClick={downloadHtml} className="px-4 py-2 rounded-full text-xs font-sans bg-[#0B1F4B] text-[#F5F1E8]" data-testid="button-download-html">Download page</button>
+          <button onClick={downloadText} className="px-4 py-2 rounded-full text-xs font-sans border border-[#0B1F4B]/25" data-testid="button-download-text">Download text</button>
+          <button onClick={() => window.print()} className="px-4 py-2 rounded-full text-xs font-sans border border-[#0B1F4B]/25" data-testid="button-print">Print</button>
           <button onClick={onClose} className="px-4 py-2 rounded-full text-xs font-sans opacity-60 hover:opacity-100" data-testid="button-close-purpose-page">Close</button>
         </div>
         <main className="flex-1 flex items-center justify-center px-6 pb-16">
           <div className="max-w-2xl text-center">
             <img src={rippleLabsLogo} alt="Ripple Labs" className="h-8 w-auto mx-auto mb-10 rounded-md opacity-80" />
-            <p className="text-[11px] font-sans uppercase tracking-[0.3em] text-[#2F7F7B]">My purpose</p>
+            <p className="text-[11px] font-sans uppercase tracking-[0.3em] text-[#1E3A6E]">My purpose</p>
             <div className="w-14 h-px mx-auto my-8" style={{ backgroundColor: GOLD }} />
             <p className="font-script text-4xl md:text-5xl leading-[1.3] break-words" data-testid="text-purpose-statement">{statement}</p>
             <div className="w-14 h-px mx-auto my-8" style={{ backgroundColor: GOLD }} />
             {pattern?.confirmed && (
               <div className="flex flex-col sm:flex-row gap-6 sm:gap-12 justify-center text-left mt-2">
                 <div>
-                  <p className="text-[10px] font-sans uppercase tracking-widest text-[#2F7F7B]">Action</p>
+                  <p className="text-[10px] font-sans uppercase tracking-widest text-[#1E3A6E]">Action</p>
                   <p className="font-serif text-lg mt-1">{pattern.actionWords.join(", ")}</p>
                 </div>
                 <div className="max-w-xs">
-                  <p className="text-[10px] font-sans uppercase tracking-widest text-[#2F7F7B]">Impact</p>
+                  <p className="text-[10px] font-sans uppercase tracking-widest text-[#1E3A6E]">Impact</p>
                   <p className="font-serif text-lg mt-1">{pattern.impact}</p>
                 </div>
               </div>
             )}
-            <p className="text-xs font-sans text-[#0F2A36]/50 mt-14">Named in the Ripple Labs Purpose Lab · {date}</p>
-            <p className="text-[11px] font-sans text-[#0F2A36]/40 mt-2 print:hidden">This page is laid out to screenshot cleanly.</p>
+            <p className="text-xs font-sans text-[#0B1F4B]/50 mt-14">Named in the Ripple Labs Purpose Lab · {date}</p>
+            <p className="text-[11px] font-sans text-[#0B1F4B]/40 mt-2 print:hidden">This page is laid out to screenshot cleanly.</p>
           </div>
         </main>
       </div>
@@ -370,7 +370,7 @@ export const PRACTICE_SAMPLES = [
 export function PracticePanel({ textColor, onUseSample }: { textColor: string; onUseSample: (text: string) => void }) {
   const [open, setOpen] = useState(true);
   return (
-    <section className="rounded-2xl p-5 text-sm font-sans" style={{ backgroundColor: "rgba(200,169,106,0.14)", border: "1px dashed rgba(200,169,106,0.6)", color: textColor }} data-testid="practice-panel">
+    <section className="rounded-2xl p-5 text-sm font-sans" style={{ backgroundColor: "rgba(201,168,76,0.14)", border: "1px dashed rgba(201,168,76,0.6)", color: textColor }} data-testid="practice-panel">
       <button onClick={() => setOpen(!open)} className="w-full flex items-center justify-between" data-testid="button-toggle-practice-help">
         <span className="text-[10px] uppercase tracking-widest" style={{ color: GOLD }}>Practice notebook · separate from your own journey</span>
         <span className="text-xs opacity-60">{open ? "Hide" : "How to test"}</span>
